@@ -1,0 +1,66 @@
+Command: ninja flash
+[1/5] C:\WINDOWS\system32\cmd.exe /C "cd /D D:\ESP-IDF-projects\DroneCam\build\esp-idf\esptool_py && w:\Espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe W:/Espressif/frameworks/esp-idf-v5.5/components/partition_table/check_sizes.py --offset 0x8000 partition --type app D:/ESP-IDF-projects/DroneCam/build/partition_table/partition-table.bin D:/ESP-IDF-projects/DroneCam/build/VisualSLAM_INAV.bin"
+VisualSLAM_INAV.bin binary size 0xcae80 bytes. Smallest app partition is 0x1f00000 bytes. 0x1e35180 bytes (97%) free.
+[2/5] Performing build step for 'bootloader'
+[1/1] C:\WINDOWS\system32\cmd.exe /C "cd /D D:\ESP-IDF-projects\DroneCam\build\bootloader\esp-idf\esptool_py && w:\Espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe W:/Espressif/frameworks/esp-idf-v5.5/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x2000 D:/ESP-IDF-projects/DroneCam/build/bootloader/bootloader.bin"
+Bootloader binary size 0x5770 bytes. 0x890 bytes (9%) free.
+[3/5] No install step for 'bootloader'
+[4/5] Completed 'bootloader'
+[4/5] C:\WINDOWS\system32\cmd.exe /C "cd /D W:\Espressif\frameworks\esp-idf-v5.5\components\esptool_py && W:\Espressif\tools\cmake\3.30.2\bin\cmake.exe -D IDF_PATH=W:/Espressif/frameworks/esp-idf-v5.5 -D SERIAL_TOOL=w:/Espressif/python_env/idf5.5_py3.13_env/Scripts/python.exe;;W:/Espressif/frameworks/esp-idf-v5.5/components/esptool_py/esptool/esptool.py;--chip;esp32p4 -D SERIAL_TOOL_ARGS=--before=default_reset;--after=hard_reset;write_flash;@flash_args -D WORKING_DIRECTORY=D:/ESP-IDF-projects/DroneCam/build -P W:/Espressif/frameworks/esp-idf-v5.5/components/esptool_py/run_serial_tool.cmake"
+esptool.py --chip esp32p4 -p COM9 -b 460800 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 80m --flash_size 32MB 0x2000 bootloader/bootloader.bin 0x10000 VisualSLAM_INAV.bin 0x8000 partition_table/partition-table.bin
+esptool.py v4.10.dev2
+Serial port COM9
+Connecting....
+Chip is ESP32-P4 (revision v1.0)
+Features: High-Performance MCU
+Crystal is 40MHz
+MAC: 30:ed:a0:e2:0c:72
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00002000 to 0x00007fff...
+Flash will be erased from 0x00010000 to 0x000dafff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+SHA digest in image updated
+Compressed 22384 bytes to 13730...
+Writing at 0x00002000... (100 %)
+Wrote 22384 bytes (13730 compressed) at 0x00002000 in 0.6 seconds (effective 290.4 kbit/s)...
+Hash of data verified.
+Compressed 831104 bytes to 399524...
+Writing at 0x00010000... (4 %)
+Writing at 0x0001de12... (8 %)
+Writing at 0x0002b91d... (12 %)
+Writing at 0x00038c3f... (16 %)
+Writing at 0x00045101... (20 %)
+Writing at 0x0004bda4... (24 %)
+Writing at 0x00052e6c... (28 %)
+Writing at 0x0005a0f2... (32 %)
+Writing at 0x00062404... (36 %)
+Writing at 0x0006c609... (40 %)
+Writing at 0x000744a8... (44 %)
+Writing at 0x0007b50e... (48 %)
+Writing at 0x00082d6f... (52 %)
+Writing at 0x00089607... (56 %)
+Writing at 0x0009093c... (60 %)
+Writing at 0x000978b0... (64 %)
+Writing at 0x0009e80b... (68 %)
+Writing at 0x000a579c... (72 %)
+Writing at 0x000ace0e... (76 %)
+Writing at 0x000b3ef4... (80 %)
+Writing at 0x000ba112... (84 %)
+Writing at 0x000c0c88... (88 %)
+Writing at 0x000c8581... (92 %)
+Writing at 0x000cf488... (96 %)
+Writing at 0x000d6c2b... (100 %)
+Wrote 831104 bytes (399524 compressed) at 0x00010000 in 10.2 seconds (effective 652.6 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 105...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (105 compressed) at 0x00008000 in 0.0 seconds (effective 503.8 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...

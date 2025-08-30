@@ -1,0 +1,2 @@
+source D:/ESP-IDF-projects/DroneCam/build/bootloader/gdbinit/symbols
+source D:/ESP-IDF-projects/DroneCam/build/bootloader/gdbinit/connect

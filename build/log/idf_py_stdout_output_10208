@@ -1,0 +1,1634 @@
+Command: w:\Espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe W:\Espressif\frameworks\esp-idf-v5.5\tools/idf_monitor.py -p COM9 -b 115200 --toolchain-prefix riscv32-esp-elf- --target esp32p4 --revision 1 --decode-panic backtrace D:\ESP-IDF-projects\DroneCam\build\VisualSLAM_INAV.elf D:\ESP-IDF-projects\DroneCam\build\bootloader\bootloader.elf --force-color -m 'w:\Espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe' 'W:\Espressif\frameworks\esp-idf-v5.5\tools\idf.py'
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0x1 (POWERON),boot:0x30f (SPI_FAST_FLASH_BOOT)
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x164c
+load:0x4ff29ed0,len:0xd64
+load:0x4ff2cbd0,len:0x3364
+entry 0x4ff29eda
+[0;32mI (25) boot: ESP-IDF v5.5 2nd stage bootloader[0m
+[0;32mI (26) boot: compile time Aug 29 2025 15:30:40[0m
+[0;32mI (26) boot: Multicore bootloader[0m
+[0;32mI (27) boot: chip revision: v1.0[0m
+[0;32mI (28) boot: efuse block revision: v0.3[0m
+[0;32mI (32) boot.esp32p4: SPI Speed      : 80MHz[0m
+[0;32mI (36) boot.esp32p4: SPI Mode       : DIO[0m
+[0;32mI (40) boot.esp32p4: SPI Flash Size : 32MB[0m
+[0;32mI (43) boot: Enabling RNG early entropy source...[0m
+[0;32mI (48) boot: Partition Table:[0m
+[0;32mI (51) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (57) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (63) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (70) boot:  2 factory          factory app      00 00 00010000 01f00000[0m
+[0;32mI (78) boot: End of partition table[0m
+[0;32mI (80) esp_image: segment 0: paddr=00010020 vaddr=40080020 size=33e34h (212532) map[0m
+[0;32mI (124) esp_image: segment 1: paddr=00043e5c vaddr=30100000 size=00068h (   104) load[0m
+[0;32mI (126) esp_image: segment 2: paddr=00043ecc vaddr=4ff00000 size=0c14ch ( 49484) load[0m
+[0;32mI (138) esp_image: segment 3: paddr=00050020 vaddr=40000020 size=7e2a0h (516768) map[0m
+[0;32mI (226) esp_image: segment 4: paddr=000ce2c8 vaddr=4ff0c14c size=09ac0h ( 39616) load[0m
+[0;32mI (235) esp_image: segment 5: paddr=000d7d90 vaddr=4ff15c80 size=030c4h ( 12484) load[0m
+[0;32mI (244) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (244) boot: Disabling RNG early entropy source...[0m
+[0;32mI (254) hex_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (254) hex_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (255) hex_psram: DriveStr.    : 0x00 (25 Ohm)[0m
+[0;32mI (255) hex_psram: dev id       : 0x03 (generation 4)[0m
+[0;32mI (260) hex_psram: density      : 0x07 (256 Mbit)[0m
+[0;32mI (264) hex_psram: good-die     : 0x06 (Pass)[0m
+[0;32mI (268) hex_psram: SRF          : 0x02 (Slow Refresh)[0m
+[0;32mI (273) hex_psram: BurstType    : 0x00 ( Wrap)[0m
+[0;32mI (277) hex_psram: BurstLen     : 0x03 (2048 Byte)[0m
+[0;32mI (282) hex_psram: BitMode      : 0x01 (X16 Mode)[0m
+[0;32mI (286) hex_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (291) hex_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (296) MSPI DQS: tuning success, best phase id is 0[0m
+[0;32mI (477) MSPI DQS: tuning success, best delayline id is 15[0m
+[0;32mI (477) esp_psram: Found 32MB PSRAM device[0m
+[0;32mI (478) esp_psram: Speed: 80MHz[0m
+[0;32mI (478) hex_psram: psram CS IO is dedicated[0m
+[0;32mI (482) cpu_start: Multicore app[0m
+[0;32mI (1771) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (1780) cpu_start: Pro cpu start user code[0m
+[0;32mI (1780) cpu_start: cpu freq: 360000000 Hz[0m
+[0;32mI (1780) app_init: Application information:[0m
+[0;32mI (1780) app_init: Project name:     VisualSLAM_INAV[0m
+[0;32mI (1785) app_init: App version:      1[0m
+[0;32mI (1788) app_init: Compile time:     Aug 29 2025 15:40:06[0m
+[0;32mI (1794) app_init: ELF file SHA256:  482ac146c...[0m
+[0;32mI (1798) app_init: ESP-IDF:          v5.5[0m
+[0;32mI (1802) efuse_init: Min chip rev:     v0.1[0m
+[0;32mI (1806) efuse_init: Max chip rev:     v1.99 [0m
+[0;32mI (1810) efuse_init: Chip rev:         v1.0[0m
+[0;32mI (1814) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (1820) heap_init: At 4FF1BF90 len 0001F030 (124 KiB): RAM[0m
+[0;32mI (1825) heap_init: At 4FF3AFC0 len 00004BF0 (18 KiB): RAM[0m
+[0;32mI (1830) heap_init: At 4FF40000 len 00060000 (384 KiB): RAM[0m
+[0;32mI (1836) heap_init: At 50108080 len 00007F80 (31 KiB): RTCRAM[0m
+[0;32mI (1841) heap_init: At 30100068 len 00001F98 (7 KiB): TCM[0m
+[0;32mI (1847) esp_psram: Adding pool of 32768K of PSRAM memory to heap allocator[0m
+[0;33mW (1854) spi_flash: GigaDevice detected but related driver is not linked, please check option `SPI_FLASH_SUPPORT_GD_CHIP`[0m
+[0;32mI (1864) spi_flash: detected chip: generic[0m
+[0;33mW (1867) spi_flash: Detected flash size > 16 MB, but access beyond 16 MB is not supported for this flash model yet.[0m
+[0;32mI (1878) spi_flash: flash io: dio[0m
+[0;32mI (1881) host_init: ESP Hosted : Host chip_ip[18][0m
+[0;32mI (1896) H_API: ESP-Hosted starting. Hosted_Tasks: prio:23, stack: 5120 RPC_task_stack: 5120[0m
+[0;32mI (1897) H_API: ** add_esp_wifi_remote_channels **[0m
+[0;32mI (1898) transport: Add ESP-Hosted channel IF[1]: S[0] Tx[0x400119dc] Rx[0x40023acc][0m
+[0;32mI (1906) transport: Add ESP-Hosted channel IF[2]: S[0] Tx[0x40011920] Rx[0x40023acc][0m
+sdio_mempool_create free:33708828 min-free:33708828 lfb-def:33030144 lfb-8bit:33030144
+
+[0;33mW (1921) sdio_wrapper: workaround: setting D2-D3 in 1 bit mode for slot 0[0m
+[0;32mI (1929) H_SDIO_DRV: sdio_data_to_rx_buf_task started[0m
+[0;32mI (1929) main_task: Started on CPU0[0m
+[0;32mI (1939) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (1939) main_task: Calling app_main()[0m
+[0;32mI (1949) VisualSLAM_INAV: [0m
+[0;32mI (1949) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1959) VisualSLAM_INAV: 🚁 Visual SLAM Navigation Module for INAV[0m
+[0;32mI (1959) VisualSLAM_INAV: 📡 ESP32-P4-WIFI6 with OV5647 MIPI-CSI Camera[0m
+[0;32mI (1969) VisualSLAM_INAV: 🧠 Real-time ORB-SLAM with Web Interface[0m
+[0;32mI (1979) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1979) VisualSLAM_INAV: [0m
+[0;32mI (1999) VisualSLAM_INAV: ✅ NVS initialized[0m
+[0;32mI (1999) VisualSLAM_INAV: ✅ GPIO initialized[0m
+[0;32mI (1999) VisualSLAM_INAV: 🎥 Initializing OV5647 MIPI-CSI camera...[0m
+[0;32mI (1999) slam_core: Initializing camera for SLAM[0m
+[0;32mI (2009) VisualSLAM_INAV: ✅ Camera initialized successfully[0m
+[0;32mI (2009) VisualSLAM_INAV: 🛰️ Initializing uBlox GPS module...[0m
+[0;32mI (2019) GPS_uBlox: Initializing uBlox GPS on UART1[0m
+[0;32mI (2019) GPS_uBlox: UBX configuration sent[0m
+[0;32mI (2029) GPS_uBlox: GPS parsing task started[0m
+[0;32mI (2029) GPS_uBlox: GPS uBlox initialized successfully[0m
+[0;32mI (2039) VisualSLAM_INAV: ✅ GPS initialized successfully[0m
+[0;32mI (2039) VisualSLAM_INAV: 📐 Initializing BMI088 IMU...[0m
+[0;32mI (2049) IMU_BMI088: Initializing BMI088 IMU on SPI[0m
+[1;31mE (2049) IMU_BMI088: Invalid accelerometer chip ID: 0xFF (expected 0x1E)[0m
+[1;31mE (2059) IMU_BMI088: Failed to initialize accelerometer[0m
+[1;31mE (2059) VisualSLAM_INAV: ❌ IMU initialization failed: ESP_FAIL[0m
+[1;31mE (2069) VisualSLAM_INAV: IMU initialization failed, continuing anyway...[0m
+[0;32mI (2079) VisualSLAM_INAV: 🧠 Initializing Visual SLAM system...[0m
+[0;32mI (2079) VisualSLAM_INAV: Memory status before SLAM init:[0m
+[0;32mI (2089) VisualSLAM_INAV:   Internal RAM free: 503435 bytes[0m
+[0;32mI (2089) VisualSLAM_INAV:   SPIRAM free: 33546060 bytes[0m
+[0;32mI (2099) VisualSLAM_INAV:   Total free: 34049495 bytes[0m
+[0;32mI (2099) orb_features: Initialized 8 pyramid levels, max size: 800x640[0m
+[0;32mI (2109) orb_features: ORB features initialized with 500 max features[0m
+[0;32mI (2109) slam_core: Allocating SLAM memory: 5.5 KB keyframes + 742.2 KB map points = 747.7 KB total[0m
+[0;32mI (2139) slam_core: SPIRAM available: 29939 KB, used SLAM: 747.7 KB[0m
+[0;32mI (2139) slam_core: SLAM memory allocation successful[0m
+[0;32mI (2139) slam_core: SLAM core initialized with 500 max features[0m
+[0;32mI (2139) VisualSLAM_INAV: ✅ SLAM system initialized successfully[0m
+[0;32mI (2149) VisualSLAM_INAV: Memory status after SLAM init:[0m
+[0;32mI (2159) VisualSLAM_INAV:   Internal RAM free: 503039 bytes[0m
+[0;32mI (2159) VisualSLAM_INAV:   SPIRAM free: 30657824 bytes[0m
+[0;32mI (2169) VisualSLAM_INAV:   Total free: 31160863 bytes[0m
+[0;32mI (2169) VisualSLAM_INAV: 🏃 Main processing task started[0m
+[0;32mI (2169) VisualSLAM_INAV: 🌐 Web interface task started[0m
+[0;32mI (2179) transport: Attempt connection with slave: retry[0][0m
+[0;33mW (2189) H_SDIO_DRV: Reset slave using GPIO[54][0m
+[0;32mI (2189) os_wrapper_esp: GPIO [54] configured[0m
+[0;32mI (2169) VisualSLAM_INAV: 📡 Telemetry broadcast task started[0m
+[0;32mI (2169) VisualSLAM_INAV: 🚀 Visual SLAM Navigation Module started successfully![0m
+[0;32mI (2209) VisualSLAM_INAV: 🌐 Web interface: Connect to WiFi or use captive portal[0m
+[0;32mI (2219) VisualSLAM_INAV: 📱 Access dashboard at: http://dronecam.local or device IP[0m
+[0;32mI (3399) sdio_wrapper: SDIO master: Slot 0, Data-Lines: 1-bit Freq(KHz)[20000 KHz][0m
+[0;32mI (3399) sdio_wrapper: GPIOs: CLK[43] CMD[44] D0[39] D1[40] Slave_Reset[54][0m
+[0;32mI (3399) sdio_wrapper: Queues: Tx[20] Rx[20] SDIO-Rx-Mode[1][0m
+[1;31mE (3419) sdmmc_common: sdmmc_init_ocr: send_op_cond (1) returned 0x107[0m
+[1;31mE (3419) sdio_wrapper: sdmmc_card_init failed[0m
+[1;31mE (3419) H_SDIO_DRV: card init failed[0m
+[0;32mI (3419) transport: Waiting for esp_hosted slave to be ready[0m
+[0;32mI (3429) H_SDIO_DRV: SDIO Host operating in STREAMING MODE[0m
+[0;32mI (3429) H_SDIO_DRV: Starting SDIO process rx task[0m
+[0;32mI (3429) H_SDIO_DRV: Open data path at slave[0m
+Guru Meditation Error: Core  0 panic'ed (Load access fault). Exception was unhandled.
+
+Core  0 register dump:
+MEPC    : 0x40056dac  RA      : 0x40054838  SP      : 0x4ff20930  GP      : 0x4ff16480  
+TP      : 0x4ff20a50  T0      : 0x4fc0a9f8  T1      : 0x30000000  T2      : 0x00000000  
+S0/FP   : 0x4ff20944  S1      : 0x00000000  A0      : 0x00000000  A1      : 0x4ff20944  
+A2      : 0x98011800  A3      : 0x88000000  A4      : 0x4ff2099f  A5      : 0x98011801  
+A6      : 0x4000d608  A7      : 0x0000000a  S2      : 0x0000008c  S3      : 0x4ff209df  
+S4      : 0x00000000  S5      : 0x00000000  S6      : 0x00000000  S7      : 0x00000000  
+S8      : 0x00000000  S9      : 0x00000000  S10     : 0x00000000  S11     : 0x00000000  
+T3      : 0x00000000  T4      : 0x00000000  T5      : 0x00000000  T6      : 0x00000000  
+MSTATUS : 0x00011880  MTVEC   : 0x4ff00003  MCAUSE  : 0x00000005  MTVAL   : 0x00000040  
+MHARTID : 0x00000000  
+
+Stack memory:
+4ff20930: 0x4ff20a50 0x00000000 0x4ff2099f 0x40054838 0x00000000 0x00000034 0x98011801 0x00000000
+4ff20950: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00001c00
+4ff20970: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x0000008c 0x40054bac
+4ff20990: 0x00000000 0x00000000 0x00000000 0x01000000 0x00000001 0x00000000 0x0000008c 0x40023988
+4ff209b0: 0x00000000 0x0000080c 0x00000000 0x00000000 0x00000000 0x00000003 0x400ae000 0x40020772
+000d608 0x40020d52
+4ff209f0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a10: 0x00000000 0x00000000 0x00000000 0x4ff0b28a 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20a50: 0x00000000 0x4ff1f674 0x4ff1f674 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5
+4ff20a70: 0xa5a5a5a5 0x00000160 0x4ff20400 0x00000096 0x4ff19130 0x4ff19130 0x4ff20a78 0x4ff19128
+4ff20a90: 0x00000002 0x4ff1c76c 0x4ff1c76c 0x4ff20a78 0x00000000 0x00000017 0x4ff1f674 0x6f696473
+4ff20ab0: 0x6165725f 0x00000064 0x00000000 0x7fffffff 0x4ff20a70 0x00000017 0x00000000 0x00000000
+4ff20ad0: 0x00000000 0x00000000 0x4ff1c540 0x4ff1c5a8 0x4ff1c610 0x00000000 0x00000000 0x00000001
+4ff20af0: 0x00000000 0x00000000 0x00000000 0x40007942 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b10: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b50: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b70: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b90: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20bb0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xbbc884b6
+4ff20bd0: 0x099d8c96 0x4ff20a70 0x0000000c 0x4ff21ff0 0x4ff1bfa4 0x4ff20bd4 0x00001400 0xa5a5a5a5
+4ff20bf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c30: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c50: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c70: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c90: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cb0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cd0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20d10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+
+
+
+ELF file SHA256: 482ac146c
+
+Rebooting...
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0xc (SW_CPU_RESET),boot:0x30f (SPI_FAST_FLASH_BOOT)
+Core0 Saved PC:0x4ff04d3a
+Core1 Saved PC:0x4ff04e96
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x164c
+load:0x4ff29ed0,len:0xd64
+load:0x4ff2cbd0,len:0x3364
+entry 0x4ff29eda
+[0;32mI (33) boot: ESP-IDF v5.5 2nd stage bootloader[0m
+[0;32mI (33) boot: compile time Aug 29 2025 15:30:40[0m
+[0;32mI (33) boot: Multicore bootloader[0m
+[0;32mI (35) boot: chip revision: v1.0[0m
+[0;32mI (36) boot: efuse block revision: v0.3[0m
+[0;32mI (40) boot.esp32p4: SPI Speed      : 80MHz[0m
+[0;32mI (43) boot.esp32p4: SPI Mode       : DIO[0m
+[0;32mI (47) boot.esp32p4: SPI Flash Size : 32MB[0m
+[0;32mI (51) boot: Enabling RNG early entropy source...[0m
+[0;32mI (56) boot: Partition Table:[0m
+[0;32mI (58) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (64) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (71) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (77) boot:  2 factory          factory app      00 00 00010000 01f00000[0m
+[0;32mI (85) boot: End of partition table[0m
+[0;32mI (87) esp_image: segment 0: paddr=00010020 vaddr=40080020 size=33e34h (212532) map[0m
+[0;32mI (125) esp_image: segment 1: paddr=00043e5c vaddr=30100000 size=00068h (   104) load[0m
+[0;32mI (127) esp_image: segment 2: paddr=00043ecc vaddr=4ff00000 size=0c14ch ( 49484) load[0m
+[0;32mI (138) esp_image: segment 3: paddr=00050020 vaddr=40000020 size=7e2a0h (516768) map[0m
+[0;32mI (211) esp_image: segment 4: paddr=000ce2c8 vaddr=4ff0c14c size=09ac0h ( 39616) load[0m
+[0;32mI (219) esp_image: segment 5: paddr=000d7d90 vaddr=4ff15c80 size=030c4h ( 12484) load[0m
+[0;32mI (227) boot: Loaded app from partition at offset 0x10000[0m
+I (227) boot: Disabling RNG early entropy source...
+[0;32mI (237) hex_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (238) hex_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (238) hex_psram: DriveStr.    : 0x00 (25 Ohm)[0m
+[0;32mI (238) hex_psram: dev id       : 0x03 (generation 4)[0m
+[0;32mI (243) hex_psram: density      : 0x07 (256 Mbit)[0m
+[0;32mI (248) hex_psram: good-die     : 0x06 (Pass)[0m
+[0;32mI (252) hex_psram: SRF          : 0x02 (Slow Refresh)[0m
+[0;32mI (257) hex_psram: BurstType    : 0x00 ( Wrap)[0m
+[0;32mI (261) hex_psram: BurstLen     : 0x03 (2048 Byte)[0m
+[0;32mI (265) hex_psram: BitMode      : 0x01 (X16 Mode)[0m
+[0;32mI (270) hex_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (275) hex_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (279) MSPI DQS: tuning success, best phase id is 0[0m
+[0;32mI (460) MSPI DQS: tuning success, best delayline id is 15[0m
+[0;32mI (461) esp_psram: Found 32MB PSRAM device[0m
+[0;32mI (461) esp_psram: Speed: 80MHz[0m
+[0;32mI (462) hex_psram: psram CS IO is dedicated[0m
+[0;32mI (465) cpu_start: Multicore app[0m
+[0;32mI (1754) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (1763) cpu_start: Pro cpu start user code[0m
+[0;32mI (1764) cpu_start: cpu freq: 360000000 Hz[0m
+[0;32mI (1764) app_init: Application information:[0m
+[0;32mI (1764) app_init: Project name:     VisualSLAM_INAV[0m
+[0;32mI (1769) app_init: App version:      1[0m
+[0;32mI (1772) app_init: Compile time:     Aug 29 2025 15:40:06[0m
+[0;32mI (1777) app_init: ELF file SHA256:  482ac146c...[0m
+[0;32mI (1782) app_init: ESP-IDF:          v5.5[0m
+[0;32mI (1785) efuse_init: Min chip rev:     v0.1[0m
+[0;32mI (1789) efuse_init: Max chip rev:     v1.99 [0m
+[0;32mI (1793) efuse_init: Chip rev:         v1.0[0m
+[0;32mI (1797) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (1804) heap_init: At 4FF1BF90 len 0001F030 (124 KiB): RAM[0m
+[0;32mI (1809) heap_init: At 4FF3AFC0 len 00004BF0 (18 KiB): RAM[0m
+[0;32mI (1814) heap_init: At 4FF40000 len 00060000 (384 KiB): RAM[0m
+[0;32mI (1820) heap_init: At 50108080 len 00007F80 (31 KiB): RTCRAM[0m
+[0;32mI (1825) heap_init: At 30100068 len 00001F98 (7 KiB): TCM[0m
+[0;32mI (1830) esp_psram: Adding pool of 32768K of PSRAM memory to heap allocator[0m
+[0;33mW (1837) spi_flash: GigaDevice detected but related driver is not linked, please check option `SPI_FLASH_SUPPORT_GD_CHIP`[0m
+[0;32mI (1847) spi_flash: detected chip: generic[0m
+[0;33mW (1851) spi_flash: Detected flash size > 16 MB, but access beyond 16 MB is not supported for this flash model yet.[0m
+[0;32mI (1861) spi_flash: flash io: dio[0m
+[0;32mI (1864) host_init: ESP Hosted : Host chip_ip[18][0m
+[0;32mI (1880) H_API: ESP-Hosted starting. Hosted_Tasks: prio:23, stack: 5120 RPC_task_stack: 5120[0m
+[0;32mI (1880) H_API: ** add_esp_wifi_remote_channels **[0m
+[0;32mI (1882) transport: Add ESP-Hosted channel IF[1]: S[0] Tx[0x400119dc] Rx[0x40023acc][0m
+[0;32mI (1889) transport: Add ESP-Hosted channel IF[2]: S[0] Tx[0x40011920] Rx[0x40023acc][0m
+sdio_mempool_create free:33708828 min-free:33708828 lfb-def:33030144 lfb-8bit:33030144
+
+[0;33mW (1905) sdio_wrapper: workaround: setting D2-D3 in 1 bit mode for slot 0[0m
+[0;32mI (1912) H_SDIO_DRV: sdio_data_to_rx_buf_task started[0m
+[0;32mI (1912) main_task: Started on CPU0[0m
+[0;32mI (1922) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (1922) main_task: Calling app_main()[0m
+[0;32mI (1932) VisualSLAM_INAV: [0m
+[0;32mI (1932) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1942) VisualSLAM_INAV: 🚁 Visual SLAM Navigation Module for INAV[0m
+[0;32mI (1942) VisualSLAM_INAV: 📡 ESP32-P4-WIFI6 with OV5647 MIPI-CSI Camera[0m
+[0;32mI (1952) VisualSLAM_INAV: 🧠 Real-time ORB-SLAM with Web Interface[0m
+[0;32mI (1962) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1962) VisualSLAM_INAV: [0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ NVS initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ GPIO initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: 🎥 Initializing OV5647 MIPI-CSI camera...[0m
+[0;32mI (1982) slam_core: Initializing camera for SLAM[0m
+[0;32mI (1992) VisualSLAM_INAV: ✅ Camera initialized successfully[0m
+[0;32mI (1992) VisualSLAM_INAV: 🛰️ Initializing uBlox GPS module...[0m
+[0;32mI (2002) GPS_uBlox: Initializing uBlox GPS on UART1[0m
+[0;32mI (2002) GPS_uBlox: UBX configuration sent[0m
+[0;32mI (2012) GPS_uBlox: GPS parsing task started[0m
+[0;32mI (2012) GPS_uBlox: GPS uBlox initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: ✅ GPS initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: 📐 Initializing BMI088 IMU...[0m
+[0;32mI (2032) IMU_BMI088: Initializing BMI088 IMU on SPI[0m
+[1;31mE (2032) IMU_BMI088: Invalid accelerometer chip ID: 0xFF (expected 0x1E)[0m
+[1;31mE (2042) IMU_BMI088: Failed to initialize accelerometer[0m
+[1;31mE (2042) VisualSLAM_INAV: ❌ IMU initialization failed: ESP_FAIL[0m
+[1;31mE (2052) VisualSLAM_INAV: IMU initialization failed, continuing anyway...[0m
+[0;32mI (2062) VisualSLAM_INAV: 🧠 Initializing Visual SLAM system...[0m
+[0;32mI (2062) VisualSLAM_INAV: Memory status before SLAM init:[0m
+[0;32mI (2072) VisualSLAM_INAV:   Internal RAM free: 503435 bytes[0m
+[0;32mI (2072) VisualSLAM_INAV:   SPIRAM free: 33546060 bytes[0m
+[0;32mI (2082) VisualSLAM_INAV:   Total free: 34049495 bytes[0m
+[0;32mI (2082) orb_features: Initialized 8 pyramid levels, max size: 800x640[0m
+[0;32mI (2092) orb_features: ORB features initialized with 500 max features[0m
+[0;32mI (2092) slam_core: Allocating SLAM memory: 5.5 KB keyframes + 742.2 KB map points = 747.7 KB total[0m
+[0;32mI (2122) slam_core: SPIRAM available: 29939 KB, used SLAM: 747.7 KB[0m
+[0;32mI (2122) slam_core: SLAM memory allocation successful[0m
+[0;32mI (2122) slam_core: SLAM core initialized with 500 max features[0m
+[0;32mI (2122) VisualSLAM_INAV: ✅ SLAM system initialized successfully[0m
+[0;32mI (2132) VisualSLAM_INAV: Memory status after SLAM init:[0m
+[0;32mI (2142) VisualSLAM_INAV:   Internal RAM free: 503039 bytes[0m
+[0;32mI (2142) VisualSLAM_INAV:   SPIRAM free: 30657824 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV:   Total free: 31160863 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV: 🏃 Main processing task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🌐 Web interface task started[0m
+[0;32mI (2162) transport: Attempt connection with slave: retry[0][0m
+[0;33mW (2172) H_SDIO_DRV: Reset slave using GPIO[54][0m
+[0;32mI (2172) os_wrapper_esp: GPIO [54] configured[0m
+[0;32mI (2152) VisualSLAM_INAV: 📡 Telemetry broadcast task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🚀 Visual SLAM Navigation Module started successfully![0m
+[0;32mI (2192) VisualSLAM_INAV: 🌐 Web interface: Connect to WiFi or use captive portal[0m
+[0;32mI (2202) VisualSLAM_INAV: 📱 Access dashboard at: http://dronecam.local or device IP[0m
+[0;32mI (3382) sdio_wrapper: SDIO master: Slot 0, Data-Lines: 1-bit Freq(KHz)[20000 KHz][0m
+[0;32mI (3382) sdio_wrapper: GPIOs: CLK[43] CMD[44] D0[39] D1[40] Slave_Reset[54][0m
+[0;32mI (3382) sdio_wrapper: Queues: Tx[20] Rx[20] SDIO-Rx-Mode[1][0m
+[1;31mE (3402) sdmmc_common: sdmmc_init_ocr: send_op_cond (1) returned 0x107[0m
+[1;31mE (3402) sdio_wrapper: sdmmc_card_init failed[0m
+[1;31mE (3402) H_SDIO_DRV: card init failed[0m
+[0;32mI (3402) transport: Waiting for esp_hosted slave to be ready[0m
+[0;32mI (3412) H_SDIO_DRV: SDIO Host operating in STREAMING MODE[0m
+[0;32mI (3412) H_SDIO_DRV: Starting SDIO process rx task[0m
+[0;32mI (3412) H_SDIO_DRV: Open data path at slave[0m
+Guru Meditation Error: Core  0 panic'ed (Load access fault). Exception was unhandled.
+
+Core  0 register dump:
+MEPC    : 0x40056dac  RA      : 0x40054838  SP      : 0x4ff20930  GP      : 0x4ff16480  
+TP      : 0x4ff20a50  T0      : 0x4fc0a9f8  T1      : 0x30000000  T2      : 0x00000000  
+S0/FP   : 0x4ff20944  S1      : 0x00000000  A0      : 0x00000000  A1      : 0x4ff20944  
+A2      : 0x98011800  A3      : 0x88000000  A4      : 0x4ff2099f  A5      : 0x98011801  
+A6      : 0x4000d608  A7      : 0x0000000a  S2      : 0x0000008c  S3      : 0x4ff209df  
+S4      : 0x00000000  S5      : 0x00000000  S6      : 0x00000000  S7      : 0x00000000  
+S8      : 0x00000000  S9      : 0x00000000  S10     : 0x00000000  S11     : 0x00000000  
+T3      : 0x00000000  T4      : 0x00000000  T5      : 0x00000000  T6      : 0x00000000  
+MSTATUS : 0x00011880  MTVEC   : 0x4ff00003  MCAUSE  : 0x00000005  MTVAL   : 0x00000040  
+MHARTID : 0x00000000  
+
+Stack memory:
+4ff20930: 0x4ff20a50 0x00000000 0x4ff2099f 0x40054838 0x00000000 0x00000034 0x98011801 0x00000000
+4ff20950: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00001c00
+4ff20970: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x0000008c 0x40054bac
+4ff20990: 0x00000000 0x00000000 0x00000000 0x01000000 0x00000001 0x00000000 0x0000008c 0x40023988
+4ff209b0: 0x00000000 0x0000080c 0x00000000 0x00000000 0x00000000 0x00000003 0x400ae000 0x40020772
+4ff209d0: 0x00000000 0x00000000 0x400ae000 0x01000d54 0x400ae0e4 0x00000778 0x4000d608 0x40020d52
+4ff209f0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a10: 0x00000000 0x00000000 0x00000000 0x4ff0b28a 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20a50: 0x00000000 0x4ff1f674 0x4ff1f674 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5
+4ff20a70: 0xa5a5a5a5 0x00000160 0x4ff20400 0x00000096 0x4ff19130 0x4ff19130 0x4ff20a78 0x4ff19128
+4ff20a90: 0x00000002 0x4ff1c76c 0x4ff1c76c 0x4ff20a78 0x00000000 0x00000017 0x4ff1f674 0x6f696473
+4ff20ab0: 0x6165725f 0x00000064 0x00000000 0x7fffffff 0x4ff20a70 0x00000017 0x00000000 0x00000000
+4ff20ad0: 0x00000000 0x00000000 0x4ff1c540 0x4ff1c5a8 0x4ff1c610 0x00000000 0x00000000 0x00000001
+4ff20af0: 0x00000000 0x00000000 0x00000000 0x40007942 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b10: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b50: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b70: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b90: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20bb0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xbbc884b6
+4ff20bd0: 0x099d8c96 0x4ff20a70 0x0000000c 0x4ff21ff0 0x4ff1bfa4 0x4ff20bd4 0x00001400 0xa5a5a5a5
+4ff20bf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c30: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c50: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c70: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c90: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cb0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cd0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20d10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+
+
+
+ELF file SHA256: 482ac146c
+
+Rebooting...
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0xc (SW_CPU_RESET),boot:0x30f (SPI_FAST_FLASH_BOOT)
+Core0 Saved PC:0x4ff04d3a
+Core1 Saved PC:0x4ff04e96
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x164c
+load:0x4ff29ed0,len:0xd64
+load:0x4ff2cbd0,len:0x3364
+entry 0x4ff29eda
+[0;32mI (33) boot: ESP-IDF v5.5 2nd stage bootloader[0m
+[0;32mI (33) boot: compile time Aug 29 2025 15:30:40[0m
+[0;32mI (33) boot: Multicore bootloader[0m
+[0;32mI (35) boot: chip revision: v1.0[0m
+[0;32mI (36) boot: efuse block revision: v0.3[0m
+[0;32mI (40) boot.esp32p4: SPI Speed      : 80MHz[0m
+[0;32mI (43) boot.esp32p4: SPI Mode       : DIO[0m
+[0;32mI (47) boot.esp32p4: SPI Flash Size : 32MB[0m
+[0;32mI (51) boot: Enabling RNG early entropy source...[0m
+[0;32mI (56) boot: Partition Table:[0m
+[0;32mI (58) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (64) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (71) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (77) boot:  2 factory          factory app      00 00 00010000 01f00000[0m
+[0;32mI (85) boot: End of partition table[0m
+[0;32mI (87) esp_image: segment 0: paddr=00010020 vaddr=40080020 size=33e34h (212532) map[0m
+[0;32mI (125) esp_image: segment 1: paddr=00043e5c vaddr=30100000 size=00068h (   104) load[0m
+[0;32mI (127) esp_image: segment 2: paddr=00043ecc vaddr=4ff00000 size=0c14ch ( 49484) load[0m
+[0;32mI (138) esp_image: segment 3: paddr=00050020 vaddr=40000020 size=7e2a0h (516768) map[0m
+[0;32mI (211) esp_image: segment 4: paddr=000ce2c8 vaddr=4ff0c14c size=09ac0h ( 39616) load[0m
+[0;32mI (219) esp_image: segment 5: paddr=000d7d90 vaddr=4ff15c80 size=030c4h ( 12484) load[0m
+[0;32mI (227) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (227) boot: Disabling RNG early entropy source...[0m
+[0;32mI (237) hex_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (238) hex_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (238) hex_psram: DriveStr.    : 0x00 (25 Ohm)[0m
+[0;32mI (238) hex_psram: dev id       : 0x03 (generation 4)[0m
+[0;32mI (243) hex_psram: density      : 0x07 (256 Mbit)[0m
+[0;32mI (248) hex_psram: good-die     : 0x06 (Pass)[0m
+[0;32mI (252) hex_psram: SRF          : 0x02 (Slow Refresh)[0m
+[0;32mI (257) hex_psram: BurstType    : 0x00 ( Wrap)[0m
+[0;32mI (261) hex_psram: BurstLen     : 0x03 (2048 Byte)[0m
+[0;32mI (265) hex_psram: BitMode      : 0x01 (X16 Mode)[0m
+[0;32mI (270) hex_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (275) hex_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (279) MSPI DQS: tuning success, best phase id is 0[0m
+[0;32mI (460) MSPI DQS: tuning success, best delayline id is 15[0m
+[0;32mI (461) esp_psram: Found 32MB PSRAM device[0m
+[0;32mI (461) esp_psram: Speed: 80MHz[0m
+[0;32mI (462) hex_psram: psram CS IO is dedicated[0m
+[0;32mI (465) cpu_start: Multicore app[0m
+[0;32mI (1754) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (1764) cpu_start: Pro cpu start user code[0m
+[0;32mI (1764) cpu_start: cpu freq: 360000000 Hz[0m
+[0;32mI (1764) app_init: Application information:[0m
+[0;32mI (1764) app_init: Project name:     VisualSLAM_INAV[0m
+[0;32mI (1769) app_init: App version:      1[0m
+[0;32mI (1772) app_init: Compile time:     Aug 29 2025 15:40:06[0m
+[0;32mI (1777) app_init: ELF file SHA256:  482ac146c...[0m
+[0;32mI (1782) app_init: ESP-IDF:          v5.5[0m
+[0;32mI (1785) efuse_init: Min chip rev:     v0.1[0m
+[0;32mI (1789) efuse_init: Max chip rev:     v1.99 [0m
+[0;32mI (1793) efuse_init: Chip rev:         v1.0[0m
+[0;32mI (1797) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (1804) heap_init: At 4FF1BF90 len 0001F030 (124 KiB): RAM[0m
+[0;32mI (1809) heap_init: At 4FF3AFC0 len 00004BF0 (18 KiB): RAM[0m
+[0;32mI (1814) heap_init: At 4FF40000 len 00060000 (384 KiB): RAM[0m
+[0;32mI (1820) heap_init: At 50108080 len 00007F80 (31 KiB): RTCRAM[0m
+[0;32mI (1825) heap_init: At 30100068 len 00001F98 (7 KiB): TCM[0m
+[0;32mI (1830) esp_psram: Adding pool of 32768K of PSRAM memory to heap allocator[0m
+[0;33mW (1837) spi_flash: GigaDevice detected but related driver is not linked, please check option `SPI_FLASH_SUPPORT_GD_CHIP`[0m
+[0;32mI (1847) spi_flash: detected chip: generic[0m
+[0;33mW (1851) spi_flash: Detected flash size > 16 MB, but access beyond 16 MB is not supported for this flash model yet.[0m
+[0;32mI (1861) spi_flash: flash io: dio[0m
+[0;32mI (1865) host_init: ESP Hosted : Host chip_ip[18][0m
+[0;32mI (1880) H_API: ESP-Hosted starting. Hosted_Tasks: prio:23, stack: 5120 RPC_task_stack: 5120[0m
+[0;32mI (1880) H_API: ** add_esp_wifi_remote_channels **[0m
+[0;32mI (1882) transport: Add ESP-Hosted channel IF[1]: S[0] Tx[0x400119dc] Rx[0x40023acc][0m
+[0;32mI (1889) transport: Add ESP-Hosted channel IF[2]: S[0] Tx[0x40011920] Rx[0x40023acc][0m
+sdio_mempool_create free:33708828 min-free:33708828 lfb-def:33030144 lfb-8bit:33030144
+
+[0;33mW (1905) sdio_wrapper: workaround: setting D2-D3 in 1 bit mode for slot 0[0m
+[0;32mI (1912) H_SDIO_DRV: sdio_data_to_rx_buf_task started[0m
+[0;32mI (1912) main_task: Started on CPU0[0m
+[0;32mI (1922) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (1922) main_task: Calling app_main()[0m
+[0;32mI (1932) VisualSLAM_INAV: [0m
+[0;32mI (1932) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1942) VisualSLAM_INAV: 🚁 Visual SLAM Navigation Module for INAV[0m
+[0;32mI (1942) VisualSLAM_INAV: 📡 ESP32-P4-WIFI6 with OV5647 MIPI-CSI Camera[0m
+[0;32mI (1952) VisualSLAM_INAV: 🧠 Real-time ORB-SLAM with Web Interface[0m
+[0;32mI (1962) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1962) VisualSLAM_INAV: [0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ NVS initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ GPIO initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: 🎥 Initializing OV5647 MIPI-CSI camera...[0m
+[0;32mI (1982) slam_core: Initializing camera for SLAM[0m
+[0;32mI (1992) VisualSLAM_INAV: ✅ Camera initialized successfully[0m
+[0;32mI (1992) VisualSLAM_INAV: 🛰️ Initializing uBlox GPS module...[0m
+[0;32mI (2002) GPS_uBlox: Initializing uBlox GPS on UART1[0m
+[0;32mI (2002) GPS_uBlox: UBX configuration sent[0m
+[0;32mI (2012) GPS_uBlox: GPS parsing task started[0m
+[0;32mI (2012) GPS_uBlox: GPS uBlox initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: ✅ GPS initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: 📐 Initializing BMI088 IMU...[0m
+[0;32mI (2032) IMU_BMI088: Initializing BMI088 IMU on SPI[0m
+[1;31mE (2032) IMU_BMI088: Invalid accelerometer chip ID: 0xFF (expected 0x1E)[0m
+[1;31mE (2042) IMU_BMI088: Failed to initialize accelerometer[0m
+[1;31mE (2042) VisualSLAM_INAV: ❌ IMU initialization failed: ESP_FAIL[0m
+[1;31mE (2052) VisualSLAM_INAV: IMU initialization failed, continuing anyway...[0m
+[0;32mI (2062) VisualSLAM_INAV: 🧠 Initializing Visual SLAM system...[0m
+[0;32mI (2062) VisualSLAM_INAV: Memory status before SLAM init:[0m
+[0;32mI (2072) VisualSLAM_INAV:   Internal RAM free: 503435 bytes[0m
+[0;32mI (2072) VisualSLAM_INAV:   SPIRAM free: 33546060 bytes[0m
+[0;32mI (2082) VisualSLAM_INAV:   Total free: 34049495 bytes[0m
+[0;32mI (2082) orb_features: Initialized 8 pyramid levels, max size: 800x640[0m
+[0;32mI (2092) orb_features: ORB features initialized with 500 max features[0m
+[0;32mI (2092) slam_core: Allocating SLAM memory: 5.5 KB keyframes + 742.2 KB map points = 747.7 KB total[0m
+[0;32mI (2122) slam_core: SPIRAM available: 29939 KB, used SLAM: 747.7 KB[0m
+[0;32mI (2122) slam_core: SLAM memory allocation successful[0m
+[0;32mI (2122) slam_core: SLAM core initialized with 500 max features[0m
+[0;32mI (2122) VisualSLAM_INAV: ✅ SLAM system initialized successfully[0m
+[0;32mI (2132) VisualSLAM_INAV: Memory status after SLAM init:[0m
+[0;32mI (2142) VisualSLAM_INAV:   Internal RAM free: 503039 bytes[0m
+[0;32mI (2142) VisualSLAM_INAV:   SPIRAM free: 30657824 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV:   Total free: 31160863 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV: 🏃 Main processing task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🌐 Web interface task started[0m
+[0;32mI (2162) transport: Attempt connection with slave: retry[0][0m
+[0;33mW (2172) H_SDIO_DRV: Reset slave using GPIO[54][0m
+[0;32mI (2172) os_wrapper_esp: GPIO [54] configured[0m
+[0;32mI (2152) VisualSLAM_INAV: 📡 Telemetry broadcast task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🚀 Visual SLAM Navigation Module started successfully![0m
+[0;32mI (2192) VisualSLAM_INAV: 🌐 Web interface: Connect to WiFi or use captive portal[0m
+[0;32mI (2202) VisualSLAM_INAV: 📱 Access dashboard at: http://dronecam.local or device IP[0m
+[0;32mI (3382) sdio_wrapper: SDIO master: Slot 0, Data-Lines: 1-bit Freq(KHz)[20000 KHz][0m
+[0;32mI (3382) sdio_wrapper: GPIOs: CLK[43] CMD[44] D0[39] D1[40] Slave_Reset[54][0m
+[0;32mI (3382) sdio_wrapper: Queues: Tx[20] Rx[20] SDIO-Rx-Mode[1][0m
+[1;31mE (3402) sdmmc_common: sdmmc_init_ocr: send_op_cond (1) returned 0x107[0m
+[1;31mE (3402) sdio_wrapper: sdmmc_card_init failed[0m
+[1;31mE (3402) H_SDIO_DRV: card init failed[0m
+[0;32mI (3402) transport: Waiting for esp_hosted slave to be ready[0m
+[0;32mI (3412) H_SDIO_DRV: SDIO Host operating in STREAMING MODE[0m
+[0;32mI (3412) H_SDIO_DRV: Starting SDIO process rx task[0m
+[0;32mI (3412) H_SDIO_DRV: Open data path at slave[0m
+Guru Meditation Error: Core  0 panic'ed (Load access fault). Exception was unhandled.
+
+Core  0 register dump:
+MEPC    : 0x40056dac  RA      : 0x40054838  SP      : 0x4ff20930  GP      : 0x4ff16480  
+TP      : 0x4ff20a50  T0      : 0x4fc0a9f8  T1      : 0x30000000  T2      : 0x00000000  
+S0/FP   : 0x4ff20944  S1      : 0x00000000  A0      : 0x00000000  A1      : 0x4ff20944  
+A2      : 0x98011800  A3      : 0x88000000  A4      : 0x4ff2099f  A5      : 0x98011801  
+A6      : 0x4000d608  A7      : 0x0000000a  S2      : 0x0000008c  S3      : 0x4ff209df  
+S4      : 0x00000000  S5      : 0x00000000  S6      : 0x00000000  S7      : 0x00000000  
+S8      : 0x00000000  S9      : 0x00000000  S10     : 0x00000000  S11     : 0x00000000  
+T3      : 0x00000000  T4      : 0x00000000  T5      : 0x00000000  T6      : 0x00000000  
+MSTATUS : 0x00011880  MTVEC   : 0x4ff00003  MCAUSE  : 0x00000005  MTVAL   : 0x00000040  
+MHARTID : 0x00000000  
+
+Stack memory:
+4ff20930: 0x4ff20a50 0x00000000 0x4ff2099f 0x40054838 0x00000000 0x00000034 0x98011801 0x00000000
+4ff20950: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00001c00
+4ff20970: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x0000008c 0x40054bac
+4ff20990: 0x00000000 0x00000000 0x00000000 0x01000000 0x00000001 0x00000000 0x0000008c 0x40023988
+4ff209b0: 0x00000000 0x0000080c 0x00000000 0x00000000 0x00000000 0x00000003 0x400ae000 0x40020772
+4ff209d0: 0x00000000 0x00000000 0x400ae000 0x01000d54 0x400ae0e4 0x00000778 0x4000d608 0x40020d52
+4ff209f0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a10: 0x00000000 0x00000000 0x00000000 0x4ff0b28a 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20a50: 0x00000000 0x4ff1f674 0x4ff1f674 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5
+4ff20a70: 0xa5a5a5a5 0x00000160 0x4ff20400 0x00000096 0x4ff19130 0x4ff19130 0x4ff20a78 0x4ff19128
+4ff20a90: 0x00000002 0x4ff1c76c 0x4ff1c76c 0x4ff20a78 0x00000000 0x00000017 0x4ff1f674 0x6f696473
+4ff20ab0: 0x6165725f 0x00000064 0x00000000 0x7fffffff 0x4ff20a70 0x00000017 0x00000000 0x00000000
+4ff20ad0: 0x00000000 0x00000000 0x4ff1c540 0x4ff1c5a8 0x4ff1c610 0x00000000 0x00000000 0x00000001
+4ff20af0: 0x00000000 0x00000000 0x00000000 0x40007942 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b10: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b50: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b70: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b90: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20bb0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xbbc884b6
+4ff20bd0: 0x099d8c96 0x4ff20a70 0x0000000c 0x4ff21ff0 0x4ff1bfa4 0x4ff20bd4 0x00001400 0xa5a5a5a5
+4ff20bf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c30: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c50: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c70: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c90: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cb0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cd0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20d10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+
+
+
+ELF file SHA256: 482ac146c
+
+Rebooting...
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0xc (SW_CPU_RESET),boot:0x30f (SPI_FAST_FLASH_BOOT)
+Core0 Saved PC:0x4ff04d3a
+Core1 Saved PC:0x4ff04e96
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x164c
+load:0x4ff29ed0,len:0xd64
+load:0x4ff2cbd0,len:0x3364
+entry 0x4ff29eda
+[0;32mI (33) boot: ESP-IDF v5.5 2nd stage bootloader[0m
+[0;32mI (33) boot: compile time Aug 29 2025 15:30:40[0m
+[0;32mI (33) boot: Multicore bootloader[0m
+[0;32mI (35) boot: chip revision: v1.0[0m
+[0;32mI (36) boot: efuse block revision: v0.3[0m
+[0;32mI (40) boot.esp32p4: SPI Speed      : 80MHz[0m
+[0;32mI (43) boot.esp32p4: SPI Mode       : DIO[0m
+[0;32mI (47) boot.esp32p4: SPI Flash Size : 32MB[0m
+[0;32mI (51) boot: Enabling RNG early entropy source...[0m
+[0;32mI (56) boot: Partition Table:[0m
+[0;32mI (58) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (64) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (71) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (77) boot:  2 factory          factory app      00 00 00010000 01f00000[0m
+[0;32mI (85) boot: End of partition table[0m
+[0;32mI (87) esp_image: segment 0: paddr=00010020 vaddr=40080020 size=33e34h (212532) map[0m
+[0;32mI (125) esp_image: segment 1: paddr=00043e5c vaddr=30100000 size=00068h (   104) load[0m
+[0;32mI (127) esp_image: segment 2: paddr=00043ecc vaddr=4ff00000 size=0c14ch ( 49484) load[0m
+[0;32mI (138) esp_image: segment 3: paddr=00050020 vaddr=40000020 size=7e2a0h (516768) map[0m
+[0;32mI (211) esp_image: segment 4: paddr=000ce2c8 vaddr=4ff0c14c size=09ac0h ( 39616) load[0m
+[0;32mI (219) esp_image: segment 5: paddr=000d7d90 vaddr=4ff15c80 size=030c4h ( 12484) load[0m
+[0;32mI (227) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (227) boot: Disabling RNG early entropy source...[0m
+[0;32mI (237) hex_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (238) hex_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (238) hex_psram: DriveStr.    : 0x00 (25 Ohm)[0m
+[0;32mI (238) hex_psram: dev id       : 0x03 (generation 4)[0m
+[0;32mI (243) hex_psram: density      : 0x07 (256 Mbit)[0m
+[0;32mI (248) hex_psram: good-die     : 0x06 (Pass)[0m
+[0;32mI (252) hex_psram: SRF          : 0x02 (Slow Refresh)[0m
+[0;32mI (257) hex_psram: BurstType    : 0x00 ( Wrap)[0m
+[0;32mI (261) hex_psram: BurstLen     : 0x03 (2048 Byte)[0m
+[0;32mI (265) hex_psram: BitMode      : 0x01 (X16 Mode)[0m
+[0;32mI (270) hex_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (275) hex_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (279) MSPI DQS: tuning success, best phase id is 0[0m
+[0;32mI (460) MSPI DQS: tuning success, best delayline id is 19[0m
+[0;32mI (461) esp_psram: Found 32MB PSRAM device[0m
+[0;32mI (461) esp_psram: Speed: 80MHz[0m
+[0;32mI (462) hex_psram: psram CS IO is dedicated[0m
+[0;32mI (465) cpu_start: Multicore app[0m
+[0;32mI (1754) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (1763) cpu_start: Pro cpu start user code[0m
+[0;32mI (1763) cpu_start: cpu freq: 360000000 Hz[0m
+[0;32mI (1763) app_init: Application information:[0m
+[0;32mI (1764) app_init: Project name:     VisualSLAM_INAV[0m
+[0;32mI (1768) app_init: App version:      1[0m
+[0;32mI (1772) app_init: Compile time:     Aug 29 2025 15:40:06[0m
+[0;32mI (1777) app_init: ELF file SHA256:  482ac146c...[0m
+[0;32mI (1781) app_init: ESP-IDF:          v5.5[0m
+[0;32mI (1785) efuse_init: Min chip rev:     v0.1[0m
+[0;32mI (1789) efuse_init: Max chip rev:     v1.99 [0m
+[0;32mI (1793) efuse_init: Chip rev:         v1.0[0m
+[0;32mI (1797) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (1803) heap_init: At 4FF1BF90 len 0001F030 (124 KiB): RAM[0m
+[0;32mI (1808) heap_init: At 4FF3AFC0 len 00004BF0 (18 KiB): RAM[0m
+[0;32mI (1814) heap_init: At 4FF40000 len 00060000 (384 KiB): RAM[0m
+[0;32mI (1819) heap_init: At 50108080 len 00007F80 (31 KiB): RTCRAM[0m
+[0;32mI (1824) heap_init: At 30100068 len 00001F98 (7 KiB): TCM[0m
+[0;32mI (1830) esp_psram: Adding pool of 32768K of PSRAM memory to heap allocator[0m
+[0;33mW (1837) spi_flash: GigaDevice detected but related driver is not linked, please check option `SPI_FLASH_SUPPORT_GD_CHIP`[0m
+[0;32mI (1847) spi_flash: detected chip: generic[0m
+[0;33mW (1851) spi_flash: Detected flash size > 16 MB, but access beyond 16 MB is not supported for this flash model yet.[0m
+[0;32mI (1861) spi_flash: flash io: dio[0m
+[0;32mI (1864) host_init: ESP Hosted : Host chip_ip[18][0m
+[0;32mI (1880) H_API: ESP-Hosted starting. Hosted_Tasks: prio:23, stack: 5120 RPC_task_stack: 5120[0m
+[0;32mI (1880) H_API: ** add_esp_wifi_remote_channels **[0m
+[0;32mI (1881) transport: Add ESP-Hosted channel IF[1]: S[0] Tx[0x400119dc] Rx[0x40023acc][0m
+[0;32mI (1889) transport: Add ESP-Hosted channel IF[2]: S[0] Tx[0x40011920] Rx[0x40023acc][0m
+sdio_mempool_create free:33708828 min-free:33708828 lfb-def:33030144 lfb-8bit:33030144
+
+[0;33mW (1904) sdio_wrapper: workaround: setting D2-D3 in 1 bit mode for slot 0[0m
+[0;32mI (1912) H_SDIO_DRV: sdio_data_to_rx_buf_task started[0m
+[0;32mI (1912) main_task: Started on CPU0[0m
+[0;32mI (1922) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (1922) main_task: Calling app_main()[0m
+[0;32mI (1932) VisualSLAM_INAV: [0m
+[0;32mI (1932) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1942) VisualSLAM_INAV: 🚁 Visual SLAM Navigation Module for INAV[0m
+[0;32mI (1942) VisualSLAM_INAV: 📡 ESP32-P4-WIFI6 with OV5647 MIPI-CSI Camera[0m
+[0;32mI (1952) VisualSLAM_INAV: 🧠 Real-time ORB-SLAM with Web Interface[0m
+[0;32mI (1962) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1962) VisualSLAM_INAV: [0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ NVS initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ GPIO initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: 🎥 Initializing OV5647 MIPI-CSI camera...[0m
+[0;32mI (1982) slam_core: Initializing camera for SLAM[0m
+[0;32mI (1992) VisualSLAM_INAV: ✅ Camera initialized successfully[0m
+[0;32mI (1992) VisualSLAM_INAV: 🛰️ Initializing uBlox GPS module...[0m
+[0;32mI (2002) GPS_uBlox: Initializing uBlox GPS on UART1[0m
+[0;32mI (2002) GPS_uBlox: UBX configuration sent[0m
+[0;32mI (2012) GPS_uBlox: GPS parsing task started[0m
+[0;32mI (2012) GPS_uBlox: GPS uBlox initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: ✅ GPS initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: 📐 Initializing BMI088 IMU...[0m
+[0;32mI (2032) IMU_BMI088: Initializing BMI088 IMU on SPI[0m
+[1;31mE (2032) IMU_BMI088: Invalid accelerometer chip ID: 0xFF (expected 0x1E)[0m
+[1;31mE (2042) IMU_BMI088: Failed to initialize accelerometer[0m
+[1;31mE (2042) VisualSLAM_INAV: ❌ IMU initialization failed: ESP_FAIL[0m
+[1;31mE (2052) VisualSLAM_INAV: IMU initialization failed, continuing anyway...[0m
+[0;32mI (2062) VisualSLAM_INAV: 🧠 Initializing Visual SLAM system...[0m
+[0;32mI (2062) VisualSLAM_INAV: Memory status before SLAM init:[0m
+[0;32mI (2072) VisualSLAM_INAV:   Internal RAM free: 503435 bytes[0m
+[0;32mI (2072) VisualSLAM_INAV:   SPIRAM free: 33546060 bytes[0m
+[0;32mI (2082) VisualSLAM_INAV:   Total free: 34049495 bytes[0m
+[0;32mI (2082) orb_features: Initialized 8 pyramid levels, max size: 800x640[0m
+[0;32mI (2092) orb_features: ORB features initialized with 500 max features[0m
+[0;32mI (2092) slam_core: Allocating SLAM memory: 5.5 KB keyframes + 742.2 KB map points = 747.7 KB total[0m
+[0;32mI (2122) slam_core: SPIRAM available: 29939 KB, used SLAM: 747.7 KB[0m
+[0;32mI (2122) slam_core: SLAM memory allocation successful[0m
+[0;32mI (2122) slam_core: SLAM core initialized with 500 max features[0m
+[0;32mI (2122) VisualSLAM_INAV: ✅ SLAM system initialized successfully[0m
+[0;32mI (2132) VisualSLAM_INAV: Memory status after SLAM init:[0m
+[0;32mI (2142) VisualSLAM_INAV:   Internal RAM free: 503039 bytes[0m
+[0;32mI (2142) VisualSLAM_INAV:   SPIRAM free: 30657824 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV:   Total free: 31160863 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV: 🏃 Main processing task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🌐 Web interface task started[0m
+[0;32mI (2162) transport: Attempt connection with slave: retry[0][0m
+[0;33mW (2172) H_SDIO_DRV: Reset slave using GPIO[54][0m
+[0;32mI (2172) os_wrapper_esp: GPIO [54] configured[0m
+[0;32mI (2152) VisualSLAM_INAV: 📡 Telemetry broadcast task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🚀 Visual SLAM Navigation Module started successfully![0m
+[0;32mI (2192) VisualSLAM_INAV: 🌐 Web interface: Connect to WiFi or use captive portal[0m
+[0;32mI (2202) VisualSLAM_INAV: 📱 Access dashboard at: http://dronecam.local or device IP[0m
+[0;32mI (3382) sdio_wrapper: SDIO master: Slot 0, Data-Lines: 1-bit Freq(KHz)[20000 KHz][0m
+[0;32mI (3382) sdio_wrapper: GPIOs: CLK[43] CMD[44] D0[39] D1[40] Slave_Reset[54][0m
+[0;32mI (3382) sdio_wrapper: Queues: Tx[20] Rx[20] SDIO-Rx-Mode[1][0m
+[1;31mE (3402) sdmmc_common: sdmmc_init_ocr: send_op_cond (1) returned 0x107[0m
+[1;31mE (3402) sdio_wrapper: sdmmc_card_init failed[0m
+[1;31mE (3402) H_SDIO_DRV: card init failed[0m
+[0;32mI (3402) transport: Waiting for esp_hosted slave to be ready[0m
+[0;32mI (3412) H_SDIO_DRV: SDIO Host operating in STREAMING MODE[0m
+[0;32mI (3412) H_SDIO_DRV: Starting SDIO process rx task[0m
+[0;32mI (3412) H_SDIO_DRV: Open data path at slave[0m
+Guru Meditation Error: Core  0 panic'ed (Load access fault). Exception was unhandled.
+
+Core  0 register dump:
+MEPC    : 0x40056dac  RA      : 0x40054838  SP      : 0x4ff20930  GP      : 0x4ff16480  
+TP      : 0x4ff20a50  T0      : 0x4fc0a9f8  T1      : 0x30000000  T2      : 0x00000000  
+S0/FP   : 0x4ff20944  S1      : 0x00000000  A0      : 0x00000000  A1      : 0x4ff20944  
+A2      : 0x98011800  A3      : 0x88000000  A4      : 0x4ff2099f  A5      : 0x98011801  
+A6      : 0x4000d608  A7      : 0x0000000a  S2      : 0x0000008c  S3      : 0x4ff209df  
+S4      : 0x00000000  S5      : 0x00000000  S6      : 0x00000000  S7      : 0x00000000  
+S8      : 0x00000000  S9      : 0x00000000  S10     : 0x00000000  S11     : 0x00000000  
+T3      : 0x00000000  T4      : 0x00000000  T5      : 0x00000000  T6      : 0x00000000  
+MSTATUS : 0x00011880  MTVEC   : 0x4ff00003  MCAUSE  : 0x00000005  MTVAL   : 0x00000040  
+MHARTID : 0x00000000  
+
+Stack memory:
+4ff20930: 0x4ff20a50 0x00000000 0x4ff2099f 0x40054838 0x00000000 0x00000034 0x98011801 0x00000000
+4ff20950: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00001c00
+4ff20970: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x0000008c 0x40054bac
+4ff20990: 0x00000000 0x00000000 0x00000000 0x01000000 0x00000001 0x00000000 0x0000008c 0x40023988
+4ff209b0: 0x00000000 0x0000080c 0x00000000 0x00000000 0x00000000 0x00000003 0x400ae000 0x40020772
+4ff209d0: 0x00000000 0x00000000 0x400ae000 0x01000d54 0x400ae0e4 0x00000778 0x4000d608 0x40020d52
+4ff209f0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a10: 0x00000000 0x00000000 0x00000000 0x4ff0b28a 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20a50: 0x00000000 0x4ff1f674 0x4ff1f674 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5
+4ff20a70: 0xa5a5a5a5 0x00000160 0x4ff20400 0x00000096 0x4ff19130 0x4ff19130 0x4ff20a78 0x4ff19128
+4ff20a90: 0x00000002 0x4ff1c76c 0x4ff1c76c 0x4ff20a78 0x00000000 0x00000017 0x4ff1f674 0x6f696473
+4ff20ab0: 0x6165725f 0x00000064 0x00000000 0x7fffffff 0x4ff20a70 0x00000017 0x00000000 0x00000000
+4ff20ad0: 0x00000000 0x00000000 0x4ff1c540 0x4ff1c5a8 0x4ff1c610 0x00000000 0x00000000 0x00000001
+4ff20af0: 0x00000000 0x00000000 0x00000000 0x40007942 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b10: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b50: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b70: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b90: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20bb0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xbbc884b6
+4ff20bd0: 0x099d8c96 0x4ff20a70 0x0000000c 0x4ff21ff0 0x4ff1bfa4 0x4ff20bd4 0x00001400 0xa5a5a5a5
+4ff20bf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c30: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c50: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c70: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c90: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cb0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cd0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20d10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+
+
+
+ELF file SHA256: 482ac146c
+
+Rebooting...
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0xc (SW_CPU_RESET),boot:0x30f (SPI_FAST_FLASH_BOOT)
+Core0 Saved PC:0x4ff04d3a
+Core1 Saved PC:0x4ff04e96
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x164c
+load:0x4ff29ed0,len:0xd64
+load:0x4ff2cbd0,len:0x3364
+entry 0x4ff29eda
+[0;32mI (33) boot: ESP-IDF v5.5 2nd stage bootloader[0m
+[0;32mI (33) boot: compile time Aug 29 2025 15:30:40[0m
+[0;32mI (33) boot: Multicore bootloader[0m
+[0;32mI (35) boot: chip revision: v1.0[0m
+[0;32mI (36) boot: efuse block revision: v0.3[0m
+[0;32mI (40) boot.esp32p4: SPI Speed      : 80MHz[0m
+[0;32mI (43) boot.esp32p4: SPI Mode       : DIO[0m
+[0;32mI (47) boot.esp32p4: SPI Flash Size : 32MB[0m
+[0;32mI (51) boot: Enabling RNG early entropy source...[0m
+[0;32mI (56) boot: Partition Table:[0m
+[0;32mI (58) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (64) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (71) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (77) boot:  2 factory          factory app      00 00 00010000 01f00000[0m
+[0;32mI (85) boot: End of partition table[0m
+[0;32mI (87) esp_image: segment 0: paddr=00010020 vaddr=40080020 size=33e34h (212532) map[0m
+[0;32mI (125) esp_image: segment 1: paddr=00043e5c vaddr=30100000 size=00068h (   104) load[0m
+[0;32mI (127) esp_image: segment 2: paddr=00043ecc vaddr=4ff00000 size=0c14ch ( 49484) load[0m
+[0;32mI (138) esp_image: segment 3: paddr=00050020 vaddr=40000020 size=7e2a0h (516768) map[0m
+[0;32mI (211) esp_image: segment 4: paddr=000ce2c8 vaddr=4ff0c14c size=09ac0h ( 39616) load[0m
+[0;32mI (219) esp_image: segment 5: paddr=000d7d90 vaddr=4ff15c80 size=030c4h ( 12484) load[0m
+[0;32mI (227) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (227) boot: Disabling RNG early entropy source...[0m
+[0;32mI (237) hex_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (238) hex_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (238) hex_psram: DriveStr.    : 0x00 (25 Ohm)[0m
+[0;32mI (238) hex_psram: dev id       : 0x03 (generation 4)[0m
+[0;32mI (243) hex_psram: density      : 0x07 (256 Mbit)[0m
+[0;32mI (248) hex_psram: good-die     : 0x06 (Pass)[0m
+[0;32mI (252) hex_psram: SRF          : 0x02 (Slow Refresh)[0m
+[0;32mI (257) hex_psram: BurstType    : 0x00 ( Wrap)[0m
+[0;32mI (261) hex_psram: BurstLen     : 0x03 (2048 Byte)[0m
+[0;32mI (265) hex_psram: BitMode      : 0x01 (X16 Mode)[0m
+[0;32mI (270) hex_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (275) hex_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (279) MSPI DQS: tuning success, best phase id is 0[0m
+[0;32mI (460) MSPI DQS: tuning success, best delayline id is 15[0m
+[0;32mI (461) esp_psram: Found 32MB PSRAM device[0m
+[0;32mI (461) esp_psram: Speed: 80MHz[0m
+[0;32mI (462) hex_psram: psram CS IO is dedicated[0m
+[0;32mI (465) cpu_start: Multicore app[0m
+[0;32mI (1754) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (1764) cpu_start: Pro cpu start user code[0m
+[0;32mI (1764) cpu_start: cpu freq: 360000000 Hz[0m
+[0;32mI (1764) app_init: Application information:[0m
+[0;32mI (1764) app_init: Project name:     VisualSLAM_INAV[0m
+[0;32mI (1769) app_init: App version:      1[0m
+[0;32mI (1772) app_init: Compile time:     Aug 29 2025 15:40:06[0m
+[0;32mI (1777) app_init: ELF file SHA256:  482ac146c...[0m
+[0;32mI (1782) app_init: ESP-IDF:          v5.5[0m
+[0;32mI (1785) efuse_init: Min chip rev:     v0.1[0m
+[0;32mI (1789) efuse_init: Max chip rev:     v1.99 [0m
+[0;32mI (1793) efuse_init: Chip rev:         v1.0[0m
+[0;32mI (1797) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (1804) heap_init: At 4FF1BF90 len 0001F030 (124 KiB): RAM[0m
+[0;32mI (1809) heap_init: At 4FF3AFC0 len 00004BF0 (18 KiB): RAM[0m
+[0;32mI (1814) heap_init: At 4FF40000 len 00060000 (384 KiB): RAM[0m
+[0;32mI (1820) heap_init: At 50108080 len 00007F80 (31 KiB): RTCRAM[0m
+[0;32mI (1825) heap_init: At 30100068 len 00001F98 (7 KiB): TCM[0m
+[0;32mI (1830) esp_psram: Adding pool of 32768K of PSRAM memory to heap allocator[0m
+[0;33mW (1837) spi_flash: GigaDevice detected but related driver is not linked, please check option `SPI_FLASH_SUPPORT_GD_CHIP`[0m
+[0;32mI (1847) spi_flash: detected chip: generic[0m
+[0;33mW (1851) spi_flash: Detected flash size > 16 MB, but access beyond 16 MB is not supported for this flash model yet.[0m
+[0;32mI (1861) spi_flash: flash io: dio[0m
+[0;32mI (1864) host_init: ESP Hosted : Host chip_ip[18][0m
+[0;32mI (1880) H_API: ESP-Hosted starting. Hosted_Tasks: prio:23, stack: 5120 RPC_task_stack: 5120[0m
+[0;32mI (1880) H_API: ** add_esp_wifi_remote_channels **[0m
+[0;32mI (1882) transport: Add ESP-Hosted channel IF[1]: S[0] Tx[0x400119dc] Rx[0x40023acc][0m
+[0;32mI (1889) transport: Add ESP-Hosted channel IF[2]: S[0] Tx[0x40011920] Rx[0x40023acc][0m
+sdio_mempool_create free:33708828 min-free:33708828 lfb-def:33030144 lfb-8bit:33030144
+
+[0;33mW (1905) sdio_wrapper: workaround: setting D2-D3 in 1 bit mode for slot 0[0m
+[0;32mI (1912) H_SDIO_DRV: sdio_data_to_rx_buf_task started[0m
+[0;32mI (1912) main_task: Started on CPU0[0m
+[0;32mI (1922) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (1922) main_task: Calling app_main()[0m
+[0;32mI (1932) VisualSLAM_INAV: [0m
+[0;32mI (1932) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1942) VisualSLAM_INAV: 🚁 Visual SLAM Navigation Module for INAV[0m
+[0;32mI (1942) VisualSLAM_INAV: 📡 ESP32-P4-WIFI6 with OV5647 MIPI-CSI Camera[0m
+[0;32mI (1952) VisualSLAM_INAV: 🧠 Real-time ORB-SLAM with Web Interface[0m
+[0;32mI (1962) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1962) VisualSLAM_INAV: [0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ NVS initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ GPIO initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: 🎥 Initializing OV5647 MIPI-CSI camera...[0m
+[0;32mI (1982) slam_core: Initializing camera for SLAM[0m
+[0;32mI (1992) VisualSLAM_INAV: ✅ Camera initialized successfully[0m
+[0;32mI (1992) VisualSLAM_INAV: 🛰️ Initializing uBlox GPS module...[0m
+[0;32mI (2002) GPS_uBlox: Initializing uBlox GPS on UART1[0m
+[0;32mI (2002) GPS_uBlox: UBX configuration sent[0m
+[0;32mI (2012) GPS_uBlox: GPS parsing task started[0m
+[0;32mI (2012) GPS_uBlox: GPS uBlox initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: ✅ GPS initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: 📐 Initializing BMI088 IMU...[0m
+[0;32mI (2032) IMU_BMI088: Initializing BMI088 IMU on SPI[0m
+[1;31mE (2032) IMU_BMI088: Invalid accelerometer chip ID: 0xFF (expected 0x1E)[0m
+[1;31mE (2042) IMU_BMI088: Failed to initialize accelerometer[0m
+[1;31mE (2042) VisualSLAM_INAV: ❌ IMU initialization failed: ESP_FAIL[0m
+[1;31mE (2052) VisualSLAM_INAV: IMU initialization failed, continuing anyway...[0m
+[0;32mI (2062) VisualSLAM_INAV: 🧠 Initializing Visual SLAM system...[0m
+[0;32mI (2062) VisualSLAM_INAV: Memory status before SLAM init:[0m
+[0;32mI (2072) VisualSLAM_INAV:   Internal RAM free: 503435 bytes[0m
+[0;32mI (2072) VisualSLAM_INAV:   SPIRAM free: 33546060 bytes[0m
+[0;32mI (2082) VisualSLAM_INAV:   Total free: 34049495 bytes[0m
+[0;32mI (2082) orb_features: Initialized 8 pyramid levels, max size: 800x640[0m
+[0;32mI (2092) orb_features: ORB features initialized with 500 max features[0m
+[0;32mI (2092) slam_core: Allocating SLAM memory: 5.5 KB keyframes + 742.2 KB map points = 747.7 KB total[0m
+[0;32mI (2122) slam_core: SPIRAM available: 29939 KB, used SLAM: 747.7 KB[0m
+[0;32mI (2122) slam_core: SLAM memory allocation successful[0m
+[0;32mI (2122) slam_core: SLAM core initialized with 500 max features[0m
+[0;32mI (2122) VisualSLAM_INAV: ✅ SLAM system initialized successfully[0m
+[0;32mI (2132) VisualSLAM_INAV: Memory status after SLAM init:[0m
+[0;32mI (2142) VisualSLAM_INAV:   Internal RAM free: 503039 bytes[0m
+[0;32mI (2142) VisualSLAM_INAV:   SPIRAM free: 30657824 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV:   Total free: 31160863 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV: 🏃 Main processing task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🌐 Web interface task started[0m
+[0;32mI (2162) transport: Attempt connection with slave: retry[0][0m
+[0;33mW (2172) H_SDIO_DRV: Reset slave using GPIO[54][0m
+[0;32mI (2172) os_wrapper_esp: GPIO [54] configured[0m
+[0;32mI (2152) VisualSLAM_INAV: 📡 Telemetry broadcast task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🚀 Visual SLAM Navigation Module started successfully![0m
+[0;32mI (2192) VisualSLAM_INAV: 🌐 Web interface: Connect to WiFi or use captive portal[0m
+[0;32mI (2202) VisualSLAM_INAV: 📱 Access dashboard at: http://dronecam.local or device IP[0m
+[0;32mI (3382) sdio_wrapper: SDIO master: Slot 0, Data-Lines: 1-bit Freq(KHz)[20000 KHz][0m
+[0;32mI (3382) sdio_wrapper: GPIOs: CLK[43] CMD[44] D0[39] D1[40] Slave_Reset[54][0m
+[0;32mI (3382) sdio_wrapper: Queues: Tx[20] Rx[20] SDIO-Rx-Mode[1][0m
+[1;31mE (3402) sdmmc_common: sdmmc_init_ocr: send_op_cond (1) returned 0x107[0m
+[1;31mE (3402) sdio_wrapper: sdmmc_card_init failed[0m
+[1;31mE (3402) H_SDIO_DRV: card init failed[0m
+[0;32mI (3402) transport: Waiting for esp_hosted slave to be ready[0m
+[0;32mI (3412) H_SDIO_DRV: SDIO Host operating in STREAMING MODE[0m
+[0;32mI (3412) H_SDIO_DRV: Starting SDIO process rx task[0m
+[0;32mI (3412) H_SDIO_DRV: Open data path at slave[0m
+Guru Meditation Error: Core  0 panic'ed (Load access fault). Exception was unhandled.
+
+Core  0 register dump:
+MEPC    : 0x40056dac  RA      : 0x40054838  SP      : 0x4ff20930  GP      : 0x4ff16480  
+TP      : 0x4ff20a50  T0      : 0x4fc0a9f8  T1      : 0x30000000  T2      : 0x00000000  
+S0/FP   : 0x4ff20944  S1      : 0x00000000  A0      : 0x00000000  A1      : 0x4ff20944  
+A2      : 0x98011800  A3      : 0x88000000  A4      : 0x4ff2099f  A5      : 0x98011801  
+A6      : 0x4000d608  A7      : 0x0000000a  S2      : 0x0000008c  S3      : 0x4ff209df  
+S4      : 0x00000000  S5      : 0x00000000  S6      : 0x00000000  S7      : 0x00000000  
+S8      : 0x00000000  S9      : 0x00000000  S10     : 0x00000000  S11     : 0x00000000  
+T3      : 0x00000000  T4      : 0x00000000  T5      : 0x00000000  T6      : 0x00000000  
+MSTATUS : 0x00011880  MTVEC   : 0x4ff00003  MCAUSE  : 0x00000005  MTVAL   : 0x00000040  
+MHARTID : 0x00000000  
+
+Stack memory:
+4ff20930: 0x4ff20a50 0x00000000 0x4ff2099f 0x40054838 0x00000000 0x00000034 0x98011801 0x00000000
+4ff20950: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00001c00
+4ff20970: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x0000008c 0x40054bac
+4ff20990: 0x00000000 0x00000000 0x00000000 0x01000000 0x00000001 0x00000000 0x0000008c 0x40023988
+4ff209b0: 0x00000000 0x0000080c 0x00000000 0x00000000 0x00000000 0x00000003 0x400ae000 0x40020772
+4ff209d0: 0x00000000 0x00000000 0x400ae000 0x01000d54 0x400ae0e4 0x00000778 0x4000d608 0x40020d52
+4ff209f0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a10: 0x00000000 0x00000000 0x00000000 0x4ff0b28a 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20a50: 0x00000000 0x4ff1f674 0x4ff1f674 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5
+4ff20a70: 0xa5a5a5a5 0x00000160 0x4ff20400 0x00000096 0x4ff19130 0x4ff19130 0x4ff20a78 0x4ff19128
+4ff20a90: 0x00000002 0x4ff1c76c 0x4ff1c76c 0x4ff20a78 0x00000000 0x00000017 0x4ff1f674 0x6f696473
+4ff20ab0: 0x6165725f 0x00000064 0x00000000 0x7fffffff 0x4ff20a70 0x00000017 0x00000000 0x00000000
+4ff20ad0: 0x00000000 0x00000000 0x4ff1c540 0x4ff1c5a8 0x4ff1c610 0x00000000 0x00000000 0x00000001
+4ff20af0: 0x00000000 0x00000000 0x00000000 0x40007942 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b10: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b50: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b70: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b90: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20bb0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xbbc884b6
+4ff20bd0: 0x099d8c96 0x4ff20a70 0x0000000c 0x4ff21ff0 0x4ff1bfa4 0x4ff20bd4 0x00001400 0xa5a5a5a5
+4ff20bf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c30: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c50: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c70: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c90: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cb0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cd0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20d10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+
+
+
+ELF file SHA256: 482ac146c
+
+Rebooting...
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0xc (SW_CPU_RESET),boot:0x30f (SPI_FAST_FLASH_BOOT)
+Core0 Saved PC:0x4ff04d3a
+Core1 Saved PC:0x4ff04e96
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x164c
+load:0x4ff29ed0,len:0xd64
+load:0x4ff2cbd0,len:0x3364
+entry 0x4ff29eda
+[0;32mI (33) boot: ESP-IDF v5.5 2nd stage bootloader[0m
+[0;32mI (33) boot: compile time Aug 29 2025 15:30:40[0m
+[0;32mI (33) boot: Multicore bootloader[0m
+[0;32mI (35) boot: chip revision: v1.0[0m
+[0;32mI (36) boot: efuse block revision: v0.3[0m
+[0;32mI (40) boot.esp32p4: SPI Speed      : 80MHz[0m
+[0;32mI (43) boot.esp32p4: SPI Mode       : DIO[0m
+[0;32mI (47) boot.esp32p4: SPI Flash Size : 32MB[0m
+[0;32mI (51) boot: Enabling RNG early entropy source...[0m
+[0;32mI (56) boot: Partition Table:[0m
+[0;32mI (58) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (64) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (71) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (77) boot:  2 factory          factory app      00 00 00010000 01f00000[0m
+[0;32mI (85) boot: End of partition table[0m
+[0;32mI (87) esp_image: segment 0: paddr=00010020 vaddr=40080020 size=33e34h (212532) map[0m
+[0;32mI (125) esp_image: segment 1: paddr=00043e5c vaddr=30100000 size=00068h (   104) load[0m
+[0;32mI (127) esp_image: segment 2: paddr=00043ecc vaddr=4ff00000 size=0c14ch ( 49484) load[0m
+[0;32mI (138) esp_image: segment 3: paddr=00050020 vaddr=40000020 size=7e2a0h (516768) map[0m
+[0;32mI (211) esp_image: segment 4: paddr=000ce2c8 vaddr=4ff0c14c size=09ac0h ( 39616) load[0m
+[0;32mI (219) esp_image: segment 5: paddr=000d7d90 vaddr=4ff15c80 size=030c4h ( 12484) load[0m
+[0;32mI (227) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (227) boot: Disabling RNG early entropy source...[0m
+[0;32mI (237) hex_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (238) hex_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (238) hex_psram: DriveStr.    : 0x00 (25 Ohm)[0m
+[0;32mI (238) hex_psram: dev id       : 0x03 (generation 4)[0m
+[0;32mI (243) hex_psram: density      : 0x07 (256 Mbit)[0m
+[0;32mI (248) hex_psram: good-die     : 0x06 (Pass)[0m
+[0;32mI (252) hex_psram: SRF          : 0x02 (Slow Refresh)[0m
+[0;32mI (257) hex_psram: BurstType    : 0x00 ( Wrap)[0m
+[0;32mI (261) hex_psram: BurstLen     : 0x03 (2048 Byte)[0m
+[0;32mI (265) hex_psram: BitMode      : 0x01 (X16 Mode)[0m
+[0;32mI (270) hex_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (275) hex_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (279) MSPI DQS: tuning success, best phase id is 0[0m
+[0;32mI (460) MSPI DQS: tuning success, best delayline id is 15[0m
+[0;32mI (461) esp_psram: Found 32MB PSRAM device[0m
+[0;32mI (461) esp_psram: Speed: 80MHz[0m
+[0;32mI (462) hex_psram: psram CS IO is dedicated[0m
+[0;32mI (465) cpu_start: Multicore app[0m
+[0;32mI (1754) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (1764) cpu_start: Pro cpu start user code[0m
+[0;32mI (1764) cpu_start: cpu freq: 360000000 Hz[0m
+[0;32mI (1764) app_init: Application information:[0m
+[0;32mI (1764) app_init: Project name:     VisualSLAM_INAV[0m
+[0;32mI (1769) app_init: App version:      1[0m
+[0;32mI (1772) app_init: Compile time:     Aug 29 2025 15:40:06[0m
+[0;32mI (1777) app_init: ELF file SHA256:  482ac146c...[0m
+[0;32mI (1782) app_init: ESP-IDF:          v5.5[0m
+[0;32mI (1785) efuse_init: Min chip rev:     v0.1[0m
+[0;32mI (1789) efuse_init: Max chip rev:     v1.99 [0m
+[0;32mI (1793) efuse_init: Chip rev:         v1.0[0m
+[0;32mI (1797) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (1804) heap_init: At 4FF1BF90 len 0001F030 (124 KiB): RAM[0m
+[0;32mI (1809) heap_init: At 4FF3AFC0 len 00004BF0 (18 KiB): RAM[0m
+[0;32mI (1814) heap_init: At 4FF40000 len 00060000 (384 KiB): RAM[0m
+[0;32mI (1820) heap_init: At 50108080 len 00007F80 (31 KiB): RTCRAM[0m
+[0;32mI (1825) heap_init: At 30100068 len 00001F98 (7 KiB): TCM[0m
+[0;32mI (1830) esp_psram: Adding pool of 32768K of PSRAM memory to heap allocator[0m
+[0;33mW (1837) spi_flash: GigaDevice detected but related driver is not linked, please check option `SPI_FLASH_SUPPORT_GD_CHIP`[0m
+[0;32mI (1847) spi_flash: detected chip: generic[0m
+[0;33mW (1851) spi_flash: Detected flash size > 16 MB, but access beyond 16 MB is not supported for this flash model yet.[0m
+[0;32mI (1861) spi_flash: flash io: dio[0m
+[0;32mI (1865) host_init: ESP Hosted : Host chip_ip[18][0m
+[0;32mI (1880) H_API: ESP-Hosted starting. Hosted_Tasks: prio:23, stack: 5120 RPC_task_stack: 5120[0m
+[0;32mI (1880) H_API: ** add_esp_wifi_remote_channels **[0m
+[0;32mI (1882) transport: Add ESP-Hosted channel IF[1]: S[0] Tx[0x400119dc] Rx[0x40023acc][0m
+[0;32mI (1889) transport: Add ESP-Hosted channel IF[2]: S[0] Tx[0x40011920] Rx[0x40023acc][0m
+sdio_mempool_create free:33708828 min-free:33708828 lfb-def:33030144 lfb-8bit:33030144
+
+[0;33mW (1905) sdio_wrapper: workaround: setting D2-D3 in 1 bit mode for slot 0[0m
+[0;32mI (1912) H_SDIO_DRV: sdio_data_to_rx_buf_task started[0m
+[0;32mI (1912) main_task: Started on CPU0[0m
+[0;32mI (1922) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (1922) main_task: Calling app_main()[0m
+[0;32mI (1932) VisualSLAM_INAV: [0m
+[0;32mI (1932) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1942) VisualSLAM_INAV: 🚁 Visual SLAM Navigation Module for INAV[0m
+[0;32mI (1942) VisualSLAM_INAV: 📡 ESP32-P4-WIFI6 with OV5647 MIPI-CSI Camera[0m
+[0;32mI (1952) VisualSLAM_INAV: 🧠 Real-time ORB-SLAM with Web Interface[0m
+[0;32mI (1962) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1962) VisualSLAM_INAV: [0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ NVS initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ GPIO initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: 🎥 Initializing OV5647 MIPI-CSI camera...[0m
+[0;32mI (1982) slam_core: Initializing camera for SLAM[0m
+[0;32mI (1992) VisualSLAM_INAV: ✅ Camera initialized successfully[0m
+[0;32mI (1992) VisualSLAM_INAV: 🛰️ Initializing uBlox GPS module...[0m
+[0;32mI (2002) GPS_uBlox: Initializing uBlox GPS on UART1[0m
+[0;32mI (2002) GPS_uBlox: UBX configuration sent[0m
+[0;32mI (2012) GPS_uBlox: GPS parsing task started[0m
+[0;32mI (2012) GPS_uBlox: GPS uBlox initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: ✅ GPS initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: 📐 Initializing BMI088 IMU...[0m
+[0;32mI (2032) IMU_BMI088: Initializing BMI088 IMU on SPI[0m
+[1;31mE (2032) IMU_BMI088: Invalid accelerometer chip ID: 0xFF (expected 0x1E)[0m
+[1;31mE (2042) IMU_BMI088: Failed to initialize accelerometer[0m
+[1;31mE (2042) VisualSLAM_INAV: ❌ IMU initialization failed: ESP_FAIL[0m
+[1;31mE (2052) VisualSLAM_INAV: IMU initialization failed, continuing anyway...[0m
+[0;32mI (2062) VisualSLAM_INAV: 🧠 Initializing Visual SLAM system...[0m
+[0;32mI (2062) VisualSLAM_INAV: Memory status before SLAM init:[0m
+[0;32mI (2072) VisualSLAM_INAV:   Internal RAM free: 503435 bytes[0m
+[0;32mI (2072) VisualSLAM_INAV:   SPIRAM free: 33546060 bytes[0m
+[0;32mI (2082) VisualSLAM_INAV:   Total free: 34049495 bytes[0m
+[0;32mI (2082) orb_features: Initialized 8 pyramid levels, max size: 800x640[0m
+[0;32mI (2092) orb_features: ORB features initialized with 500 max features[0m
+[0;32mI (2092) slam_core: Allocating SLAM memory: 5.5 KB keyframes + 742.2 KB map points = 747.7 KB total[0m
+[0;32mI (2122) slam_core: SPIRAM available: 29939 KB, used SLAM: 747.7 KB[0m
+[0;32mI (2122) slam_core: SLAM memory allocation successful[0m
+[0;32mI (2122) slam_core: SLAM core initialized with 500 max features[0m
+[0;32mI (2122) VisualSLAM_INAV: ✅ SLAM system initialized successfully[0m
+[0;32mI (2132) VisualSLAM_INAV: Memory status after SLAM init:[0m
+[0;32mI (2142) VisualSLAM_INAV:   Internal RAM free: 503039 bytes[0m
+[0;32mI (2142) VisualSLAM_INAV:   SPIRAM free: 30657824 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV:   Total free: 31160863 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV: 🏃 Main processing task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🌐 Web interface task started[0m
+[0;32mI (2162) transport: Attempt connection with slave: retry[0][0m
+[0;33mW (2172) H_SDIO_DRV: Reset slave using GPIO[54][0m
+[0;32mI (2172) os_wrapper_esp: GPIO [54] configured[0m
+[0;32mI (2152) VisualSLAM_INAV: 📡 Telemetry broadcast task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🚀 Visual SLAM Navigation Module started successfully![0m
+[0;32mI (2192) VisualSLAM_INAV: 🌐 Web interface: Connect to WiFi or use captive portal[0m
+[0;32mI (2202) VisualSLAM_INAV: 📱 Access dashboard at: http://dronecam.local or device IP[0m
+[0;32mI (3382) sdio_wrapper: SDIO master: Slot 0, Data-Lines: 1-bit Freq(KHz)[20000 KHz][0m
+[0;32mI (3382) sdio_wrapper: GPIOs: CLK[43] CMD[44] D0[39] D1[40] Slave_Reset[54][0m
+[0;32mI (3382) sdio_wrapper: Queues: Tx[20] Rx[20] SDIO-Rx-Mode[1][0m
+[1;31mE (3402) sdmmc_common: sdmmc_init_ocr: send_op_cond (1) returned 0x107[0m
+[1;31mE (3402) sdio_wrapper: sdmmc_card_init failed[0m
+[1;31mE (3402) H_SDIO_DRV: card init failed[0m
+[0;32mI (3402) transport: Waiting for esp_hosted slave to be ready[0m
+[0;32mI (3412) H_SDIO_DRV: SDIO Host operating in STREAMING MODE[0m
+[0;32mI (3412) H_SDIO_DRV: Starting SDIO process rx task[0m
+[0;32mI (3412) H_SDIO_DRV: Open data path at slave[0m
+Guru Meditation Error: Core  0 panic'ed (Load access fault). Exception was unhandled.
+
+Core  0 register dump:
+MEPC    : 0x40056dac  RA      : 0x40054838  SP      : 0x4ff20930  GP      : 0x4ff16480  
+TP      : 0x4ff20a50  T0      : 0x4fc0a9f8  T1      : 0x30000000  T2      : 0x00000000  
+S0/FP   : 0x4ff20944  S1      : 0x00000000  A0      : 0x00000000  A1      : 0x4ff20944  
+A2      : 0x98011800  A3      : 0x88000000  A4      : 0x4ff2099f  A5      : 0x98011801  
+A6      : 0x4000d608  A7      : 0x0000000a  S2      : 0x0000008c  S3      : 0x4ff209df  
+S4      : 0x00000000  S5      : 0x00000000  S6      : 0x00000000  S7      : 0x00000000  
+S8      : 0x00000000  S9      : 0x00000000  S10     : 0x00000000  S11     : 0x00000000  
+T3      : 0x00000000  T4      : 0x00000000  T5      : 0x00000000  T6      : 0x00000000  
+MSTATUS : 0x00011880  MTVEC   : 0x4ff00003  MCAUSE  : 0x00000005  MTVAL   : 0x00000040  
+MHARTID : 0x00000000  
+
+Stack memory:
+4ff20930: 0x4ff20a50 0x00000000 0x4ff2099f 0x40054838 0x00000000 0x00000034 0x98011801 0x00000000
+4ff20950: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00001c00
+4ff20970: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x0000008c 0x40054bac
+4ff20990: 0x00000000 0x00000000 0x00000000 0x01000000 0x00000001 0x00000000 0x0000008c 0x40023988
+000 0x00000000 0x00000003 0x400ae000 0x40020772
+4ff209d0: 0x00000000 0x00000000 0x400ae000 0x01000d54 0x400ae0e4 0x00000778 0x4000d608 0x40020d52
+4ff209f0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a10: 0x00000000 0x00000000 0x00000000 0x4ff0b28a 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20a50: 0x00000000 0x4ff1f674 0x4ff1f674 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5
+4ff20a70: 0xa5a5a5a5 0x00000160 0x4ff20400 0x00000096 0x4ff19130 0x4ff19130 0x4ff20a78 0x4ff19128
+4ff20a90: 0x00000002 0x4ff1c76c 0x4ff1c76c 0x4ff20a78 0x00000000 0x00000017 0x4ff1f674 0x6f696473
+4ff20ab0: 0x6165725f 0x00000064 0x00000000 0x7fffffff 0x4ff20a70 0x00000017 0x00000000 0x00000000
+4ff20ad0: 0x00000000 0x00000000 0x4ff1c540 0x4ff1c5a8 0x4ff1c610 0x00000000 0x00000000 0x00000001
+4ff20af0: 0x00000000 0x00000000 0x00000000 0x40007942 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b10: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b50: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b70: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b90: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20bb0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xbbc884b6
+4ff20bd0: 0x099d8c96 0x4ff20a70 0x0000000c 0x4ff21ff0 0x4ff1bfa4 0x4ff20bd4 0x00001400 0xa5a5a5a5
+4ff20bf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c30: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c50: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c70: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c90: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cb0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cd0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20d10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+
+
+
+ELF file SHA256: 482ac146c
+
+Rebooting...
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0xc (SW_CPU_RESET),boot:0x30f (SPI_FAST_FLASH_BOOT)
+Core0 Saved PC:0x4ff04d3a
+Core1 Saved PC:0x4ff04e96
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x164c
+load:0x4ff29ed0,len:0xd64
+load:0x4ff2cbd0,len:0x3364
+entry 0x4ff29eda
+[0;32mI (33) boot: ESP-IDF v5.5 2nd stage bootloader[0m
+[0;32mI (33) boot: compile time Aug 29 2025 15:30:40[0m
+[0;32mI (33) boot: Multicore bootloader[0m
+[0;32mI (35) boot: chip revision: v1.0[0m
+[0;32mI (36) boot: efuse block revision: v0.3[0m
+[0;32mI (40) boot.esp32p4: SPI Speed      : 80MHz[0m
+[0;32mI (43) boot.esp32p4: SPI Mode       : DIO[0m
+[0;32mI (47) boot.esp32p4: SPI Flash Size : 32MB[0m
+[0;32mI (51) boot: Enabling RNG early entropy source...[0m
+[0;32mI (56) boot: Partition Table:[0m
+[0;32mI (58) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (64) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (71) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (77) boot:  2 factory          factory app      00 00 00010000 01f00000[0m
+[0;32mI (85) boot: End of partition table[0m
+[0;32mI (87) esp_image: segment 0: paddr=00010020 vaddr=40080020 size=33e34h (212532) map[0m
+[0;32mI (125) esp_image: segment 1: paddr=00043e5c vaddr=30100000 size=00068h (   104) load[0m
+[0;32mI (127) esp_image: segment 2: paddr=00043ecc vaddr=4ff00000 size=0c14ch ( 49484) load[0m
+[0;32mI (138) esp_image: segment 3: paddr=00050020 vaddr=40000020 size=7e2a0h (516768) map[0m
+[0;32mI (211) esp_image: segment 4: paddr=000ce2c8 vaddr=4ff0c14c size=09ac0h ( 39616) load[0m
+[0;32mI (219) esp_image: segment 5: paddr=000d7d90 vaddr=4ff15c80 size=030c4h ( 12484) load[0m
+[0;32mI (227) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (227) boot: Disabling RNG early entropy source...[0m
+[0;32mI (237) hex_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (238) hex_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (238) hex_psram: DriveStr.    : 0x00 (25 Ohm)[0m
+[0;32mI (238) hex_psram: dev id       : 0x03 (generation 4)[0m
+[0;32mI (243) hex_psram: density      : 0x07 (256 Mbit)[0m
+[0;32mI (248) hex_psram: good-die     : 0x06 (Pass)[0m
+[0;32mI (252) hex_psram: SRF          : 0x02 (Slow Refresh)[0m
+[0;32mI (257) hex_psram: BurstType    : 0x00 ( Wrap)[0m
+[0;32mI (261) hex_psram: BurstLen     : 0x03 (2048 Byte)[0m
+[0;32mI (265) hex_psram: BitMode      : 0x01 (X16 Mode)[0m
+[0;32mI (270) hex_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (275) hex_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (279) MSPI DQS: tuning success, best phase id is 0[0m
+[0;32mI (460) MSPI DQS: tuning success, best delayline id is 15[0m
+[0;32mI (461) esp_psram: Found 32MB PSRAM device[0m
+[0;32mI (461) esp_psram: Speed: 80MHz[0m
+[0;32mI (462) hex_psram: psram CS IO is dedicated[0m
+[0;32mI (465) cpu_start: Multicore app[0m
+[0;32mI (1754) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (1763) cpu_start: Pro cpu start user code[0m
+[0;32mI (1763) cpu_start: cpu freq: 360000000 Hz[0m
+[0;32mI (1764) app_init: Application information:[0m
+[0;32mI (1764) app_init: Project name:     VisualSLAM_INAV[0m
+[0;32mI (1768) app_init: App version:      1[0m
+[0;32mI (1772) app_init: Compile time:     Aug 29 2025 15:40:06[0m
+[0;32mI (1777) app_init: ELF file SHA256:  482ac146c...[0m
+[0;32mI (1781) app_init: ESP-IDF:          v5.5[0m
+[0;32mI (1785) efuse_init: Min chip rev:     v0.1[0m
+[0;32mI (1789) efuse_init: Max chip rev:     v1.99 [0m
+[0;32mI (1793) efuse_init: Chip rev:         v1.0[0m
+[0;32mI (1797) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (1803) heap_init: At 4FF1BF90 len 0001F030 (124 KiB): RAM[0m
+[0;32mI (1809) heap_init: At 4FF3AFC0 len 00004BF0 (18 KiB): RAM[0m
+[0;32mI (1814) heap_init: At 4FF40000 len 00060000 (384 KiB): RAM[0m
+[0;32mI (1819) heap_init: At 50108080 len 00007F80 (31 KiB): RTCRAM[0m
+[0;32mI (1825) heap_init: At 30100068 len 00001F98 (7 KiB): TCM[0m
+[0;32mI (1830) esp_psram: Adding pool of 32768K of PSRAM memory to heap allocator[0m
+[0;33mW (1837) spi_flash: GigaDevice detected but related driver is not linked, please check option `SPI_FLASH_SUPPORT_GD_CHIP`[0m
+[0;32mI (1847) spi_flash: detected chip: generic[0m
+[0;33mW (1851) spi_flash: Detected flash size > 16 MB, but access beyond 16 MB is not supported for this flash model yet.[0m
+[0;32mI (1861) spi_flash: flash io: dio[0m
+[0;32mI (1864) host_init: ESP Hosted : Host chip_ip[18][0m
+[0;32mI (1880) H_API: ESP-Hosted starting. Hosted_Tasks: prio:23, stack: 5120 RPC_task_stack: 5120[0m
+[0;32mI (1880) H_API: ** add_esp_wifi_remote_channels **[0m
+[0;32mI (1882) transport: Add ESP-Hosted channel IF[1]: S[0] Tx[0x400119dc] Rx[0x40023acc][0m
+[0;32mI (1889) transport: Add ESP-Hosted channel IF[2]: S[0] Tx[0x40011920] Rx[0x40023acc][0m
+sdio_mempool_create free:33708828 min-free:33708828 lfb-def:33030144 lfb-8bit:33030144
+
+[0;33mW (1904) sdio_wrapper: workaround: setting D2-D3 in 1 bit mode for slot 0[0m
+[0;32mI (1912) H_SDIO_DRV: sdio_data_to_rx_buf_task started[0m
+[0;32mI (1912) main_task: Started on CPU0[0m
+[0;32mI (1922) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (1922) main_task: Calling app_main()[0m
+[0;32mI (1932) VisualSLAM_INAV: [0m
+[0;32mI (1932) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1942) VisualSLAM_INAV: 🚁 Visual SLAM Navigation Module for INAV[0m
+[0;32mI (1942) VisualSLAM_INAV: 📡 ESP32-P4-WIFI6 with OV5647 MIPI-CSI Camera[0m
+[0;32mI (1952) VisualSLAM_INAV: 🧠 Real-time ORB-SLAM with Web Interface[0m
+[0;32mI (1962) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1962) VisualSLAM_INAV: [0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ NVS initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ GPIO initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: 🎥 Initializing OV5647 MIPI-CSI camera...[0m
+[0;32mI (1982) slam_core: Initializing camera for SLAM[0m
+[0;32mI (1992) VisualSLAM_INAV: ✅ Camera initialized successfully[0m
+[0;32mI (1992) VisualSLAM_INAV: 🛰️ Initializing uBlox GPS module...[0m
+[0;32mI (2002) GPS_uBlox: Initializing uBlox GPS on UART1[0m
+[0;32mI (2002) GPS_uBlox: UBX configuration sent[0m
+[0;32mI (2012) GPS_uBlox: GPS parsing task started[0m
+[0;32mI (2012) GPS_uBlox: GPS uBlox initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: ✅ GPS initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: 📐 Initializing BMI088 IMU...[0m
+[0;32mI (2032) IMU_BMI088: Initializing BMI088 IMU on SPI[0m
+[1;31mE (2032) IMU_BMI088: Invalid accelerometer chip ID: 0xFF (expected 0x1E)[0m
+[1;31mE (2042) IMU_BMI088: Failed to initialize accelerometer[0m
+[1;31mE (2042) VisualSLAM_INAV: ❌ IMU initialization failed: ESP_FAIL[0m
+[1;31mE (2052) VisualSLAM_INAV: IMU initialization failed, continuing anyway...[0m
+[0;32mI (2062) VisualSLAM_INAV: 🧠 Initializing Visual SLAM system...[0m
+[0;32mI (2062) VisualSLAM_INAV: Memory status before SLAM init:[0m
+[0;32mI (2072) VisualSLAM_INAV:   Internal RAM free: 503435 bytes[0m
+[0;32mI (2072) VisualSLAM_INAV:   SPIRAM free: 33546060 bytes[0m
+[0;32mI (2082) VisualSLAM_INAV:   Total free: 34049495 bytes[0m
+[0;32mI (2082) orb_features: Initialized 8 pyramid levels, max size: 800x640[0m
+[0;32mI (2092) orb_features: ORB features initialized with 500 max features[0m
+[0;32mI (2092) slam_core: Allocating SLAM memory: 5.5 KB keyframes + 742.2 KB map points = 747.7 KB total[0m
+[0;32mI (2122) slam_core: SPIRAM available: 29939 KB, used SLAM: 747.7 KB[0m
+[0;32mI (2122) slam_core: SLAM memory allocation successful[0m
+[0;32mI (2122) slam_core: SLAM core initialized with 500 max features[0m
+[0;32mI (2122) VisualSLAM_INAV: ✅ SLAM system initialized successfully[0m
+[0;32mI (2132) VisualSLAM_INAV: Memory status after SLAM init:[0m
+[0;32mI (2142) VisualSLAM_INAV:   Internal RAM free: 503039 bytes[0m
+[0;32mI (2142) VisualSLAM_INAV:   SPIRAM free: 30657824 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV:   Total free: 31160863 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV: 🏃 Main processing task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🌐 Web interface task started[0m
+[0;32mI (2162) transport: Attempt connection with slave: retry[0][0m
+[0;33mW (2172) H_SDIO_DRV: Reset slave using GPIO[54][0m
+[0;32mI (2172) os_wrapper_esp: GPIO [54] configured[0m
+[0;32mI (2152) VisualSLAM_INAV: 📡 Telemetry broadcast task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🚀 Visual SLAM Navigation Module started successfully![0m
+[0;32mI (2192) VisualSLAM_INAV: 🌐 Web interface: Connect to WiFi or use captive portal[0m
+[0;32mI (2202) VisualSLAM_INAV: 📱 Access dashboard at: http://dronecam.local or device IP[0m
+[0;32mI (3382) sdio_wrapper: SDIO master: Slot 0, Data-Lines: 1-bit Freq(KHz)[20000 KHz][0m
+[0;32mI (3382) sdio_wrapper: GPIOs: CLK[43] CMD[44] D0[39] D1[40] Slave_Reset[54][0m
+[0;32mI (3382) sdio_wrapper: Queues: Tx[20] Rx[20] SDIO-Rx-Mode[1][0m
+[1;31mE (3402) sdmmc_common: sdmmc_init_ocr: send_op_cond (1) returned 0x107[0m
+[1;31mE (3402) sdio_wrapper: sdmmc_card_init failed[0m
+[1;31mE (3402) H_SDIO_DRV: card init failed[0m
+[0;32mI (3402) transport: Waiting for esp_hosted slave to be ready[0m
+[0;32mI (3412) H_SDIO_DRV: SDIO Host operating in STREAMING MODE[0m
+[0;32mI (3412) H_SDIO_DRV: Starting SDIO process rx task[0m
+[0;32mI (3412) H_SDIO_DRV: Open data path at slave[0m
+Guru Meditation Error: Core  0 panic'ed (Load access fault). Exception was unhandled.
+
+Core  0 register dump:
+MEPC    : 0x40056dac  RA      : 0x40054838  SP      : 0x4ff20930  GP      : 0x4ff16480  
+TP      : 0x4ff20a50  T0      : 0x4fc0a9f8  T1      : 0x30000000  T2      : 0x00000000  
+S0/FP   : 0x4ff20944  S1      : 0x00000000  A0      : 0x00000000  A1      : 0x4ff20944  
+A2      : 0x98011800  A3      : 0x88000000  A4      : 0x4ff2099f  A5      : 0x98011801  
+A6      : 0x4000d608  A7      : 0x0000000a  S2      : 0x0000008c  S3      : 0x4ff209df  
+S4      : 0x00000000  S5      : 0x00000000  S6      : 0x00000000  S7      : 0x00000000  
+S8      : 0x00000000  S9      : 0x00000000  S10     : 0x00000000  S11     : 0x00000000  
+T3      : 0x00000000  T4      : 0x00000000  T5      : 0x00000000  T6      : 0x00000000  
+MSTATUS : 0x00011880  MTVEC   : 0x4ff00003  MCAUSE  : 0x00000005  MTVAL   : 0x00000040  
+MHARTID : 0x00000000  
+
+Stack memory:
+4ff20930: 0x4ff20a50 0x00000000 0x4ff2099f 0x40054838 0x00000000 0x00000034 0x98011801 0x00000000
+4ff20950: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00001c00
+4ff20970: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x0000008c 0x40054bac
+c 0x40023988
+4ff209b0: 0x00000000 0x0000080c 0x00000000 0x00000000 0x00000000 0x00000003 0x400ae000 0x40020772
+4ff209d0: 0x00000000 0x00000000 0x400ae000 0x01000d54 0x400ae0e4 0x00000778 0x4000d608 0x40020d52
+4ff209f0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a10: 0x00000000 0x00000000 0x00000000 0x4ff0b28a 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20a50: 0x00000000 0x4ff1f674 0x4ff1f674 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5
+4ff20a70: 0xa5a5a5a5 0x00000160 0x4ff20400 0x00000096 0x4ff19130 0x4ff19130 0x4ff20a78 0x4ff19128
+4ff20a90: 0x00000002 0x4ff1c76c 0x4ff1c76c 0x4ff20a78 0x00000000 0x00000017 0x4ff1f674 0x6f696473
+4ff20ab0: 0x6165725f 0x00000064 0x00000000 0x7fffffff 0x4ff20a70 0x00000017 0x00000000 0x00000000
+4ff20ad0: 0x00000000 0x00000000 0x4ff1c540 0x4ff1c5a8 0x4ff1c610 0x00000000 0x00000000 0x00000001
+4ff20af0: 0x00000000 0x00000000 0x00000000 0x40007942 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b10: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b50: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b70: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b90: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20bb0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xbbc884b6
+4ff20bd0: 0x099d8c96 0x4ff20a70 0x0000000c 0x4ff21ff0 0x4ff1bfa4 0x4ff20bd4 0x00001400 0xa5a5a5a5
+4ff20bf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c30: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c50: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c70: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c90: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cb0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cd0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20d10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+
+
+
+ELF file SHA256: 482ac146c
+
+Rebooting...
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0xc (SW_CPU_RESET),boot:0x30f (SPI_FAST_FLASH_BOOT)
+Core0 Saved PC:0x4ff04d3a
+Core1 Saved PC:0x4ff04e96
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x164c
+load:0x4ff29ed0,len:0xd64
+load:0x4ff2cbd0,len:0x3364
+entry 0x4ff29eda
+[0;32mI (33) boot: ESP-IDF v5.5 2nd stage bootloader[0m
+[0;32mI (33) boot: compile time Aug 29 2025 15:30:40[0m
+[0;32mI (33) boot: Multicore bootloader[0m
+[0;32mI (35) boot: chip revision: v1.0[0m
+[0;32mI (36) boot: efuse block revision: v0.3[0m
+[0;32mI (40) boot.esp32p4: SPI Speed      : 80MHz[0m
+[0;32mI (43) boot.esp32p4: SPI Mode       : DIO[0m
+[0;32mI (47) boot.esp32p4: SPI Flash Size : 32MB[0m
+[0;32mI (51) boot: Enabling RNG early entropy source...[0m
+[0;32mI (56) boot: Partition Table:[0m
+[0;32mI (58) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (64) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (71) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (77) boot:  2 factory          factory app      00 00 00010000 01f00000[0m
+[0;32mI (85) boot: End of partition table[0m
+[0;32mI (87) esp_image: segment 0: paddr=00010020 vaddr=40080020 size=33e34h (212532) map[0m
+[0;32mI (125) esp_image: segment 1: paddr=00043e5c vaddr=30100000 size=00068h (   104) load[0m
+[0;32mI (127) esp_image: segment 2: paddr=00043ecc vaddr=4ff00000 size=0c14ch ( 49484) load[0m
+[0;32mI (138) esp_image: segment 3: paddr=00050020 vaddr=40000020 size=7e2a0h (516768) map[0m
+[0;32mI (211) esp_image: segment 4: paddr=000ce2c8 vaddr=4ff0c14c size=09ac0h ( 39616) load[0m
+[0;32mI (219) esp_image: segment 5: paddr=000d7d90 vaddr=4ff15c80 size=030c4h ( 12484) load[0m
+[0;32mI (227) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (227) boot: Disabling RNG early entropy source...[0m
+[0;32mI (237) hex_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (238) hex_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (238) hex_psram: DriveStr.    : 0x00 (25 Ohm)[0m
+[0;32mI (238) hex_psram: dev id       : 0x03 (generation 4)[0m
+[0;32mI (243) hex_psram: density      : 0x07 (256 Mbit)[0m
+[0;32mI (248) hex_psram: good-die     : 0x06 (Pass)[0m
+[0;32mI (252) hex_psram: SRF          : 0x02 (Slow Refresh)[0m
+[0;32mI (257) hex_psram: BurstType    : 0x00 ( Wrap)[0m
+[0;32mI (261) hex_psram: BurstLen     : 0x03 (2048 Byte)[0m
+[0;32mI (265) hex_psram: BitMode      : 0x01 (X16 Mode)[0m
+[0;32mI (270) hex_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (275) hex_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (279) MSPI DQS: tuning success, best phase id is 0[0m
+[0;32mI (460) MSPI DQS: tuning success, best delayline id is 15[0m
+[0;32mI (461) esp_psram: Found 32MB PSRAM device[0m
+[0;32mI (461) esp_psram: Speed: 80MHz[0m
+[0;32mI (462) hex_psram: psram CS IO is dedicated[0m
+[0;32mI (465) cpu_start: Multicore app[0m
+[0;32mI (1754) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (1763) cpu_start: Pro cpu start user code[0m
+[0;32mI (1763) cpu_start: cpu freq: 360000000 Hz[0m
+[0;32mI (1764) app_init: Application information:[0m
+[0;32mI (1764) app_init: Project name:     VisualSLAM_INAV[0m
+[0;32mI (1768) app_init: App version:      1[0m
+[0;32mI (1772) app_init: Compile time:     Aug 29 2025 15:40:06[0m
+[0;32mI (1777) app_init: ELF file SHA256:  482ac146c...[0m
+[0;32mI (1781) app_init: ESP-IDF:          v5.5[0m
+[0;32mI (1785) efuse_init: Min chip rev:     v0.1[0m
+[0;32mI (1789) efuse_init: Max chip rev:     v1.99 [0m
+[0;32mI (1793) efuse_init: Chip rev:         v1.0[0m
+[0;32mI (1797) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (1803) heap_init: At 4FF1BF90 len 0001F030 (124 KiB): RAM[0m
+[0;32mI (1809) heap_init: At 4FF3AFC0 len 00004BF0 (18 KiB): RAM[0m
+[0;32mI (1814) heap_init: At 4FF40000 len 00060000 (384 KiB): RAM[0m
+[0;32mI (1819) heap_init: At 50108080 len 00007F80 (31 KiB): RTCRAM[0m
+[0;32mI (1825) heap_init: At 30100068 len 00001F98 (7 KiB): TCM[0m
+[0;32mI (1830) esp_psram: Adding pool of 32768K of PSRAM memory to heap allocator[0m
+[0;33mW (1837) spi_flash: GigaDevice detected but related driver is not linked, please check option `SPI_FLASH_SUPPORT_GD_CHIP`[0m
+[0;32mI (1847) spi_flash: detected chip: generic[0m
+[0;33mW (1851) spi_flash: Detected flash size > 16 MB, but access beyond 16 MB is not supported for this flash model yet.[0m
+[0;32mI (1861) spi_flash: flash io: dio[0m
+[0;32mI (1864) host_init: ESP Hosted : Host chip_ip[18][0m
+[0;32mI (1880) H_API: ESP-Hosted starting. Hosted_Tasks: prio:23, stack: 5120 RPC_task_stack: 5120[0m
+[0;32mI (1880) H_API: ** add_esp_wifi_remote_channels **[0m
+[0;32mI (1881) transport: Add ESP-Hosted channel IF[1]: S[0] Tx[0x400119dc] Rx[0x40023acc][0m
+[0;32mI (1889) transport: Add ESP-Hosted channel IF[2]: S[0] Tx[0x40011920] Rx[0x40023acc][0m
+sdio_mempool_create free:33708828 min-free:33708828 lfb-def:33030144 lfb-8bit:33030144
+
+[0;33mW (1904) sdio_wrapper: workaround: setting D2-D3 in 1 bit mode for slot 0[0m
+[0;32mI (1912) H_SDIO_DRV: sdio_data_to_rx_buf_task started[0m
+[0;32mI (1912) main_task: Started on CPU0[0m
+[0;32mI (1922) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (1922) main_task: Calling app_main()[0m
+[0;32mI (1932) VisualSLAM_INAV: [0m
+[0;32mI (1932) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1942) VisualSLAM_INAV: 🚁 Visual SLAM Navigation Module for INAV[0m
+[0;32mI (1942) VisualSLAM_INAV: 📡 ESP32-P4-WIFI6 with OV5647 MIPI-CSI Camera[0m
+[0;32mI (1952) VisualSLAM_INAV: 🧠 Real-time ORB-SLAM with Web Interface[0m
+[0;32mI (1962) VisualSLAM_INAV: =================================================[0m
+[0;32mI (1962) VisualSLAM_INAV: [0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ NVS initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: ✅ GPIO initialized[0m
+[0;32mI (1982) VisualSLAM_INAV: 🎥 Initializing OV5647 MIPI-CSI camera...[0m
+[0;32mI (1982) slam_core: Initializing camera for SLAM[0m
+[0;32mI (1992) VisualSLAM_INAV: ✅ Camera initialized successfully[0m
+[0;32mI (1992) VisualSLAM_INAV: 🛰️ Initializing uBlox GPS module...[0m
+[0;32mI (2002) GPS_uBlox: Initializing uBlox GPS on UART1[0m
+[0;32mI (2002) GPS_uBlox: UBX configuration sent[0m
+[0;32mI (2012) GPS_uBlox: GPS parsing task started[0m
+[0;32mI (2012) GPS_uBlox: GPS uBlox initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: ✅ GPS initialized successfully[0m
+[0;32mI (2022) VisualSLAM_INAV: 📐 Initializing BMI088 IMU...[0m
+[0;32mI (2032) IMU_BMI088: Initializing BMI088 IMU on SPI[0m
+[1;31mE (2032) IMU_BMI088: Invalid accelerometer chip ID: 0xFF (expected 0x1E)[0m
+[1;31mE (2042) IMU_BMI088: Failed to initialize accelerometer[0m
+[1;31mE (2042) VisualSLAM_INAV: ❌ IMU initialization failed: ESP_FAIL[0m
+[1;31mE (2052) VisualSLAM_INAV: IMU initialization failed, continuing anyway...[0m
+[0;32mI (2062) VisualSLAM_INAV: 🧠 Initializing Visual SLAM system...[0m
+[0;32mI (2062) VisualSLAM_INAV: Memory status before SLAM init:[0m
+[0;32mI (2072) VisualSLAM_INAV:   Internal RAM free: 503435 bytes[0m
+[0;32mI (2072) VisualSLAM_INAV:   SPIRAM free: 33546060 bytes[0m
+[0;32mI (2082) VisualSLAM_INAV:   Total free: 34049495 bytes[0m
+[0;32mI (2082) orb_features: Initialized 8 pyramid levels, max size: 800x640[0m
+[0;32mI (2092) orb_features: ORB features initialized with 500 max features[0m
+[0;32mI (2092) slam_core: Allocating SLAM memory: 5.5 KB keyframes + 742.2 KB map points = 747.7 KB total[0m
+[0;32mI (2122) slam_core: SPIRAM available: 29939 KB, used SLAM: 747.7 KB[0m
+[0;32mI (2122) slam_core: SLAM memory allocation successful[0m
+[0;32mI (2122) slam_core: SLAM core initialized with 500 max features[0m
+[0;32mI (2122) VisualSLAM_INAV: ✅ SLAM system initialized successfully[0m
+[0;32mI (2132) VisualSLAM_INAV: Memory status after SLAM init:[0m
+[0;32mI (2142) VisualSLAM_INAV:   Internal RAM free: 503039 bytes[0m
+[0;32mI (2142) VisualSLAM_INAV:   SPIRAM free: 30657824 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV:   Total free: 31160863 bytes[0m
+[0;32mI (2152) VisualSLAM_INAV: 🏃 Main processing task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🌐 Web interface task started[0m
+[0;32mI (2162) transport: Attempt connection with slave: retry[0][0m
+[0;33mW (2172) H_SDIO_DRV: Reset slave using GPIO[54][0m
+[0;32mI (2172) os_wrapper_esp: GPIO [54] configured[0m
+[0;32mI (2152) VisualSLAM_INAV: 📡 Telemetry broadcast task started[0m
+[0;32mI (2152) VisualSLAM_INAV: 🚀 Visual SLAM Navigation Module started successfully![0m
+[0;32mI (2192) VisualSLAM_INAV: 🌐 Web interface: Connect to WiFi or use captive portal[0m
+[0;32mI (2202) VisualSLAM_INAV: 📱 Access dashboard at: http://dronecam.local or device IP[0m
+[0;32mI (3382) sdio_wrapper: SDIO master: Slot 0, Data-Lines: 1-bit Freq(KHz)[20000 KHz][0m
+[0;32mI (3382) sdio_wrapper: GPIOs: CLK[43] CMD[44] D0[39] D1[40] Slave_Reset[54][0m
+[0;32mI (3382) sdio_wrapper: Queues: Tx[20] Rx[20] SDIO-Rx-Mode[1][0m
+[1;31mE (3402) sdmmc_common: sdmmc_init_ocr: send_op_cond (1) returned 0x107[0m
+[1;31mE (3402) sdio_wrapper: sdmmc_card_init failed[0m
+[1;31mE (3402) H_SDIO_DRV: card init failed[0m
+[0;32mI (3402) transport: Waiting for esp_hosted slave to be ready[0m
+[0;32mI (3412) H_SDIO_DRV: SDIO Host operating in STREAMING MODE[0m
+[0;32mI (3412) H_SDIO_DRV: Starting SDIO process rx task[0m
+[0;32mI (3412) H_SDIO_DRV: Open data path at slave[0m
+Guru Meditation Error: Core  0 panic'ed (Load access fault). Exception was unhandled.
+
+Core  0 register dump:
+MEPC    : 0x40056dac  RA      : 0x40054838  SP      : 0x4ff20930  GP      : 0x4ff16480  
+TP      : 0x4ff20a50  T0      : 0x4fc0a9f8  T1      : 0x30000000  T2      : 0x00000000  
+S0/FP   : 0x4ff20944  S1      : 0x00000000  A0      : 0x00000000  A1      : 0x4ff20944  
+A2      : 0x98011800  A3      : 0x88000000  A4      : 0x4ff2099f  A5      : 0x98011801  
+A6      : 0x4000d608  A7      : 0x0000000a  S2      : 0x0000008c  S3      : 0x4ff209df  
+S4      : 0x00000000  S5      : 0x00000000  S6      : 0x00000000  S7      : 0x00000000  
+S8      : 0x00000000  S9      : 0x00000000  S10     : 0x00000000  S11     : 0x00000000  
+T3      : 0x00000000  T4      : 0x00000000  T5      : 0x00000000  T6      : 0x00000000  
+MSTATUS : 0x00011880  MTVEC   : 0x4ff00003  MCAUSE  : 0x00000005  MTVAL   : 0x00000040  
+MHARTID : 0x00000000  
+
+Stack memory:
+4ff20930: 0x4ff20a50 0x00000000 0x4ff2099f 0x40054838 0x00000000 0x00000034 0x98011801 0x00000000
+4ff20950: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00001c00
+4ff20970: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x0000008c 0x40054bac
+4ff20990: 0x00000000 0x00000000 0x00000000 0x01000000 0x00000001 0x00000000 0x0000008c 0x40023988
+4ff209b0: 0x00000000 0x0000080c 0x00000000 0x00000000 0x00000000 0x00000003 0x400ae000 0x40020772
+000d608 0x40020d52
+4ff209f0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a10: 0x00000000 0x00000000 0x00000000 0x4ff0b28a 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20a30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20a50: 0x00000000 0x4ff1f674 0x4ff1f674 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5
+4ff20a70: 0xa5a5a5a5 0x00000160 0x4ff20400 0x00000096 0x4ff19130 0x4ff19130 0x4ff20a78 0x4ff19128
+4ff20a90: 0x00000002 0x4ff1c76c 0x4ff1c76c 0x4ff20a78 0x00000000 0x00000017 0x4ff1f674 0x6f696473
+4ff20ab0: 0x6165725f 0x00000064 0x00000000 0x7fffffff 0x4ff20a70 0x00000017 0x00000000 0x00000000
+4ff20ad0: 0x00000000 0x00000000 0x4ff1c540 0x4ff1c5a8 0x4ff1c610 0x00000000 0x00000000 0x00000001
+4ff20af0: 0x00000000 0x00000000 0x00000000 0x40007942 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b10: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b50: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b70: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20b90: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff20bb0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xbbc884b6
+4ff20bd0: 0x099d8c96 0x4ff20a70 0x0000000c 0x4ff21ff0 0x4ff1bfa4 0x4ff20bd4 0x00001400 0xa5a5a5a5
+4ff20bf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c30: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c50: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c70: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20c90: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cb0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cd0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20cf0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff20d10: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+
+
+
+ELF file SHA256: 482ac146c
+
+Rebooting...
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0xc (SW_CPU_RESET),boot:0x30f (SPI_FAST_FLASH_BOOT)
+Core0 Saved PC:0x4ff04d3a
+Core1 Saved PC:0x4ff04e96
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x164c
+load:0x4ff29ed0,len:0xd64
+load:0x4ff2cbd0,len:0x3364
+entry 0x4ff29eda
+[0;32mI (33) boot: ESP-IDF v5.5 2nd stage bootloader[0m
+[0;32mI (33) boot: compile time Aug 29 2025 15:30:40[0m
+[0;32mI (33) boot: Multicore bootloader[0m
+[0;32mI (35) boot: chip revision: v1.0[0m
+[0;32mI (36) boot: efuse block revision: v0.3[0m
+[0;32mI (40) boot.esp32p4: SPI Speed      : 80MHz[0m
+[0;32mI (43) boot.esp32p4: SPI Mode       : DIO[0m
+[0;32mI (47) boot.esp32p4: SPI Flash Size : 32MB[0m
+[0;32mI (51) boot: Enabling RNG early entropy source...[0m
+[0;32mI (56) boot: Partition Table:[0m
+[0;32mI (58) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (64) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (71) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (77) boot:  2 factory          factory app      00 00 00010000 01f00000[0m
+[0;32mI (85) boot: End of partition table[0m
+[0;32mI (87) esp_image: segment 0: paddr=00010020 vaddr=40080020 size=33e34h (212532) map[0m
+[0;32mI (125) esp_image: segment 1: paddr=00043e5c vaddr=30100000 size=00068h (   104) load[0m
+[0;32mI (127) esp_image: segment 2: paddr=00043ecc vaddr=4ff00000 size=0c14ch ( 49484) load[0m
+[0;32mI (138) esp_image: segment 3: paddr=00050020 vaddr=40000020 size=7e2a0h (516768) map[0m
+[0;32mI (211) esp_image: segment 4: paddr=000ce2c8 vaddr=4ff0c14c size=09ac0h ( 39616) load[0m
+[0;32mI (219) esp_image: segment 5: paddr=000d7d90 vaddr=4ff15c80 size=030c4h ( 12484) load[0m
+[0;32mI (227) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (227) boot: Disabling RNG early entropy source...[0m
+[0;32mI (237) hex_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (238) hex_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (238) hex_psram: DriveStr.    : 0x00 (25 Ohm)[0m
+[0;32mI (238) hex_psram: dev id       : 0x03 (generation 4)[0m
+[0;32mI (243) hex_psram: density      : 0x07 (256 Mbit)[0m
+[0;32mI (248) hex_psram: good-die     : 0x06 (Pass)[0m
+[0;32mI (252) hex_psram: SRF          : 0x02 (Slow Refresh)[0m
+[0;32mI (257) hex_psram: BurstType    : 0x00 ( Wrap)[0m
+[0;32mI (261) hex_psram: BurstLen     : 0x03 (2048 Byte)[0m
+[0;32mI (265) hex_psram: BitMode      : 0x01 (X16 Mode)[0m
+[0;32mI (270) hex_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (275) hex_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (279) MSPI DQS: tuning success, best phase id is 0[0m
+[0;32mI (460) MSPI DQS: tuning success, best delayline id is 15[0m
+[0;32mI (461) esp_psram: Found 32MB PSRAM device[0m
+[0;32mI (461) esp_psram: Speed: 80MHz[0m
+[0;32mI (462) hex_psram: psram CS IO is dedicated[0m
+[0;32mI (465) cpu_start: Multicore app[0m

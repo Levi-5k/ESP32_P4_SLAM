@@ -1,0 +1,23 @@
+Command: w:\Espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe W:\Espressif\frameworks\esp-idf-v5.5\tools/idf_monitor.py -p COM9 -b 115200 --toolchain-prefix riscv32-esp-elf- --target esp32p4 --revision 1 --decode-panic backtrace D:\ESP-IDF-projects\DroneCam\build\VisualSLAM_INAV.elf D:\ESP-IDF-projects\DroneCam\build\bootloader\bootloader.elf --force-color -m 'w:\Espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe' 'W:\Espressif\frameworks\esp-idf-v5.5\tools\idf.py'
+[0;33m--- Warning: GDB cannot open serial ports accessed as COMx[0m
+[0;33m--- Using \\.\COM9 instead...[0m
+[0;33m--- esp-idf-monitor 1.7.0 on \\.\COM9 115200[0m
+[0;33m--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H[0m
+[0m--- 0x4ff29ed0: [0;33mesp_bootloader_get_description[0m[0m at [0;32mW:/Espressif/frameworks/esp-idf-v5.5/components/esp_bootloader_format/esp_bootloader_desc.c[0m[0m:[1;31m39[0m
+[0m--- 0x4ff2cbd0: [0;33mesp_flash_encryption_enabled[0m[0m at [0;32mW:/Espressif/frameworks/esp-idf-v5.5/components/bootloader_support/src/flash_encrypt.c[0m[0m:[1;31m89[0m
+[0m--- 0x4ff29eda: [0;33mcall_start_cpu0[0m[0m at [0;32mW:/Espressif/frameworks/esp-idf-v5.5/components/bootloader/subproject/main/bootloader_start.c[0m[0m:[1;31m25[0m
+[0m--- 0x40011a18: [0;33mtransport_drv_sta_tx[0m[0m at [0;32mD:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/transport/transport_drv.c[0m[0m:[1;31m245[0m
+[0m--- 0x40023b9a: [0;33mesp_wifi_remote_channel_rx[0m[0m at [0;32mD:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c[0m[0m:[1;31m19[0m
+[0m--- 0x4001195c: [0;33mtransport_drv_ap_tx[0m[0m at [0;32mD:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/transport/transport_drv.c[0m[0m:[1;31m275[0m
+[0m--- 0x40023b9a: [0;33mesp_wifi_remote_channel_rx[0m[0m at [0;32mD:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c[0m[0m:[1;31m19[0m
+[0m--- 0x4ff04d82: [0;33mcpu_utility_ll_reset_cpu[0m[0m at [0;32mW:/Espressif/frameworks/esp-idf-v5.5/components/hal/esp32p4/include/hal/cpu_utility_ll.h[0m[0m:[1;31m25[0m
+[0m--- (inlined by) [0;33mesp_cpu_reset[0m[0m at [0;32mW:/Espressif/frameworks/esp-idf-v5.5/components/esp_hw_support/cpu.c[0m[0m:[1;31m49[0m
+[0m--- 0x4ff04ede: [0;33mesp_cpu_wait_for_intr[0m[0m at [0;32mW:/Espressif/frameworks/esp-idf-v5.5/components/esp_hw_support/cpu.c[0m[0m:[1;31m57[0m
+[0m--- 0x4ff29ed0: [0;33mesp_bootloader_get_description[0m[0m at [0;32mW:/Espressif/frameworks/esp-idf-v5.5/components/esp_bootloader_format/esp_bootloader_desc.c[0m[0m:[1;31m39[0m
+[0m--- 0x4ff2cbd0: [0;33mesp_flash_encryption_enabled[0m[0m at [0;32mW:/Espressif/frameworks/esp-idf-v5.5/components/bootloader_support/src/flash_encrypt.c[0m[0m:[1;31m89[0m
+[0m--- 0x4ff29eda: [0;33mcall_start_cpu0[0m[0m at [0;32mW:/Espressif/frameworks/esp-idf-v5.5/components/bootloader/subproject/main/bootloader_start.c[0m[0m:[1;31m25[0m
+[0m--- 0x40011a18: [0;33mtransport_drv_sta_tx[0m[0m at [0;32mD:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/transport/transport_drv.c[0m[0m:[1;31m245[0m
+[0m--- 0x40023b9a: [0;33mesp_wifi_remote_channel_rx[0m[0m at [0;32mD:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c[0m[0m:[1;31m19[0m
+[0m--- 0x4001195c: [0;33mtransport_drv_ap_tx[0m[0m at [0;32mD:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/transport/transport_drv.c[0m[0m:[1;31m275[0m
+[0m--- 0x40023b9a: [0;33mesp_wifi_remote_channel_rx[0m[0m at [0;32mD:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c[0m[0m:[1;31m19[0m
+[0m
