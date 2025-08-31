@@ -12,7 +12,7 @@
 #include <freertos/event_groups.h>
 #include <esp_log.h>
 #include <esp_system.h>
-#include <esp_wifi.h>
+// #include <esp_wifi.h>  // Disabled - WiFi not available
 #include <driver/spi_master.h>
 #include <esp_event.h>
 #include <nvs_flash.h>
@@ -24,7 +24,8 @@
 #include "slam_core.h"
 #include "orb_features.h"
 #include "sensor_fusion.h"
-#include "web_server.h"
+// #include "web_server.h"  // Disabled - WiFi not available
+#include "sd_storage.h"
 // #include "gps_ublox.h"    // Will be implemented later
 // #include "imu_bmi088.h"   // Will be implemented later
 // #include "msp_protocol.h" // Will be implemented later
@@ -40,8 +41,8 @@ static EventGroupHandle_t system_event_group;
 #define GPS_READY_BIT          BIT1
 #define IMU_READY_BIT          BIT2
 #define SLAM_READY_BIT         BIT3
-#define WEB_SERVER_READY_BIT   BIT4
-#define ALL_SYSTEMS_READY      (CAMERA_READY_BIT | GPS_READY_BIT | IMU_READY_BIT | SLAM_READY_BIT | WEB_SERVER_READY_BIT)
+// #define WEB_SERVER_READY_BIT   BIT4  // Disabled - WiFi not available
+#define ALL_SYSTEMS_READY      (CAMERA_READY_BIT | GPS_READY_BIT | IMU_READY_BIT | SLAM_READY_BIT)
 
 // Task handles
 static TaskHandle_t main_processing_task_handle = NULL;
@@ -101,7 +102,15 @@ static esp_err_t initialize_camera(void)
         .format = CAMERA_FORMAT_RGB565,
         .fps = 30,
         .auto_exposure = true,
-        .auto_white_balance = true
+        .auto_white_balance = true,
+        .brightness = 0,
+        .contrast = 0,
+        .saturation = 0,
+        .exposure_value = 100,
+        .auto_adjustment_enabled = true,
+        .target_brightness = 128,
+        .adjustment_speed = 0.3f,
+        .brightness_threshold = 20.0f
     };
     
     esp_err_t ret = slam_core_init_camera(&camera_config);
@@ -126,8 +135,8 @@ static esp_err_t initialize_gps(void)
     gps_config_t gps_config = {
         .uart_port = UART_NUM_1,
         .baud_rate = 115200,
-        .tx_pin = GPIO_NUM_43,
-        .rx_pin = GPIO_NUM_44
+        .tx_pin = GPIO_NUM_15,  // Changed from 43 (SDIO CLK conflict)
+        .rx_pin = GPIO_NUM_16   // Changed from 44 (SDIO CMD conflict)
     };
     
     esp_err_t ret = sensor_fusion_init_gps(&gps_config);
@@ -278,7 +287,8 @@ static void main_processing_task(void *pvParameters)
                 ret = slam_core_process_frame(&frame, &slam_pose);
                 
                 if (ret == ESP_OK) {
-                    // Create a slam_result from slam_pose for web server
+                    // Create a slam_result from slam_pose for web server (disabled - WiFi not available)
+                    /*
                     slam_result_t slam_result = {
                         .pose = slam_pose,
                         .num_features = features.num_features,
@@ -286,14 +296,25 @@ static void main_processing_task(void *pvParameters)
                         .is_lost = false
                     };
                     
-                    // Update web server with latest data
-                    web_server_update_slam_data(&slam_result);
-                    web_server_update_system_status(&system_status);
+                    // Update web server with latest data (disabled - WiFi not available)
+                    // web_server_update_slam_data(&slam_result);
+                    // web_server_update_system_status(&system_status);
+                    */
+                    
+                    // Log SLAM pose for mission recording (if active)
+                    log_current_slam_pose();
                 }
             }
             
             // Release frame buffer
             slam_core_release_frame(&frame);
+        }
+        
+        // Check for auto-save conditions (every few iterations)
+        static uint32_t auto_save_counter = 0;
+        if (++auto_save_counter >= 1000) {  // Check every ~20 seconds at 50Hz
+            auto_save_map_if_needed();
+            auto_save_counter = 0;
         }
         
         // Maintain consistent timing
@@ -306,15 +327,17 @@ static void main_processing_task(void *pvParameters)
  */
 static void web_interface_task(void *pvParameters)
 {
-    ESP_LOGI(TAG, "🌐 Web interface task started");
+    ESP_LOGI(TAG, "🌐 Web interface task started (WiFi disabled)");
     
-    // Initialize web server with captive portal support
+    // Web server initialization disabled - WiFi not available
+    /*
     web_server_config_t config = {
         .enable_captive_portal = true,
         .max_clients = 4,
         .websocket_enabled = true
     };
     
+    // Web server and WiFi completely disabled to avoid SDMMC conflicts
     esp_err_t ret = web_server_init(&config);
     if (ret == ESP_OK) {
         // Try to start WiFi in AP mode for captive portal
@@ -322,8 +345,8 @@ static void web_interface_task(void *pvParameters)
         if (ret == ESP_OK) {
             ret = web_server_start();
             if (ret == ESP_OK) {
-                system_status.web_server_running = true;
-                xEventGroupSetBits(system_event_group, WEB_SERVER_READY_BIT);
+                // system_status.web_server_running = true;  // Disabled - WiFi not available
+                // xEventGroupSetBits(system_event_group, WEB_SERVER_READY_BIT);
                 ESP_LOGI(TAG, "✅ Web server started successfully");
                 gpio_set_level(GPIO_NUM_17, 1); // Communication LED
             } else {
@@ -335,12 +358,16 @@ static void web_interface_task(void *pvParameters)
             ESP_LOGI(TAG, "📡 System continuing without WiFi interface");
         }
     } else {
-        ESP_LOGW(TAG, "⚠️  Web server failed to initialize: %s", esp_err_to_name(ret));
-        ESP_LOGI(TAG, "📡 System continuing without web interface");
+        ESP_LOGW(TAG, "⚠️  Web server init failed: %s", esp_err_to_name(ret));
+        ESP_LOGI(TAG, "📡 System continuing without web interface - proceeding with SLAM");
     }
+    */
     
-    // Set the bit anyway to allow system to continue
-    xEventGroupSetBits(system_event_group, WEB_SERVER_READY_BIT);
+    ESP_LOGI(TAG, "📡 Web server and WiFi disabled - SDMMC available for SD storage");
+    
+    // Set the bit to allow system to continue (WiFi disabled)
+    ESP_LOGI(TAG, "📡 System continuing without web interface - WiFi disabled");
+    // xEventGroupSetBits(system_event_group, WEB_SERVER_READY_BIT);  // Not needed anymore
     
     // Web server runs indefinitely
     while (1) {
@@ -359,9 +386,9 @@ static void telemetry_broadcast_task(void *pvParameters)
 {
     ESP_LOGI(TAG, "📡 Telemetry broadcast task started");
     
-    // Wait for web server to be ready
-    xEventGroupWaitBits(system_event_group, WEB_SERVER_READY_BIT, 
-                       pdFALSE, pdTRUE, portMAX_DELAY);
+    // Wait for web server to be ready (disabled - WiFi not available)
+    // xEventGroupWaitBits(system_event_group, WEB_SERVER_READY_BIT, 
+    //                    pdFALSE, pdTRUE, portMAX_DELAY);
     
     TickType_t last_wake_time = xTaskGetTickCount();
     const TickType_t frequency = pdMS_TO_TICKS(100); // 10 Hz telemetry
@@ -370,8 +397,8 @@ static void telemetry_broadcast_task(void *pvParameters)
         // Update system status and broadcast to web clients
         system_status.uptime_seconds = esp_timer_get_time() / 1000000;
         
-        // Send telemetry data via WebSocket
-        web_server_broadcast_telemetry(&system_status);
+        // Send telemetry data via WebSocket (disabled - WiFi not available)
+        // web_server_broadcast_telemetry(&system_status);
         
         vTaskDelayUntil(&last_wake_time, frequency);
     }
@@ -403,8 +430,8 @@ void app_main(void)
         return;
     }
     
-    // Initialize TCP/IP stack
-    ESP_ERROR_CHECK(esp_netif_init());
+    // Initialize TCP/IP stack (disabled - WiFi not available)
+    // ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     
     // Initialize hardware subsystems
@@ -423,6 +450,28 @@ void app_main(void)
     ret = initialize_imu();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "IMU initialization failed, continuing anyway...");
+    }
+    
+    // Initialize SD card storage for map data
+    ESP_LOGI(TAG, "💾 Initializing SD card storage...");
+    ret = map_manager_init();
+    if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "✅ SD card storage initialized successfully");
+        
+        // List available maps
+        list_available_maps();
+        
+        // Try to load a default map if available
+        ESP_LOGI(TAG, "🗺️ Checking for existing maps to load...");
+        ret = load_slam_map(NULL);  // Load latest map
+        if (ret == ESP_OK) {
+            ESP_LOGI(TAG, "✅ Existing map loaded successfully");
+        } else {
+            ESP_LOGI(TAG, "ℹ️ No existing map found, starting fresh");
+        }
+    } else {
+        ESP_LOGE(TAG, "❌ SD card initialization failed: %s", esp_err_to_name(ret));
+        ESP_LOGI(TAG, "⚠️ Continuing without map storage capability");
     }
     
     ret = initialize_slam();

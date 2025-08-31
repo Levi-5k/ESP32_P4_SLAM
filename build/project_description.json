@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "VisualSLAM_INAV",
-    "project_version":    "1",
+    "project_version":    "824602c-dirty",
     "project_path":       "D:/ESP-IDF-projects/DroneCam",
     "idf_path":           "W:/Espressif/frameworks/esp-idf-v5.5",
     "build_dir":          "D:/ESP-IDF-projects/DroneCam/build",
@@ -21,12 +21,12 @@
     "monitor_toolprefix": "riscv32-esp-elf-",
     "c_compiler":         "W:/Espressif/tools/riscv32-esp-elf/esp-14.2.0_20241119/riscv32-esp-elf/bin/riscv32-esp-elf-gcc.exe",
     "config_environment" : {
-        "COMPONENT_KCONFIGS" : "W:/Espressif/frameworks/esp-idf-v5.5/components/app_trace/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/bt/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/console/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/driver/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/efuse/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp-tls/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_adc/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_coex/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_common/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_ana_cmpr/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_bitscrambler/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_cam/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_dac/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_gpio/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_gptimer/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_i2c/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_i2s/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_isp/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_jpeg/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_ledc/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_mcpwm/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_parlio/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_pcnt/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_rmt/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_sdm/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_spi/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_touch_sens/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_tsens/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_twai/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_uart/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_usb_serial_jtag/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_eth/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_event/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_gdbstub/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_hid/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_http_client/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_http_server/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_https_ota/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_https_server/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_hw_support/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_lcd/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_mm/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_netif/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_partition/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_phy/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_pm/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_psram/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_ringbuf/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_rom/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_security/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_system/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_timer/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_wifi/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/espcoredump/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/fatfs/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/freertos/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/hal/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/heap/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/ieee802154/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/log/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/lwip/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/mbedtls/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/mqtt/esp-mqtt/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/newlib/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/nvs_flash/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/nvs_sec_provider/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/openthread/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/protocomm/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/pthread/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/soc/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/spi_flash/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/spiffs/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/tcp_transport/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/ulp/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/unity/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/usb/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/vfs/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/wear_levelling/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/wifi_provisioning/Kconfig;D:/ESP-IDF-projects/DroneCam/managed_components/espressif__cmake_utilities/Kconfig;D:/ESP-IDF-projects/DroneCam/managed_components/espressif__eppp_link/Kconfig;D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_cam_sensor/Kconfig;D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/Kconfig;D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_sccb_intf/Kconfig;D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote/Kconfig;D:/ESP-IDF-projects/DroneCam/managed_components/espressif__wifi_remote_over_eppp/Kconfig",
+        "COMPONENT_KCONFIGS" : "W:/Espressif/frameworks/esp-idf-v5.5/components/app_trace/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/bt/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/console/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/driver/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/efuse/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp-tls/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_adc/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_coex/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_common/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_ana_cmpr/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_bitscrambler/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_cam/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_dac/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_gpio/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_gptimer/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_i2c/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_i2s/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_isp/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_jpeg/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_ledc/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_mcpwm/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_parlio/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_pcnt/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_rmt/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_sdm/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_spi/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_touch_sens/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_tsens/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_twai/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_uart/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_usb_serial_jtag/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_eth/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_event/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_gdbstub/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_hid/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_http_client/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_http_server/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_https_ota/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_https_server/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_hw_support/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_lcd/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_mm/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_netif/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_partition/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_phy/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_pm/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_psram/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_ringbuf/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_rom/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_security/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_system/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_timer/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_wifi/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/espcoredump/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/fatfs/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/freertos/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/hal/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/heap/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/ieee802154/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/log/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/lwip/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/mbedtls/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/mqtt/esp-mqtt/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/newlib/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/nvs_flash/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/nvs_sec_provider/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/openthread/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/protocomm/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/pthread/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/soc/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/spi_flash/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/spiffs/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/tcp_transport/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/ulp/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/unity/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/usb/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/vfs/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/wear_levelling/Kconfig;W:/Espressif/frameworks/esp-idf-v5.5/components/wifi_provisioning/Kconfig;D:/ESP-IDF-projects/DroneCam/managed_components/espressif__cmake_utilities/Kconfig;D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_cam_sensor/Kconfig;D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_sccb_intf/Kconfig",
         "COMPONENT_KCONFIGS_PROJBUILD" : "W:/Espressif/frameworks/esp-idf-v5.5/components/bootloader/Kconfig.projbuild;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_app_format/Kconfig.projbuild;W:/Espressif/frameworks/esp-idf-v5.5/components/esp_rom/Kconfig.projbuild;W:/Espressif/frameworks/esp-idf-v5.5/components/esptool_py/Kconfig.projbuild;W:/Espressif/frameworks/esp-idf-v5.5/components/partition_table/Kconfig.projbuild;D:/ESP-IDF-projects/DroneCam/main/Kconfig.projbuild"
     },
     "common_component_reqs": [ "cxx", "newlib", "freertos", "esp_hw_support", "heap", "log", "soc", "hal", "esp_rom", "esp_common", "esp_system", "riscv" ],
-    "build_components" : [ "app_trace", "app_update", "bootloader", "bootloader_support", "bt", "cmock", "common", "console", "cxx", "driver", "efuse", "esp-tls", "esp_adc", "esp_app_format", "esp_bootloader_format", "esp_coex", "esp_common", "esp_driver_ana_cmpr", "esp_driver_bitscrambler", "esp_driver_cam", "esp_driver_dac", "esp_driver_gpio", "esp_driver_gptimer", "esp_driver_i2c", "esp_driver_i2s", "esp_driver_isp", "esp_driver_jpeg", "esp_driver_ledc", "esp_driver_mcpwm", "esp_driver_parlio", "esp_driver_pcnt", "esp_driver_ppa", "esp_driver_rmt", "esp_driver_sdio", "esp_driver_sdm", "esp_driver_sdmmc", "esp_driver_sdspi", "esp_driver_spi", "esp_driver_touch_sens", "esp_driver_tsens", "esp_driver_twai", "esp_driver_uart", "esp_driver_usb_serial_jtag", "esp_eth", "esp_event", "esp_gdbstub", "esp_hid", "esp_http_client", "esp_http_server", "esp_https_ota", "esp_https_server", "esp_hw_support", "esp_lcd", "esp_local_ctrl", "esp_mm", "esp_netif", "esp_netif_stack", "esp_partition", "esp_phy", "esp_pm", "esp_psram", "esp_ringbuf", "esp_rom", "esp_security", "esp_system", "esp_timer", "esp_vfs_console", "esp_wifi", "espcoredump", "espressif__cmake_utilities", "espressif__eppp_link", "espressif__esp_cam_sensor", "espressif__esp_hosted", "espressif__esp_sccb_intf", "espressif__esp_serial_slave_link", "espressif__esp_wifi_remote", "espressif__wifi_remote_over_eppp", "esptool_py", "fatfs", "freertos", "gps_ublox", "hal", "heap", "http_parser", "idf_test", "ieee802154", "imu_bmi088", "json", "log", "lwip", "main", "mbedtls", "mqtt", "msp_protocol", "newlib", "nvs_flash", "nvs_sec_provider", "openthread", "orb_features", "partition_table", "protobuf-c", "protocomm", "pthread", "riscv", "rt", "sdmmc", "sensor_fusion", "sensor_init", "slam_core", "soc", "spi_flash", "spiffs", "tcp_transport", "ulp", "unity", "usb", "vfs", "wear_levelling", "web_server", "wifi_provisioning", "wpa_supplicant", "" ],
-    "build_component_paths" : [ "W:/Espressif/frameworks/esp-idf-v5.5/components/app_trace", "W:/Espressif/frameworks/esp-idf-v5.5/components/app_update", "W:/Espressif/frameworks/esp-idf-v5.5/components/bootloader", "W:/Espressif/frameworks/esp-idf-v5.5/components/bootloader_support", "W:/Espressif/frameworks/esp-idf-v5.5/components/bt", "W:/Espressif/frameworks/esp-idf-v5.5/components/cmock", "D:/ESP-IDF-projects/DroneCam/components/common", "W:/Espressif/frameworks/esp-idf-v5.5/components/console", "W:/Espressif/frameworks/esp-idf-v5.5/components/cxx", "W:/Espressif/frameworks/esp-idf-v5.5/components/driver", "W:/Espressif/frameworks/esp-idf-v5.5/components/efuse", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp-tls", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_adc", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_app_format", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_bootloader_format", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_coex", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_common", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_ana_cmpr", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_bitscrambler", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_cam", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_dac", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_gpio", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_gptimer", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_i2c", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_i2s", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_isp", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_jpeg", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_ledc", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_mcpwm", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_parlio", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_pcnt", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_ppa", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_rmt", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_sdio", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_sdm", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_sdmmc", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_sdspi", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_spi", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_touch_sens", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_tsens", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_twai", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_uart", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_usb_serial_jtag", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_eth", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_event", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_gdbstub", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_hid", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_http_client", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_http_server", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_https_ota", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_https_server", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_hw_support", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_lcd", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_local_ctrl", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_mm", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_netif", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_netif_stack", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_partition", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_phy", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_pm", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_psram", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_ringbuf", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_rom", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_security", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_system", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_timer", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_vfs_console", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_wifi", "W:/Espressif/frameworks/esp-idf-v5.5/components/espcoredump", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__cmake_utilities", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__eppp_link", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_cam_sensor", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_sccb_intf", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_serial_slave_link", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__wifi_remote_over_eppp", "W:/Espressif/frameworks/esp-idf-v5.5/components/esptool_py", "W:/Espressif/frameworks/esp-idf-v5.5/components/fatfs", "W:/Espressif/frameworks/esp-idf-v5.5/components/freertos", "D:/ESP-IDF-projects/DroneCam/components/gps_ublox", "W:/Espressif/frameworks/esp-idf-v5.5/components/hal", "W:/Espressif/frameworks/esp-idf-v5.5/components/heap", "W:/Espressif/frameworks/esp-idf-v5.5/components/http_parser", "W:/Espressif/frameworks/esp-idf-v5.5/components/idf_test", "W:/Espressif/frameworks/esp-idf-v5.5/components/ieee802154", "D:/ESP-IDF-projects/DroneCam/components/imu_bmi088", "W:/Espressif/frameworks/esp-idf-v5.5/components/json", "W:/Espressif/frameworks/esp-idf-v5.5/components/log", "W:/Espressif/frameworks/esp-idf-v5.5/components/lwip", "D:/ESP-IDF-projects/DroneCam/main", "W:/Espressif/frameworks/esp-idf-v5.5/components/mbedtls", "W:/Espressif/frameworks/esp-idf-v5.5/components/mqtt", "D:/ESP-IDF-projects/DroneCam/components/msp_protocol", "W:/Espressif/frameworks/esp-idf-v5.5/components/newlib", "W:/Espressif/frameworks/esp-idf-v5.5/components/nvs_flash", "W:/Espressif/frameworks/esp-idf-v5.5/components/nvs_sec_provider", "W:/Espressif/frameworks/esp-idf-v5.5/components/openthread", "D:/ESP-IDF-projects/DroneCam/components/orb_features", "W:/Espressif/frameworks/esp-idf-v5.5/components/partition_table", "W:/Espressif/frameworks/esp-idf-v5.5/components/protobuf-c", "W:/Espressif/frameworks/esp-idf-v5.5/components/protocomm", "W:/Espressif/frameworks/esp-idf-v5.5/components/pthread", "W:/Espressif/frameworks/esp-idf-v5.5/components/riscv", "W:/Espressif/frameworks/esp-idf-v5.5/components/rt", "W:/Espressif/frameworks/esp-idf-v5.5/components/sdmmc", "D:/ESP-IDF-projects/DroneCam/components/sensor_fusion", "D:/ESP-IDF-projects/DroneCam/common_components/sensor_init", "D:/ESP-IDF-projects/DroneCam/components/slam_core", "W:/Espressif/frameworks/esp-idf-v5.5/components/soc", "W:/Espressif/frameworks/esp-idf-v5.5/components/spi_flash", "W:/Espressif/frameworks/esp-idf-v5.5/components/spiffs", "W:/Espressif/frameworks/esp-idf-v5.5/components/tcp_transport", "W:/Espressif/frameworks/esp-idf-v5.5/components/ulp", "W:/Espressif/frameworks/esp-idf-v5.5/components/unity", "W:/Espressif/frameworks/esp-idf-v5.5/components/usb", "W:/Espressif/frameworks/esp-idf-v5.5/components/vfs", "W:/Espressif/frameworks/esp-idf-v5.5/components/wear_levelling", "D:/ESP-IDF-projects/DroneCam/components/web_server", "W:/Espressif/frameworks/esp-idf-v5.5/components/wifi_provisioning", "W:/Espressif/frameworks/esp-idf-v5.5/components/wpa_supplicant", "" ],
+    "build_components" : [ "app_trace", "app_update", "bootloader", "bootloader_support", "bt", "camera", "cmock", "common", "console", "cxx", "driver", "efuse", "esp-tls", "esp_adc", "esp_app_format", "esp_bootloader_format", "esp_coex", "esp_common", "esp_driver_ana_cmpr", "esp_driver_bitscrambler", "esp_driver_cam", "esp_driver_dac", "esp_driver_gpio", "esp_driver_gptimer", "esp_driver_i2c", "esp_driver_i2s", "esp_driver_isp", "esp_driver_jpeg", "esp_driver_ledc", "esp_driver_mcpwm", "esp_driver_parlio", "esp_driver_pcnt", "esp_driver_ppa", "esp_driver_rmt", "esp_driver_sdio", "esp_driver_sdm", "esp_driver_sdmmc", "esp_driver_sdspi", "esp_driver_spi", "esp_driver_touch_sens", "esp_driver_tsens", "esp_driver_twai", "esp_driver_uart", "esp_driver_usb_serial_jtag", "esp_eth", "esp_event", "esp_gdbstub", "esp_hid", "esp_http_client", "esp_http_server", "esp_https_ota", "esp_https_server", "esp_hw_support", "esp_lcd", "esp_local_ctrl", "esp_mm", "esp_netif", "esp_netif_stack", "esp_partition", "esp_phy", "esp_pm", "esp_psram", "esp_ringbuf", "esp_rom", "esp_security", "esp_system", "esp_timer", "esp_vfs_console", "esp_wifi", "espcoredump", "espressif__cmake_utilities", "espressif__esp_cam_sensor", "espressif__esp_sccb_intf", "esptool_py", "fatfs", "freertos", "gps_ublox", "hal", "heap", "http_parser", "idf_test", "ieee802154", "imu_bmi088", "json", "log", "lwip", "main", "mbedtls", "mqtt", "msp_protocol", "newlib", "nvs_flash", "nvs_sec_provider", "openthread", "orb_features", "partition_table", "protobuf-c", "protocomm", "pthread", "riscv", "rt", "sd_storage", "sdmmc", "sensor_fusion", "sensor_init", "slam_core", "soc", "spi_flash", "spiffs", "tcp_transport", "ulp", "unity", "usb", "vfs", "wear_levelling", "wifi_provisioning", "wpa_supplicant", "" ],
+    "build_component_paths" : [ "W:/Espressif/frameworks/esp-idf-v5.5/components/app_trace", "W:/Espressif/frameworks/esp-idf-v5.5/components/app_update", "W:/Espressif/frameworks/esp-idf-v5.5/components/bootloader", "W:/Espressif/frameworks/esp-idf-v5.5/components/bootloader_support", "W:/Espressif/frameworks/esp-idf-v5.5/components/bt", "D:/ESP-IDF-projects/DroneCam/components/camera", "W:/Espressif/frameworks/esp-idf-v5.5/components/cmock", "D:/ESP-IDF-projects/DroneCam/components/common", "W:/Espressif/frameworks/esp-idf-v5.5/components/console", "W:/Espressif/frameworks/esp-idf-v5.5/components/cxx", "W:/Espressif/frameworks/esp-idf-v5.5/components/driver", "W:/Espressif/frameworks/esp-idf-v5.5/components/efuse", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp-tls", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_adc", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_app_format", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_bootloader_format", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_coex", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_common", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_ana_cmpr", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_bitscrambler", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_cam", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_dac", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_gpio", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_gptimer", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_i2c", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_i2s", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_isp", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_jpeg", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_ledc", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_mcpwm", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_parlio", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_pcnt", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_ppa", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_rmt", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_sdio", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_sdm", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_sdmmc", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_sdspi", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_spi", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_touch_sens", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_tsens", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_twai", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_uart", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_driver_usb_serial_jtag", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_eth", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_event", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_gdbstub", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_hid", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_http_client", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_http_server", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_https_ota", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_https_server", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_hw_support", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_lcd", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_local_ctrl", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_mm", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_netif", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_netif_stack", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_partition", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_phy", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_pm", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_psram", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_ringbuf", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_rom", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_security", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_system", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_timer", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_vfs_console", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_wifi", "W:/Espressif/frameworks/esp-idf-v5.5/components/espcoredump", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__cmake_utilities", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_cam_sensor", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_sccb_intf", "W:/Espressif/frameworks/esp-idf-v5.5/components/esptool_py", "W:/Espressif/frameworks/esp-idf-v5.5/components/fatfs", "W:/Espressif/frameworks/esp-idf-v5.5/components/freertos", "D:/ESP-IDF-projects/DroneCam/components/gps_ublox", "W:/Espressif/frameworks/esp-idf-v5.5/components/hal", "W:/Espressif/frameworks/esp-idf-v5.5/components/heap", "W:/Espressif/frameworks/esp-idf-v5.5/components/http_parser", "W:/Espressif/frameworks/esp-idf-v5.5/components/idf_test", "W:/Espressif/frameworks/esp-idf-v5.5/components/ieee802154", "D:/ESP-IDF-projects/DroneCam/components/imu_bmi088", "W:/Espressif/frameworks/esp-idf-v5.5/components/json", "W:/Espressif/frameworks/esp-idf-v5.5/components/log", "W:/Espressif/frameworks/esp-idf-v5.5/components/lwip", "D:/ESP-IDF-projects/DroneCam/main", "W:/Espressif/frameworks/esp-idf-v5.5/components/mbedtls", "W:/Espressif/frameworks/esp-idf-v5.5/components/mqtt", "D:/ESP-IDF-projects/DroneCam/components/msp_protocol", "W:/Espressif/frameworks/esp-idf-v5.5/components/newlib", "W:/Espressif/frameworks/esp-idf-v5.5/components/nvs_flash", "W:/Espressif/frameworks/esp-idf-v5.5/components/nvs_sec_provider", "W:/Espressif/frameworks/esp-idf-v5.5/components/openthread", "D:/ESP-IDF-projects/DroneCam/components/orb_features", "W:/Espressif/frameworks/esp-idf-v5.5/components/partition_table", "W:/Espressif/frameworks/esp-idf-v5.5/components/protobuf-c", "W:/Espressif/frameworks/esp-idf-v5.5/components/protocomm", "W:/Espressif/frameworks/esp-idf-v5.5/components/pthread", "W:/Espressif/frameworks/esp-idf-v5.5/components/riscv", "W:/Espressif/frameworks/esp-idf-v5.5/components/rt", "D:/ESP-IDF-projects/DroneCam/components/sd_storage", "W:/Espressif/frameworks/esp-idf-v5.5/components/sdmmc", "D:/ESP-IDF-projects/DroneCam/components/sensor_fusion", "D:/ESP-IDF-projects/DroneCam/common_components/sensor_init", "D:/ESP-IDF-projects/DroneCam/components/slam_core", "W:/Espressif/frameworks/esp-idf-v5.5/components/soc", "W:/Espressif/frameworks/esp-idf-v5.5/components/spi_flash", "W:/Espressif/frameworks/esp-idf-v5.5/components/spiffs", "W:/Espressif/frameworks/esp-idf-v5.5/components/tcp_transport", "W:/Espressif/frameworks/esp-idf-v5.5/components/ulp", "W:/Espressif/frameworks/esp-idf-v5.5/components/unity", "W:/Espressif/frameworks/esp-idf-v5.5/components/usb", "W:/Espressif/frameworks/esp-idf-v5.5/components/vfs", "W:/Espressif/frameworks/esp-idf-v5.5/components/wear_levelling", "W:/Espressif/frameworks/esp-idf-v5.5/components/wifi_provisioning", "W:/Espressif/frameworks/esp-idf-v5.5/components/wpa_supplicant", "" ],
     "build_component_info" : {
         "app_trace": {
             "alias": "idf::app_trace",
@@ -102,6 +102,21 @@
             "file": "",
             "sources": [],
             "include_dirs": []
+        },
+        "camera": {
+            "alias": "idf::camera",
+            "target": "___idf_camera",
+            "prefix": "idf",
+            "dir": "D:/ESP-IDF-projects/DroneCam/components/camera",
+            "type": "LIBRARY",
+            "lib": "__idf_camera",
+            "reqs": [ "esp_driver_cam", "esp_driver_i2c", "driver", "esp_common", "sensor_init", "common", "esp_hw_support" ],
+            "priv_reqs": [],
+            "managed_reqs": [],
+            "managed_priv_reqs": [],
+            "file": "D:/ESP-IDF-projects/DroneCam/build/esp-idf/camera/libcamera.a",
+            "sources": [ "D:/ESP-IDF-projects/DroneCam/components/camera/camera_init.c" ],
+            "include_dirs": [ "." ]
         },
         "cmock": {
             "alias": "idf::cmock",
@@ -1045,7 +1060,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [],
             "file": "D:/ESP-IDF-projects/DroneCam/build/esp-idf/esp_wifi/libesp_wifi.a",
-            "sources": [ "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote/dummy_src.c" ],
+            "sources": [ "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_wifi/src/wifi_default.c", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_wifi/src/wifi_netif.c", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_wifi/src/wifi_default_ap.c" ],
             "include_dirs": [ "include", "wifi_apps/nan_app/include" ]
         },
         "espcoredump": {
@@ -1078,21 +1093,6 @@
             "sources": [],
             "include_dirs": []
         },
-        "espressif__eppp_link": {
-            "alias": "idf::espressif__eppp_link",
-            "target": "___idf_espressif__eppp_link",
-            "prefix": "idf",
-            "dir": "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__eppp_link",
-            "type": "LIBRARY",
-            "lib": "__idf_espressif__eppp_link",
-            "reqs": [],
-            "priv_reqs": [ "esp_netif", "esp_timer", "esp_eth", "esp_driver_gpio", "esp_driver_spi", "espressif__esp_serial_slave_link" ],
-            "managed_reqs": [],
-            "managed_priv_reqs": [ "espressif__esp_serial_slave_link" ],
-            "file": "D:/ESP-IDF-projects/DroneCam/build/esp-idf/espressif__eppp_link/libespressif__eppp_link.a",
-            "sources": [ "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__eppp_link/eppp_link.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__eppp_link/eppp_sdio.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__eppp_link/eppp_sdio_slave.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__eppp_link/eppp_sdio_host.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__eppp_link/eppp_netif_tun.c" ],
-            "include_dirs": [ "include" ]
-        },
         "espressif__esp_cam_sensor": {
             "alias": "idf::espressif__esp_cam_sensor",
             "target": "___idf_espressif__esp_cam_sensor",
@@ -1108,21 +1108,6 @@
             "sources": [ "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_cam_sensor/src/esp_cam_sensor.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_cam_sensor/sensors/ov5647/ov5647.c" ],
             "include_dirs": [ "include", "sensors/ov5647/include" ]
         },
-        "espressif__esp_hosted": {
-            "alias": "idf::espressif__esp_hosted",
-            "target": "___idf_espressif__esp_hosted",
-            "prefix": "idf",
-            "dir": "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted",
-            "type": "LIBRARY",
-            "lib": "__idf_espressif__esp_hosted",
-            "reqs": [],
-            "priv_reqs": [ "soc", "esp_event", "esp_netif", "esp_timer", "driver", "esp_wifi", "bt", "esp_http_client", "console" ],
-            "managed_reqs": [],
-            "managed_priv_reqs": [],
-            "file": "D:/ESP-IDF-projects/DroneCam/build/esp-idf/espressif__esp_hosted/libespressif__esp_hosted.a",
-            "sources": [ "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/api/src/esp_wifi_weak.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/api/src/esp_hosted_api.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/api/src/esp_hosted_transport_config.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/transport/transport_drv.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/serial/serial_ll_if.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/utils/stats.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/serial/serial_drv.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/rpc/core/rpc_core.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/rpc/core/rpc_req.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/rpc/core/rpc_rsp.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/rpc/core/rpc_evt.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/rpc/slaveif/rpc_slave_if.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/rpc/wrap/rpc_wrap.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/virtual_serial_if/serial_if.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/mempool/mempool.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/common/protobuf-c/protobuf-c/protobuf-c.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/common/proto/esp_hosted_rpc.pb-c.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/port/esp/freertos/src/port_esp_hosted_host_ota.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/common/utils/esp_hosted_cli.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/bt/hci_stub_drv.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/power_save/power_save_drv.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/drivers/transport/sdio/sdio_drv.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/port/esp/freertos/src/port_esp_hosted_host_init.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/port/esp/freertos/src/port_esp_hosted_host_os.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/port/esp/freertos/src/port_esp_hosted_host_transport_defaults.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted/host/port/esp/freertos/src/port_esp_hosted_host_sdio.c" ],
-            "include_dirs": [ "./host", "./host/api/include" ]
-        },
         "espressif__esp_sccb_intf": {
             "alias": "idf::espressif__esp_sccb_intf",
             "target": "___idf_espressif__esp_sccb_intf",
@@ -1137,51 +1122,6 @@
             "file": "D:/ESP-IDF-projects/DroneCam/build/esp-idf/espressif__esp_sccb_intf/libespressif__esp_sccb_intf.a",
             "sources": [ "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_sccb_intf/src/sccb.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_sccb_intf/sccb_i2c/src/sccb_i2c.c" ],
             "include_dirs": [ "include", "interface", "sccb_i2c/include" ]
-        },
-        "espressif__esp_serial_slave_link": {
-            "alias": "idf::espressif__esp_serial_slave_link",
-            "target": "___idf_espressif__esp_serial_slave_link",
-            "prefix": "idf",
-            "dir": "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_serial_slave_link",
-            "type": "LIBRARY",
-            "lib": "__idf_espressif__esp_serial_slave_link",
-            "reqs": [ "sdmmc", "driver" ],
-            "priv_reqs": [],
-            "managed_reqs": [],
-            "managed_priv_reqs": [],
-            "file": "D:/ESP-IDF-projects/DroneCam/build/esp-idf/espressif__esp_serial_slave_link/libespressif__esp_serial_slave_link.a",
-            "sources": [ "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_serial_slave_link/essl.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_serial_slave_link/essl_sdio.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_serial_slave_link/essl_spi.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_serial_slave_link/essl_sdio_defs.c" ],
-            "include_dirs": [ "include" ]
-        },
-        "espressif__esp_wifi_remote": {
-            "alias": "idf::espressif__esp_wifi_remote",
-            "target": "___idf_espressif__esp_wifi_remote",
-            "prefix": "idf",
-            "dir": "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote",
-            "type": "LIBRARY",
-            "lib": "__idf_espressif__esp_wifi_remote",
-            "reqs": [ "esp_event", "esp_netif" ],
-            "priv_reqs": [ "esp_wifi", "esp-tls", "vfs", "espressif__esp_hosted", "espressif__wifi_remote_over_eppp" ],
-            "managed_reqs": [],
-            "managed_priv_reqs": [ "espressif__esp_hosted", "espressif__wifi_remote_over_eppp" ],
-            "file": "D:/ESP-IDF-projects/DroneCam/build/esp-idf/espressif__esp_wifi_remote/libespressif__esp_wifi_remote.a",
-            "sources": [ "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote/esp_wifi_remote.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote/dummy_src.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote/idf_tag_v5.5/esp_wifi_remote_weak.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote/idf_tag_v5.5/esp_eap_client_remote_weak.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote/idf_tag_v5.5/esp_wifi_with_remote.c", "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote/idf_tag_v5.5/esp_eap_client_with_remote.c", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_wifi/src/wifi_default.c", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_wifi/src/wifi_netif.c", "W:/Espressif/frameworks/esp-idf-v5.5/components/esp_wifi/src/wifi_default_ap.c" ],
-            "include_dirs": [ "include" ]
-        },
-        "espressif__wifi_remote_over_eppp": {
-            "alias": "idf::espressif__wifi_remote_over_eppp",
-            "target": "___idf_espressif__wifi_remote_over_eppp",
-            "prefix": "idf",
-            "dir": "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__wifi_remote_over_eppp",
-            "type": "CONFIG_ONLY",
-            "lib": "__idf_espressif__wifi_remote_over_eppp",
-            "reqs": [],
-            "priv_reqs": [ "esp_event", "esp_netif", "espressif__eppp_link", "esp-tls", "esp_wifi", "vfs" ],
-            "managed_reqs": [],
-            "managed_priv_reqs": [ "espressif__eppp_link" ],
-            "file": "",
-            "sources": [],
-            "include_dirs": []
         },
         "esptool_py": {
             "alias": "idf::esptool_py",
@@ -1385,10 +1325,10 @@
             "dir": "D:/ESP-IDF-projects/DroneCam/main",
             "type": "LIBRARY",
             "lib": "__idf_main",
-            "reqs": [ "common", "slam_core", "orb_features", "sensor_fusion", "web_server", "esp_wifi", "nvs_flash", "esp_http_server", "esp_mm", "esp_driver_cam", "esp_driver_i2c", "driver", "sensor_init", "esp_netif", "esp_driver_jpeg" ],
-            "priv_reqs": [ "espressif__esp_hosted", "espressif__esp_wifi_remote", "sensor_init" ],
+            "reqs": [ "common", "slam_core", "orb_features", "sensor_fusion", "sd_storage", "nvs_flash", "esp_mm", "esp_driver_cam", "esp_driver_i2c", "driver", "sensor_init", "esp_driver_jpeg", "esp_event", "camera" ],
+            "priv_reqs": [ "sensor_init" ],
             "managed_reqs": [],
-            "managed_priv_reqs": [ "espressif__esp_hosted", "espressif__esp_wifi_remote", "sensor_init" ],
+            "managed_priv_reqs": [ "sensor_init" ],
             "file": "D:/ESP-IDF-projects/DroneCam/build/esp-idf/main/libmain.a",
             "sources": [ "D:/ESP-IDF-projects/DroneCam/main/visual_slam_main.c" ],
             "include_dirs": [ "." ]
@@ -1603,6 +1543,21 @@
             "sources": [ "W:/Espressif/frameworks/esp-idf-v5.5/components/rt/FreeRTOS_POSIX_mqueue.c", "W:/Espressif/frameworks/esp-idf-v5.5/components/rt/FreeRTOS_POSIX_utils.c" ],
             "include_dirs": [ "include" ]
         },
+        "sd_storage": {
+            "alias": "idf::sd_storage",
+            "target": "___idf_sd_storage",
+            "prefix": "idf",
+            "dir": "D:/ESP-IDF-projects/DroneCam/components/sd_storage",
+            "type": "LIBRARY",
+            "lib": "__idf_sd_storage",
+            "reqs": [ "fatfs", "sdmmc", "json", "slam_core", "esp_driver_gpio" ],
+            "priv_reqs": [],
+            "managed_reqs": [],
+            "managed_priv_reqs": [],
+            "file": "D:/ESP-IDF-projects/DroneCam/build/esp-idf/sd_storage/libsd_storage.a",
+            "sources": [ "D:/ESP-IDF-projects/DroneCam/components/sd_storage/sd_storage_spi.c", "D:/ESP-IDF-projects/DroneCam/components/sd_storage/map_manager.c" ],
+            "include_dirs": [ "include" ]
+        },
         "sdmmc": {
             "alias": "idf::sdmmc",
             "target": "___idf_sdmmc",
@@ -1655,7 +1610,7 @@
             "dir": "D:/ESP-IDF-projects/DroneCam/components/slam_core",
             "type": "LIBRARY",
             "lib": "__idf_slam_core",
-            "reqs": [ "esp_timer", "freertos", "heap", "esp_common", "common", "orb_features" ],
+            "reqs": [ "esp_timer", "freertos", "heap", "esp_common", "common", "orb_features", "camera" ],
             "priv_reqs": [],
             "managed_reqs": [],
             "managed_priv_reqs": [],
@@ -1796,21 +1751,6 @@
             "managed_priv_reqs": [],
             "file": "D:/ESP-IDF-projects/DroneCam/build/esp-idf/wear_levelling/libwear_levelling.a",
             "sources": [ "W:/Espressif/frameworks/esp-idf-v5.5/components/wear_levelling/Partition.cpp", "W:/Espressif/frameworks/esp-idf-v5.5/components/wear_levelling/SPI_Flash.cpp", "W:/Espressif/frameworks/esp-idf-v5.5/components/wear_levelling/WL_Ext_Perf.cpp", "W:/Espressif/frameworks/esp-idf-v5.5/components/wear_levelling/WL_Ext_Safe.cpp", "W:/Espressif/frameworks/esp-idf-v5.5/components/wear_levelling/WL_Flash.cpp", "W:/Espressif/frameworks/esp-idf-v5.5/components/wear_levelling/crc32.cpp", "W:/Espressif/frameworks/esp-idf-v5.5/components/wear_levelling/wear_levelling.cpp" ],
-            "include_dirs": [ "include" ]
-        },
-        "web_server": {
-            "alias": "idf::web_server",
-            "target": "___idf_web_server",
-            "prefix": "idf",
-            "dir": "D:/ESP-IDF-projects/DroneCam/components/web_server",
-            "type": "LIBRARY",
-            "lib": "__idf_web_server",
-            "reqs": [ "common", "slam_core", "esp_wifi", "esp_netif", "esp_event", "esp_http_server", "esp_timer", "nvs_flash", "json", "freertos", "heap", "vfs" ],
-            "priv_reqs": [],
-            "managed_reqs": [],
-            "managed_priv_reqs": [],
-            "file": "D:/ESP-IDF-projects/DroneCam/build/esp-idf/web_server/libweb_server.a",
-            "sources": [ "D:/ESP-IDF-projects/DroneCam/components/web_server/web_server.c" ],
             "include_dirs": [ "include" ]
         },
         "wifi_provisioning": {
@@ -3147,10 +3087,22 @@
             "prefix": "idf",
             "dir": "D:/ESP-IDF-projects/DroneCam/main",
             "lib": "__idf_main",
-            "reqs": [ "common", "slam_core", "orb_features", "sensor_fusion", "web_server", "esp_wifi", "nvs_flash", "esp_http_server", "esp_mm", "esp_driver_cam", "esp_driver_i2c", "driver", "sensor_init", "esp_netif", "esp_driver_jpeg" ],
-            "priv_reqs": [ "espressif__esp_hosted", "espressif__esp_wifi_remote", "sensor_init" ],
+            "reqs": [ "common", "slam_core", "orb_features", "sensor_fusion", "sd_storage", "nvs_flash", "esp_mm", "esp_driver_cam", "esp_driver_i2c", "driver", "sensor_init", "esp_driver_jpeg", "esp_event", "camera" ],
+            "priv_reqs": [ "sensor_init" ],
             "managed_reqs": [],
-            "managed_priv_reqs": [ "espressif__esp_hosted", "espressif__esp_wifi_remote", "sensor_init" ],
+            "managed_priv_reqs": [ "sensor_init" ],
+            "include_dirs": [ "." ]
+        },
+        "camera": {
+            "alias": "idf::camera",
+            "target": "___idf_camera",
+            "prefix": "idf",
+            "dir": "D:/ESP-IDF-projects/DroneCam/components/camera",
+            "lib": "__idf_camera",
+            "reqs": [ "esp_driver_cam", "esp_driver_i2c", "driver", "esp_common", "sensor_init", "common", "esp_hw_support" ],
+            "priv_reqs": [],
+            "managed_reqs": [],
+            "managed_priv_reqs": [],
             "include_dirs": [ "." ]
         },
         "common": {
@@ -3213,6 +3165,18 @@
             "managed_priv_reqs": [],
             "include_dirs": [ "include" ]
         },
+        "sd_storage": {
+            "alias": "idf::sd_storage",
+            "target": "___idf_sd_storage",
+            "prefix": "idf",
+            "dir": "D:/ESP-IDF-projects/DroneCam/components/sd_storage",
+            "lib": "__idf_sd_storage",
+            "reqs": [ "fatfs", "sdmmc", "json", "slam_core", "esp_driver_gpio" ],
+            "priv_reqs": [],
+            "managed_reqs": [],
+            "managed_priv_reqs": [],
+            "include_dirs": [ "include" ]
+        },
         "sensor_fusion": {
             "alias": "idf::sensor_fusion",
             "target": "___idf_sensor_fusion",
@@ -3231,19 +3195,7 @@
             "prefix": "idf",
             "dir": "D:/ESP-IDF-projects/DroneCam/components/slam_core",
             "lib": "__idf_slam_core",
-            "reqs": [ "esp_timer", "freertos", "heap", "esp_common", "common", "orb_features" ],
-            "priv_reqs": [],
-            "managed_reqs": [],
-            "managed_priv_reqs": [],
-            "include_dirs": [ "include" ]
-        },
-        "web_server": {
-            "alias": "idf::web_server",
-            "target": "___idf_web_server",
-            "prefix": "idf",
-            "dir": "D:/ESP-IDF-projects/DroneCam/components/web_server",
-            "lib": "__idf_web_server",
-            "reqs": [ "common", "slam_core", "esp_wifi", "esp_netif", "esp_event", "esp_http_server", "esp_timer", "nvs_flash", "json", "freertos", "heap", "vfs" ],
+            "reqs": [ "esp_timer", "freertos", "heap", "esp_common", "common", "orb_features", "camera" ],
             "priv_reqs": [],
             "managed_reqs": [],
             "managed_priv_reqs": [],
@@ -3273,18 +3225,6 @@
             "managed_priv_reqs": [],
             "include_dirs": []
         },
-        "espressif__eppp_link": {
-            "alias": "idf::espressif__eppp_link",
-            "target": "___idf_espressif__eppp_link",
-            "prefix": "idf",
-            "dir": "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__eppp_link",
-            "lib": "__idf_espressif__eppp_link",
-            "reqs": [],
-            "priv_reqs": [ "esp_netif", "esp_timer", "esp_eth", "esp_driver_gpio", "esp_driver_spi", "espressif__esp_serial_slave_link" ],
-            "managed_reqs": [],
-            "managed_priv_reqs": [ "espressif__esp_serial_slave_link" ],
-            "include_dirs": [ "include" ]
-        },
         "espressif__esp_cam_sensor": {
             "alias": "idf::espressif__esp_cam_sensor",
             "target": "___idf_espressif__esp_cam_sensor",
@@ -3297,18 +3237,6 @@
             "managed_priv_reqs": [ "espressif__cmake_utilities", "espressif__esp_sccb_intf" ],
             "include_dirs": [ "include", "sensors/ov5647/include" ]
         },
-        "espressif__esp_hosted": {
-            "alias": "idf::espressif__esp_hosted",
-            "target": "___idf_espressif__esp_hosted",
-            "prefix": "idf",
-            "dir": "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_hosted",
-            "lib": "__idf_espressif__esp_hosted",
-            "reqs": [],
-            "priv_reqs": [ "soc", "esp_event", "esp_netif", "esp_timer", "driver", "esp_wifi", "bt", "esp_http_client", "console" ],
-            "managed_reqs": [],
-            "managed_priv_reqs": [],
-            "include_dirs": [ "./host", "./host/api/include" ]
-        },
         "espressif__esp_sccb_intf": {
             "alias": "idf::espressif__esp_sccb_intf",
             "target": "___idf_espressif__esp_sccb_intf",
@@ -3320,42 +3248,6 @@
             "managed_reqs": [],
             "managed_priv_reqs": [],
             "include_dirs": [ "include", "interface", "sccb_i2c/include" ]
-        },
-        "espressif__esp_serial_slave_link": {
-            "alias": "idf::espressif__esp_serial_slave_link",
-            "target": "___idf_espressif__esp_serial_slave_link",
-            "prefix": "idf",
-            "dir": "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_serial_slave_link",
-            "lib": "__idf_espressif__esp_serial_slave_link",
-            "reqs": [ "sdmmc", "driver" ],
-            "priv_reqs": [],
-            "managed_reqs": [],
-            "managed_priv_reqs": [],
-            "include_dirs": [ "include" ]
-        },
-        "espressif__esp_wifi_remote": {
-            "alias": "idf::espressif__esp_wifi_remote",
-            "target": "___idf_espressif__esp_wifi_remote",
-            "prefix": "idf",
-            "dir": "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__esp_wifi_remote",
-            "lib": "__idf_espressif__esp_wifi_remote",
-            "reqs": [ "esp_event", "esp_netif" ],
-            "priv_reqs": [ "esp_wifi", "esp-tls", "vfs", "espressif__esp_hosted", "espressif__wifi_remote_over_eppp" ],
-            "managed_reqs": [],
-            "managed_priv_reqs": [ "espressif__esp_hosted", "espressif__wifi_remote_over_eppp" ],
-            "include_dirs": [ "include" ]
-        },
-        "espressif__wifi_remote_over_eppp": {
-            "alias": "idf::espressif__wifi_remote_over_eppp",
-            "target": "___idf_espressif__wifi_remote_over_eppp",
-            "prefix": "idf",
-            "dir": "D:/ESP-IDF-projects/DroneCam/managed_components/espressif__wifi_remote_over_eppp",
-            "lib": "__idf_espressif__wifi_remote_over_eppp",
-            "reqs": [],
-            "priv_reqs": [ "esp_event", "esp_netif", "espressif__eppp_link", "esp-tls", "esp_wifi", "vfs" ],
-            "managed_reqs": [],
-            "managed_priv_reqs": [ "espressif__eppp_link" ],
-            "include_dirs": []
         }
     },
     "debug_prefix_map_gdbinit": "",

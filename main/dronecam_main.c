@@ -32,7 +32,7 @@
 #include "slam_core.h"
 #include "orb_features.h"
 #include "sensor_fusion.h"
-#include "camera_init.h"
+#include "camera/camera_init.h"
 
 static const char *TAG = "VisualSLAM_INAV";
 

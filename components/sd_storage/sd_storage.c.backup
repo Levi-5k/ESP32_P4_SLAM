@@ -1,0 +1,632 @@
+#include "sd_storage.h"
+#include "esp_log.h"
+#include "esp_vfs_fat.h"
+#include "driver/sdmmc_host.h"
+#include "driver/sdmmc_defs.h"
+#include "sdmmc_cmd.h"
+#include "sys/stat.h"
+#include "dirent.h"
+#include "string.h"
+#include "esp_crc.h"
+#include "cJSON.h"
+#include "slam_core.h"
+
+static const char *TAG = "SD_STORAGE";
+
+// Magic number for map file validation
+#define MAP_FILE_MAGIC 0x534C414D  // "SLAM" in ASCII
+#define MAP_FILE_VERSION 1
+
+// Global state
+static struct {
+    bool initialized;
+    bool mounted;
+    sdmmc_card_t *card;
+    sdmmc_host_t host;
+    FILE *session_log_file;
+    char current_session[32];
+} g_sd_state = {0};
+
+// Default SD card configuration for ESP32-P4
+// NOTE: These pins are separate from SDIO Slot 1 (39-44) used by ESP32-C6
+// Using SPI mode for SD card to avoid SDMMC pin conflicts
+static const sd_card_config_t default_sd_config = {
+    .clk_pin = GPIO_NUM_21,     // SPI mode - SCLK (avoiding SDMMC conflicts)
+    .cmd_pin = GPIO_NUM_20,     // SPI mode - MOSI 
+    .d0_pin = GPIO_NUM_22,      // SPI mode - MISO
+    .d1_pin = -1,               // Not used in SPI mode
+    .d2_pin = -1,               // Not used in SPI mode  
+    .d3_pin = GPIO_NUM_7,       // SPI mode - CS
+    .max_freq_khz = 10000,      // 10MHz for SPI mode reliability
+    .format_if_mount_failed = false
+};
+
+// Forward declarations
+static esp_err_t create_default_directories(void);
+static uint32_t calculate_file_checksum(const char *filepath);
+static esp_err_t write_map_file_header(FILE *file, const map_file_header_t *header);
+static esp_err_t read_map_file_header(FILE *file, map_file_header_t *header);
+
+esp_err_t sd_storage_init(const sd_card_config_t *config) {
+    if (g_sd_state.initialized) {
+        ESP_LOGW(TAG, "SD storage already initialized");
+        return ESP_OK;
+    }
+
+    // Use default config if none provided
+    const sd_card_config_t *sd_config = config ? config : &default_sd_config;
+    
+    ESP_LOGI(TAG, "Initializing SD card storage...");
+    ESP_LOGI(TAG, "SD pins - CLK:%d CMD:%d D0:%d D1:%d D2:%d D3:%d", 
+             sd_config->clk_pin, sd_config->cmd_pin, sd_config->d0_pin,
+             sd_config->d1_pin, sd_config->d2_pin, sd_config->d3_pin);
+
+    // Initialize SDMMC host
+    g_sd_state.host = SDMMC_HOST_DEFAULT();
+    g_sd_state.host.flags = SDMMC_HOST_FLAG_4BIT | SDMMC_HOST_FLAG_DDR;
+    g_sd_state.host.max_freq_khz = sd_config->max_freq_khz;
+
+    // Configure slot 0 for SD card (Slot 1 is used by ESP32-C6 SDIO)
+    sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
+    slot_config.width = 4;  // 4-bit mode
+    slot_config.cd = SDMMC_SLOT_NO_CD;  // No card detect pin
+    slot_config.wp = SDMMC_SLOT_NO_WP;  // No write protect pin
+    
+    // Set custom pins
+    slot_config.clk = sd_config->clk_pin;
+    slot_config.cmd = sd_config->cmd_pin;
+    slot_config.d0 = sd_config->d0_pin;
+    slot_config.d1 = sd_config->d1_pin;
+    slot_config.d2 = sd_config->d2_pin;
+    slot_config.d3 = sd_config->d3_pin;
+
+    esp_err_t ret = sdmmc_host_init();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize SDMMC host: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    ret = sdmmc_host_init_slot(SDMMC_HOST_SLOT_0, &slot_config);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize SDMMC slot: %s", esp_err_to_name(ret));
+        sdmmc_host_deinit();
+        return ret;
+    }
+
+    // Mount FAT filesystem
+    esp_vfs_fat_sdmmc_mount_config_t mount_config = {
+        .format_if_mount_failed = sd_config->format_if_mount_failed,
+        .max_files = 10,
+        .allocation_unit_size = 16 * 1024  // 16KB allocation units for better performance
+    };
+
+    ret = esp_vfs_fat_sdmmc_mount(SD_MOUNT_POINT, &g_sd_state.host, &slot_config, 
+                                  &mount_config, &g_sd_state.card);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to mount SD card: %s", esp_err_to_name(ret));
+        if (ret == ESP_FAIL) {
+            ESP_LOGE(TAG, "Failed to mount filesystem. Try formatting the card.");
+        }
+        sdmmc_host_deinit();
+        return ret;
+    }
+
+    g_sd_state.mounted = true;
+    g_sd_state.initialized = true;
+
+    // Print card info
+    ESP_LOGI(TAG, "SD card mounted successfully");
+    ESP_LOGI(TAG, "Card info: %s, Size: %lluMB, Speed: %s", 
+             g_sd_state.card->cid.name,
+             ((uint64_t) g_sd_state.card->csd.capacity) * g_sd_state.card->csd.sector_size / (1024 * 1024),
+             (g_sd_state.card->real_freq_khz > 25000) ? "High Speed" : "Default Speed");
+
+    // Create default directory structure
+    ret = create_default_directories();
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to create default directories: %s", esp_err_to_name(ret));
+    }
+
+    return ESP_OK;
+}
+
+esp_err_t sd_storage_deinit(void) {
+    if (!g_sd_state.initialized) {
+        return ESP_OK;
+    }
+
+    // Close any open session log
+    if (g_sd_state.session_log_file) {
+        fclose(g_sd_state.session_log_file);
+        g_sd_state.session_log_file = NULL;
+    }
+
+    if (g_sd_state.mounted) {
+        esp_vfs_fat_sdcard_unmount(SD_MOUNT_POINT, g_sd_state.card);
+        g_sd_state.mounted = false;
+    }
+
+    sdmmc_host_deinit();
+    
+    memset(&g_sd_state, 0, sizeof(g_sd_state));
+    ESP_LOGI(TAG, "SD storage deinitialized");
+    
+    return ESP_OK;
+}
+
+esp_err_t sd_storage_get_info(sd_card_info_t *info) {
+    if (!info || !g_sd_state.initialized || !g_sd_state.mounted) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    FATFS *fs;
+    DWORD fre_clust;
+    
+    // Get filesystem info
+    FRESULT res = f_getfree("0:", &fre_clust, &fs);
+    if (res != FR_OK) {
+        ESP_LOGE(TAG, "Failed to get filesystem info");
+        return ESP_FAIL;
+    }
+
+    // Calculate sizes
+    uint64_t total_sectors = (fs->n_fatent - 2) * fs->csize;
+    uint64_t free_sectors = fre_clust * fs->csize;
+    uint64_t sector_size = 512;  // Standard sector size
+
+    info->mounted = true;
+    info->total_size_mb = (total_sectors * sector_size) / (1024 * 1024);
+    info->free_size_mb = (free_sectors * sector_size) / (1024 * 1024);
+    strncpy(info->card_name, g_sd_state.card->cid.name, sizeof(info->card_name) - 1);
+    info->speed_class = (g_sd_state.card->real_freq_khz > 25000) ? 10 : 4;
+
+    return ESP_OK;
+}
+
+esp_err_t sd_storage_save_slam_map(const char *map_name, double origin_lat, 
+                                   double origin_lon, float origin_alt) {
+    if (!g_sd_state.initialized || !g_sd_state.mounted) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!map_name) {
+        ESP_LOGE(TAG, "Map name cannot be NULL");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    ESP_LOGI(TAG, "Saving SLAM map: %s", map_name);
+
+    // Generate filename with timestamp
+    char filename[128];
+    snprintf(filename, sizeof(filename), "%s/%s_%llu.map", 
+             SD_MAPS_DIR, map_name, esp_timer_get_time() / 1000000);
+
+    FILE *file = fopen(filename, "wb");
+    if (!file) {
+        ESP_LOGE(TAG, "Failed to create map file: %s", filename);
+        return ESP_FAIL;
+    }
+
+    esp_err_t ret = ESP_OK;
+
+    // Get SLAM statistics and data
+    slam_stats_t stats;
+    keyframe_t *keyframes = NULL;
+    map_point_t *map_points = NULL;
+    uint32_t keyframe_count = 0;
+    uint32_t map_point_count = 0;
+
+    ret = slam_core_get_stats(&stats);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to get SLAM stats");
+        goto cleanup;
+    }
+
+    ret = slam_core_get_keyframes(&keyframes, &keyframe_count);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to get keyframes");
+        goto cleanup;
+    }
+
+    ret = slam_core_get_map_points(&map_points, &map_point_count);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to get map points");
+        goto cleanup;
+    }
+
+    // Create file header
+    map_file_header_t header = {
+        .magic = MAP_FILE_MAGIC,
+        .version = MAP_FILE_VERSION,
+        .timestamp = esp_timer_get_time(),
+        .keyframe_count = keyframe_count,
+        .map_point_count = map_point_count,
+        .checksum = 0,  // Will calculate later
+        .origin_lat = origin_lat,
+        .origin_lon = origin_lon,
+        .origin_alt = origin_alt
+    };
+    strncpy(header.mission_name, map_name, sizeof(header.mission_name) - 1);
+
+    // Write header (checksum will be updated later)
+    ret = write_map_file_header(file, &header);
+    if (ret != ESP_OK) {
+        goto cleanup;
+    }
+
+    // Write keyframes
+    if (keyframe_count > 0) {
+        size_t written = fwrite(keyframes, sizeof(keyframe_t), keyframe_count, file);
+        if (written != keyframe_count) {
+            ESP_LOGE(TAG, "Failed to write keyframes");
+            ret = ESP_FAIL;
+            goto cleanup;
+        }
+    }
+
+    // Write map points
+    if (map_point_count > 0) {
+        size_t written = fwrite(map_points, sizeof(map_point_t), map_point_count, file);
+        if (written != map_point_count) {
+            ESP_LOGE(TAG, "Failed to write map points");
+            ret = ESP_FAIL;
+            goto cleanup;
+        }
+    }
+
+    // Calculate and update checksum
+    fclose(file);
+    file = NULL;
+
+    uint32_t checksum = calculate_file_checksum(filename);
+    
+    // Reopen file to update header with checksum
+    file = fopen(filename, "r+b");
+    if (file) {
+        header.checksum = checksum;
+        fseek(file, 0, SEEK_SET);
+        write_map_file_header(file, &header);
+    }
+
+    ESP_LOGI(TAG, "Map saved successfully: %d keyframes, %d map points", 
+             keyframe_count, map_point_count);
+
+cleanup:
+    if (file) {
+        fclose(file);
+    }
+    
+    return ret;
+}
+
+esp_err_t sd_storage_load_slam_map(const char *map_name, double *origin_lat,
+                                   double *origin_lon, float *origin_alt) {
+    if (!g_sd_state.initialized || !g_sd_state.mounted) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // Find the map file
+    char filename[128];
+    if (map_name) {
+        // Look for specific map (find latest version)
+        DIR *dir = opendir(SD_MAPS_DIR);
+        if (!dir) {
+            ESP_LOGE(TAG, "Failed to open maps directory");
+            return ESP_FAIL;
+        }
+
+        struct dirent *entry;
+        uint64_t latest_timestamp = 0;
+        bool found = false;
+
+        while ((entry = readdir(dir)) != NULL) {
+            if (strstr(entry->d_name, map_name) && strstr(entry->d_name, ".map")) {
+                // Extract timestamp from filename
+                char *timestamp_str = strrchr(entry->d_name, '_');
+                if (timestamp_str) {
+                    uint64_t timestamp = strtoull(timestamp_str + 1, NULL, 10);
+                    if (timestamp > latest_timestamp) {
+                        latest_timestamp = timestamp;
+                        snprintf(filename, sizeof(filename), "%s/%s", SD_MAPS_DIR, entry->d_name);
+                        found = true;
+                    }
+                }
+            }
+        }
+        closedir(dir);
+
+        if (!found) {
+            ESP_LOGE(TAG, "Map not found: %s", map_name);
+            return ESP_ERR_NOT_FOUND;
+        }
+    } else {
+        // Use default map file
+        strcpy(filename, SD_SLAM_MAP_FILE);
+    }
+
+    ESP_LOGI(TAG, "Loading SLAM map: %s", filename);
+
+    FILE *file = fopen(filename, "rb");
+    if (!file) {
+        ESP_LOGE(TAG, "Failed to open map file: %s", filename);
+        return ESP_FAIL;
+    }
+
+    esp_err_t ret = ESP_OK;
+    map_file_header_t header;
+
+    // Read and validate header
+    ret = read_map_file_header(file, &header);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to read map header");
+        goto cleanup;
+    }
+
+    if (header.magic != MAP_FILE_MAGIC) {
+        ESP_LOGE(TAG, "Invalid map file magic number");
+        ret = ESP_ERR_INVALID_ARG;
+        goto cleanup;
+    }
+
+    if (header.version != MAP_FILE_VERSION) {
+        ESP_LOGE(TAG, "Unsupported map file version: %lu", header.version);
+        ret = ESP_ERR_NOT_SUPPORTED;
+        goto cleanup;
+    }
+
+    // Verify checksum
+    fclose(file);
+    uint32_t calculated_checksum = calculate_file_checksum(filename);
+    if (calculated_checksum != header.checksum) {
+        ESP_LOGE(TAG, "Map file checksum mismatch");
+        return ESP_ERR_INVALID_CRC;
+    }
+
+    // Reopen file for reading data
+    file = fopen(filename, "rb");
+    if (!file) {
+        return ESP_FAIL;
+    }
+
+    // Skip header
+    fseek(file, sizeof(map_file_header_t), SEEK_SET);
+
+    // Load keyframes if any
+    if (header.keyframe_count > 0) {
+        keyframe_t *keyframes = malloc(sizeof(keyframe_t) * header.keyframe_count);
+        if (!keyframes) {
+            ESP_LOGE(TAG, "Failed to allocate memory for keyframes");
+            ret = ESP_ERR_NO_MEM;
+            goto cleanup;
+        }
+
+        size_t read = fread(keyframes, sizeof(keyframe_t), header.keyframe_count, file);
+        if (read != header.keyframe_count) {
+            ESP_LOGE(TAG, "Failed to read keyframes");
+            free(keyframes);
+            ret = ESP_FAIL;
+            goto cleanup;
+        }
+
+        // TODO: Load keyframes into SLAM system
+        // This would require extending slam_core with load functions
+        
+        free(keyframes);
+    }
+
+    // Load map points if any
+    if (header.map_point_count > 0) {
+        map_point_t *map_points = malloc(sizeof(map_point_t) * header.map_point_count);
+        if (!map_points) {
+            ESP_LOGE(TAG, "Failed to allocate memory for map points");
+            ret = ESP_ERR_NO_MEM;
+            goto cleanup;
+        }
+
+        size_t read = fread(map_points, sizeof(map_point_t), header.map_point_count, file);
+        if (read != header.map_point_count) {
+            ESP_LOGE(TAG, "Failed to read map points");
+            free(map_points);
+            ret = ESP_FAIL;
+            goto cleanup;
+        }
+
+        // TODO: Load map points into SLAM system
+        
+        free(map_points);
+    }
+
+    // Return GPS origin if requested
+    if (origin_lat) *origin_lat = header.origin_lat;
+    if (origin_lon) *origin_lon = header.origin_lon;
+    if (origin_alt) *origin_alt = header.origin_alt;
+
+    ESP_LOGI(TAG, "Map loaded successfully: %lu keyframes, %lu map points", 
+             header.keyframe_count, header.map_point_count);
+
+cleanup:
+    if (file) {
+        fclose(file);
+    }
+    
+    return ret;
+}
+
+esp_err_t sd_storage_start_session_log(const char *session_name) {
+    if (!g_sd_state.initialized || !g_sd_state.mounted) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (g_sd_state.session_log_file) {
+        ESP_LOGW(TAG, "Session log already active, closing previous session");
+        fclose(g_sd_state.session_log_file);
+    }
+
+    // Generate session filename with timestamp
+    char filename[128];
+    snprintf(filename, sizeof(filename), "%s/%s_%llu.log", 
+             SD_SESSIONS_DIR, session_name, esp_timer_get_time() / 1000000);
+
+    g_sd_state.session_log_file = fopen(filename, "w");
+    if (!g_sd_state.session_log_file) {
+        ESP_LOGE(TAG, "Failed to create session log: %s", filename);
+        return ESP_FAIL;
+    }
+
+    strncpy(g_sd_state.current_session, session_name, sizeof(g_sd_state.current_session) - 1);
+
+    // Write CSV header
+    fprintf(g_sd_state.session_log_file, 
+            "timestamp,x,y,z,qw,qx,qy,qz,confidence,tracked_features,is_lost\\n");
+    
+    ESP_LOGI(TAG, "Session log started: %s", filename);
+    return ESP_OK;
+}
+
+esp_err_t sd_storage_log_slam_pose(uint64_t timestamp, const void *pose) {
+    if (!g_sd_state.session_log_file || !pose) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    const slam_pose_t *slam_pose = (const slam_pose_t *)pose;
+
+    fprintf(g_sd_state.session_log_file, 
+            "%llu,%.3f,%.3f,%.3f,%.6f,%.6f,%.6f,%.6f,%.3f,%d,%d\\n",
+            timestamp, slam_pose->x, slam_pose->y, slam_pose->z,
+            slam_pose->qw, slam_pose->qx, slam_pose->qy, slam_pose->qz,
+            slam_pose->confidence, slam_pose->tracked_features, slam_pose->is_lost ? 1 : 0);
+
+    // Flush every 100 lines for data safety
+    static int line_count = 0;
+    if (++line_count >= 100) {
+        fflush(g_sd_state.session_log_file);
+        line_count = 0;
+    }
+
+    return ESP_OK;
+}
+
+esp_err_t sd_storage_stop_session_log(const session_metadata_t *metadata) {
+    if (!g_sd_state.session_log_file) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    fclose(g_sd_state.session_log_file);
+    g_sd_state.session_log_file = NULL;
+
+    // Save session metadata as JSON
+    if (metadata) {
+        char metadata_filename[128];
+        snprintf(metadata_filename, sizeof(metadata_filename), "%s/%s_metadata.json", 
+                 SD_SESSIONS_DIR, g_sd_state.current_session);
+
+        cJSON *json = cJSON_CreateObject();
+        cJSON_AddStringToObject(json, "session_name", metadata->session_name);
+        cJSON_AddNumberToObject(json, "session_start", metadata->session_start);
+        cJSON_AddNumberToObject(json, "session_duration", metadata->session_duration);
+        cJSON_AddNumberToObject(json, "total_frames", metadata->total_frames);
+        cJSON_AddNumberToObject(json, "tracked_frames", metadata->tracked_frames);
+        cJSON_AddNumberToObject(json, "max_confidence", metadata->max_tracking_confidence);
+        cJSON_AddNumberToObject(json, "avg_processing_time", metadata->average_processing_time);
+
+        char *json_string = cJSON_Print(json);
+        if (json_string) {
+            FILE *meta_file = fopen(metadata_filename, "w");
+            if (meta_file) {
+                fprintf(meta_file, "%s", json_string);
+                fclose(meta_file);
+            }
+            free(json_string);
+        }
+        cJSON_Delete(json);
+    }
+
+    ESP_LOGI(TAG, "Session log stopped: %s", g_sd_state.current_session);
+    return ESP_OK;
+}
+
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+static esp_err_t create_default_directories(void) {
+    struct stat st;
+    
+    // Create maps directory
+    if (stat(SD_MAPS_DIR, &st) == -1) {
+        if (mkdir(SD_MAPS_DIR, 0755) != 0) {
+            ESP_LOGE(TAG, "Failed to create maps directory");
+            return ESP_FAIL;
+        }
+    }
+
+    // Create sessions directory
+    if (stat(SD_SESSIONS_DIR, &st) == -1) {
+        if (mkdir(SD_SESSIONS_DIR, 0755) != 0) {
+            ESP_LOGE(TAG, "Failed to create sessions directory");
+            return ESP_FAIL;
+        }
+    }
+
+    // Create config directory
+    if (stat(SD_CONFIG_DIR, &st) == -1) {
+        if (mkdir(SD_CONFIG_DIR, 0755) != 0) {
+            ESP_LOGE(TAG, "Failed to create config directory");
+            return ESP_FAIL;
+        }
+    }
+
+    return ESP_OK;
+}
+
+static uint32_t calculate_file_checksum(const char *filepath) {
+    FILE *file = fopen(filepath, "rb");
+    if (!file) {
+        return 0;
+    }
+
+    uint32_t crc = 0;
+    uint8_t buffer[1024];
+    size_t bytes_read;
+
+    while ((bytes_read = fread(buffer, 1, sizeof(buffer), file)) > 0) {
+        crc = esp_crc32_le(crc, buffer, bytes_read);
+    }
+
+    fclose(file);
+    return crc;
+}
+
+static esp_err_t write_map_file_header(FILE *file, const map_file_header_t *header) {
+    size_t written = fwrite(header, sizeof(map_file_header_t), 1, file);
+    return (written == 1) ? ESP_OK : ESP_FAIL;
+}
+
+static esp_err_t read_map_file_header(FILE *file, map_file_header_t *header) {
+    size_t read = fread(header, sizeof(map_file_header_t), 1, file);
+    return (read == 1) ? ESP_OK : ESP_FAIL;
+}
+
+bool sd_storage_file_exists(const char *filepath) {
+    struct stat st;
+    return (stat(filepath, &st) == 0);
+}
+
+esp_err_t sd_storage_get_file_size(const char *filepath, size_t *size) {
+    struct stat st;
+    if (stat(filepath, &st) != 0) {
+        return ESP_FAIL;
+    }
+    *size = st.st_size;
+    return ESP_OK;
+}
+
+esp_err_t sd_storage_create_directory(const char *dirpath) {
+    struct stat st;
+    if (stat(dirpath, &st) == -1) {
+        if (mkdir(dirpath, 0755) != 0) {
+            return ESP_FAIL;
+        }
+    }
+    return ESP_OK;
+}

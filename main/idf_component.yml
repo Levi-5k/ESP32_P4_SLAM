@@ -1,7 +1,7 @@
 dependencies:
-  # ESP32-P4 + ESP32-C6 SDIO WiFi support (required for dual-chip architecture)
-  espressif/esp_wifi_remote: "*"
-  espressif/esp_hosted: "*"
+  # WiFi support disabled - SD storage conflicts resolved
+  # espressif/esp_wifi_remote: "*"  # DISABLED
+  # espressif/esp_hosted: "*"       # DISABLED
   
   # Camera components (from ESP-IDF examples)
   sensor_init:

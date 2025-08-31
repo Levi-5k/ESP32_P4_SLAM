@@ -5,6 +5,7 @@
 
 #include "slam_core.h"
 #include "orb_features.h"
+#include "camera_init.h"
 #include "esp_log.h"
 #include "esp_heap_caps.h"
 #include "freertos/FreeRTOS.h"
@@ -14,6 +15,11 @@
 #include <string.h>
 
 static const char* TAG = "slam_core";
+
+// Camera constants (matching camera_init.c)
+#define CAMERA_WIDTH               800
+#define CAMERA_HEIGHT              640
+#define CAMERA_FORMAT_RGB565       1
 
 // Global SLAM state
 static struct {
@@ -502,20 +508,41 @@ esp_err_t slam_core_init_camera(const camera_config_t* config) {
 esp_err_t slam_core_get_frame(camera_frame_t* frame) {
     if (!frame) return ESP_ERR_INVALID_ARG;
     
-    // In a real implementation, this would capture a frame from the camera
-    // For now, return an error to indicate no frame available
+    // Get frame from camera system
+    uint8_t* buffer = NULL;
+    size_t len = 0;
+    esp_err_t ret = camera_capture(&buffer, &len);
+    
+    if (ret == ESP_OK && buffer && len > 0) {
+        frame->data = buffer;
+        frame->data_size = len;
+        frame->width = CAMERA_WIDTH;  // From camera_init.c
+        frame->height = CAMERA_HEIGHT;
+        frame->format = CAMERA_FORMAT_RGB565;
+        frame->timestamp_us = esp_timer_get_time();
+        
+        // Run auto-adjustment on the captured frame
+        if (g_camera_config.auto_adjustment_enabled) {
+            camera_auto_adjust(buffer, len);
+        }
+        
+        return ESP_OK;
+    }
+    
     return ESP_ERR_NOT_FOUND;
 }
 
 esp_err_t slam_core_release_frame(camera_frame_t* frame) {
     if (!frame) return ESP_ERR_INVALID_ARG;
     
-    // Release frame resources
-    if (frame->data) {
-        free(frame->data);
-        frame->data = NULL;
-    }
+    // Camera system manages its own frame buffers
+    // Just clear the frame structure
+    frame->data = NULL;
     frame->data_size = 0;
+    frame->width = 0;
+    frame->height = 0;
+    frame->timestamp_us = 0;
+    
     return ESP_OK;
 }
 
@@ -575,6 +602,9 @@ static void adjust_camera_settings(const camera_frame_t* frame) {
             g_camera_config.brightness = new_brightness;
             ESP_LOGD(TAG, "Auto-adjusted brightness: %d (current: %.1f, target: %.1f)", 
                      new_brightness, current_brightness, target_brightness);
+            
+            // Apply brightness adjustment to camera hardware
+            camera_set_brightness(new_brightness);
         }
         
         // Also adjust exposure if auto-exposure is enabled
@@ -587,6 +617,11 @@ static void adjust_camera_settings(const camera_frame_t* frame) {
             if (abs(new_exposure - g_camera_config.exposure_value) >= 10) {
                 g_camera_config.exposure_value = new_exposure;
                 ESP_LOGD(TAG, "Auto-adjusted exposure: %d", new_exposure);
+                
+                // Apply exposure adjustment to camera hardware
+                camera_set_exposure_mode("Manual"); // Switch to manual for custom exposure
+                // Note: camera_set_exposure_mode doesn't handle custom values, 
+                // this would need sensor-specific IOCTL calls
             }
         }
     }

@@ -621,21 +621,48 @@ esp_err_t camera_set_exposure_mode(const char* mode)
     ESP_LOGI(TAG, "💡 Setting camera exposure mode to: %s", mode);
     
     // For ESP32-P4, exposure can be controlled through sensor IOCTL
-    // This implementation shows the approach, though specific IOCTL commands
-    // may vary based on sensor capabilities
-    
-    if (strcmp(mode, "Auto") == 0) {
-        ESP_LOGI(TAG, "✅ Auto exposure mode set");
-    } else if (strcmp(mode, "Manual") == 0) {
-        ESP_LOGI(TAG, "✅ Manual exposure mode set");
-    } else if (strcmp(mode, "Night") == 0) {
-        ESP_LOGI(TAG, "✅ Night exposure mode set");
+    if (s_sensor_handle.sensor_device) {
+        if (strcmp(mode, "Auto") == 0) {
+            // Enable auto exposure
+            uint32_t auto_exp = 1;
+            esp_err_t ret = esp_cam_sensor_ioctl(s_sensor_handle.sensor_device, 
+                                               ESP_CAM_SENSOR_IOC_S_AE, &auto_exp);
+            if (ret == ESP_OK) {
+                ESP_LOGI(TAG, "✅ Auto exposure enabled");
+            } else {
+                ESP_LOGW(TAG, "⚠️ Failed to enable auto exposure: %s", esp_err_to_name(ret));
+            }
+            return ret;
+        } else if (strcmp(mode, "Manual") == 0) {
+            // Disable auto exposure
+            uint32_t auto_exp = 0;
+            esp_err_t ret = esp_cam_sensor_ioctl(s_sensor_handle.sensor_device, 
+                                               ESP_CAM_SENSOR_IOC_S_AE, &auto_exp);
+            if (ret == ESP_OK) {
+                ESP_LOGI(TAG, "✅ Manual exposure enabled");
+            } else {
+                ESP_LOGW(TAG, "⚠️ Failed to enable manual exposure: %s", esp_err_to_name(ret));
+            }
+            return ret;
+        } else if (strcmp(mode, "Night") == 0) {
+            // Set night mode (longer exposure)
+            uint32_t night_exp = 1;
+            esp_err_t ret = esp_cam_sensor_ioctl(s_sensor_handle.sensor_device, 
+                                               ESP_CAM_SENSOR_IOC_S_NIGHT_MODE, &night_exp);
+            if (ret == ESP_OK) {
+                ESP_LOGI(TAG, "✅ Night exposure mode set");
+            } else {
+                ESP_LOGW(TAG, "⚠️ Failed to set night mode: %s", esp_err_to_name(ret));
+            }
+            return ret;
+        }
     } else {
-        ESP_LOGW(TAG, "⚠️ Unknown exposure mode: %s", mode);
-        return ESP_ERR_INVALID_ARG;
+        ESP_LOGW(TAG, "⚠️ Sensor device not available for exposure control");
+        return ESP_ERR_INVALID_STATE;
     }
     
-    return ESP_OK;
+    ESP_LOGW(TAG, "⚠️ Unknown exposure mode: %s", mode);
+    return ESP_ERR_INVALID_ARG;
 }
 
 esp_err_t camera_set_white_balance(const char* wb)
@@ -646,18 +673,148 @@ esp_err_t camera_set_white_balance(const char* wb)
     
     ESP_LOGI(TAG, "⚪ Setting camera white balance to: %s", wb);
     
-    // For ESP32-P4, white balance can be controlled through sensor IOCTL or ISP
-    
-    if (strcmp(wb, "Auto") == 0) {
-        ESP_LOGI(TAG, "✅ Auto white balance set");
-    } else if (strcmp(wb, "Daylight") == 0) {
-        ESP_LOGI(TAG, "✅ Daylight white balance set");
-    } else if (strcmp(wb, "Cloudy") == 0) {
-        ESP_LOGI(TAG, "✅ Cloudy white balance set");
+    // For ESP32-P4, white balance can be controlled through sensor IOCTL
+    if (s_sensor_handle.sensor_device) {
+        if (strcmp(wb, "Auto") == 0) {
+            // Enable auto white balance
+            uint32_t awb = 1;
+            esp_err_t ret = esp_cam_sensor_ioctl(s_sensor_handle.sensor_device, 
+                                               ESP_CAM_SENSOR_IOC_S_AWB, &awb);
+            if (ret == ESP_OK) {
+                ESP_LOGI(TAG, "✅ Auto white balance enabled");
+            } else {
+                ESP_LOGW(TAG, "⚠️ Failed to enable auto white balance: %s", esp_err_to_name(ret));
+            }
+            return ret;
+        } else if (strcmp(wb, "Daylight") == 0) {
+            // Set daylight white balance
+            uint32_t wb_mode = ESP_CAM_SENSOR_WB_DAYLIGHT;
+            esp_err_t ret = esp_cam_sensor_ioctl(s_sensor_handle.sensor_device, 
+                                               ESP_CAM_SENSOR_IOC_S_WB_MODE, &wb_mode);
+            if (ret == ESP_OK) {
+                ESP_LOGI(TAG, "✅ Daylight white balance set");
+            } else {
+                ESP_LOGW(TAG, "⚠️ Failed to set daylight white balance: %s", esp_err_to_name(ret));
+            }
+            return ret;
+        } else if (strcmp(wb, "Cloudy") == 0) {
+            // Set cloudy white balance
+            uint32_t wb_mode = ESP_CAM_SENSOR_WB_CLOUDY;
+            esp_err_t ret = esp_cam_sensor_ioctl(s_sensor_handle.sensor_device, 
+                                               ESP_CAM_SENSOR_IOC_S_WB_MODE, &wb_mode);
+            if (ret == ESP_OK) {
+                ESP_LOGI(TAG, "✅ Cloudy white balance set");
+            } else {
+                ESP_LOGW(TAG, "⚠️ Failed to set cloudy white balance: %s", esp_err_to_name(ret));
+            }
+            return ret;
+        }
     } else {
-        ESP_LOGW(TAG, "⚠️ Unknown white balance mode: %s", wb);
+        ESP_LOGW(TAG, "⚠️ Sensor device not available for white balance control");
+        return ESP_ERR_INVALID_STATE;
+    }
+    
+    ESP_LOGW(TAG, "⚠️ Unknown white balance mode: %s", wb);
+    return ESP_ERR_INVALID_ARG;
+}
+
+esp_err_t camera_auto_adjust(const uint8_t* frame_buffer, size_t frame_size)
+{
+    if (!frame_buffer || frame_size == 0) {
+        ESP_LOGE(TAG, "Invalid frame buffer for auto-adjustment");
         return ESP_ERR_INVALID_ARG;
     }
     
-    return ESP_OK;
+    if (!s_isp_proc) {
+        ESP_LOGE(TAG, "ISP processor not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+    
+    ESP_LOGD(TAG, "🔧 Running automatic camera adjustment analysis...");
+    
+    // Analyze frame statistics for auto-adjustment
+    uint32_t total_pixels = frame_size / 2; // RGB565 = 2 bytes per pixel
+    uint32_t bright_pixels = 0;
+    uint32_t dark_pixels = 0;
+    uint32_t total_brightness = 0;
+    uint32_t sample_count = 0;
+    
+    // Sample pixels for analysis (sample every 10th pixel for performance)
+    const uint16_t* pixels = (const uint16_t*)frame_buffer;
+    uint32_t sample_step = total_pixels / 1000; // Sample ~1000 pixels
+    if (sample_step == 0) sample_step = 1;
+    
+    for (uint32_t i = 0; i < total_pixels; i += sample_step) {
+        uint16_t pixel = pixels[i];
+        
+        // Extract RGB components from RGB565
+        uint8_t r = (pixel >> 11) & 0x1F;
+        uint8_t g = (pixel >> 5) & 0x3F;
+        uint8_t b = pixel & 0x1F;
+        
+        // Convert to 8-bit and calculate brightness
+        uint8_t r8 = (r << 3) | (r >> 2);
+        uint8_t g8 = (g << 2) | (g >> 4);
+        uint8_t b8 = (b << 3) | (b >> 2);
+        
+        uint8_t brightness = (uint8_t)((r8 * 0.299f + g8 * 0.587f + b8 * 0.114f));
+        total_brightness += brightness;
+        sample_count++;
+        
+        // Count bright/dark pixels
+        if (brightness > 200) bright_pixels++;
+        if (brightness < 50) dark_pixels++;
+    }
+    
+    if (sample_count == 0) {
+        ESP_LOGW(TAG, "⚠️ No pixels sampled for analysis");
+        return ESP_ERR_INVALID_STATE;
+    }
+    
+    float avg_brightness = (float)total_brightness / sample_count;
+    float bright_ratio = (float)bright_pixels / sample_count;
+    float dark_ratio = (float)dark_pixels / sample_count;
+    
+    ESP_LOGD(TAG, "📊 Frame analysis - Avg brightness: %.1f, Bright pixels: %.1f%%, Dark pixels: %.1f%%", 
+             avg_brightness, bright_ratio * 100.0f, dark_ratio * 100.0f);
+    
+    // Auto-adjustment logic
+    esp_err_t ret = ESP_OK;
+    bool adjustment_made = false;
+    
+    // Brightness adjustment
+    if (avg_brightness < 100.0f || avg_brightness > 150.0f) {
+        int brightness_adjustment = (int)((128.0f - avg_brightness) * 0.5f);
+        brightness_adjustment = (brightness_adjustment > 20) ? 20 : 
+                               (brightness_adjustment < -20) ? -20 : brightness_adjustment;
+        
+        if (abs(brightness_adjustment) >= 5) {
+            ret |= camera_set_brightness(brightness_adjustment);
+            adjustment_made = true;
+            ESP_LOGI(TAG, "🔆 Auto-adjusted brightness by %d (avg: %.1f)", 
+                     brightness_adjustment, avg_brightness);
+        }
+    }
+    
+    // Contrast adjustment based on bright/dark pixel ratios
+    if (bright_ratio > 0.3f || dark_ratio > 0.3f) {
+        int contrast_adjustment = (bright_ratio > dark_ratio) ? -10 : 10;
+        ret |= camera_set_contrast(contrast_adjustment);
+        adjustment_made = true;
+        ESP_LOGI(TAG, "🎨 Auto-adjusted contrast by %d (bright: %.1f%%, dark: %.1f%%)", 
+                 contrast_adjustment, bright_ratio * 100.0f, dark_ratio * 100.0f);
+    }
+    
+    // Saturation adjustment (slight boost for better color)
+    if (bright_ratio < 0.1f && dark_ratio < 0.1f) {
+        ret |= camera_set_saturation(10);
+        adjustment_made = true;
+        ESP_LOGI(TAG, "🌈 Auto-adjusted saturation +10 for better color");
+    }
+    
+    if (!adjustment_made) {
+        ESP_LOGD(TAG, "✅ No camera adjustments needed");
+    }
+    
+    return ret;
 }
