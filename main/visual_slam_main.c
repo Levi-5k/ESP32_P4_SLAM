@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/semphr.h>
@@ -18,6 +19,7 @@
 #include <nvs_flash.h>
 #include <driver/gpio.h>
 #include <esp_timer.h>
+#include <esp_heap_caps.h>
 
 // Visual SLAM Components
 #include "visual_slam_common_types.h"
@@ -359,12 +361,30 @@ static void main_processing_task(void *pvParameters)
     if ((bits & ALL_SYSTEMS_READY) == ALL_SYSTEMS_READY) {
         ESP_LOGI(TAG, "🚀 All systems ready - starting main processing loop");
         gpio_set_level(GPIO_NUM_15, 1); // System ready LED
+        
+        // Start comprehensive logging session
+        char session_name[64];
+        time_t now = time(NULL);
+        struct tm timeinfo;
+        localtime_r(&now, &timeinfo);
+        strftime(session_name, sizeof(session_name), "slam_mission_%Y%m%d_%H%M%S", &timeinfo);
+        
+        esp_err_t log_ret = sd_storage_start_comprehensive_logging(session_name);
+        if (log_ret == ESP_OK) {
+            ESP_LOGI(TAG, "📊 Comprehensive logging started: %s", session_name);
+        } else {
+            ESP_LOGW(TAG, "⚠️ Failed to start comprehensive logging: %s", esp_err_to_name(log_ret));
+        }
     }
     
     TickType_t last_wake_time = xTaskGetTickCount();
     const TickType_t frequency = pdMS_TO_TICKS(33); // ~30 FPS
+    uint32_t loop_counter = 0;
     
     while (1) {
+        uint64_t loop_start_time = esp_timer_get_time();
+        loop_counter++;
+        
         // Get camera frame
         camera_frame_t frame;
         esp_err_t ret = slam_core_get_frame(&frame);
@@ -378,15 +398,28 @@ static void main_processing_task(void *pvParameters)
             gpio_set_level(GPIO_NUM_16, slam_led_state);
             
             // Process frame through ORB feature detection
+            uint64_t feature_start_time = esp_timer_get_time();
             orb_features_t features;
             ret = orb_features_extract(&frame, &features);
+            uint64_t feature_end_time = esp_timer_get_time();
+            float feature_processing_time = (feature_end_time - feature_start_time) / 1000.0f;
             
             if (ret == ESP_OK) {
                 system_status.feature_count = features.count;
                 
+                // Log feature extraction data
+                sd_storage_log_feature_data(loop_start_time, features.count, 
+                                          features.num_good_matches, feature_processing_time);
+                
                 // Get sensor fusion data
                 sensor_fusion_data_t sensor_data;
                 sensor_fusion_get_data(&sensor_data);
+                
+                // Log sensor data (GPS, IMU)
+                sd_storage_log_sensor_data(loop_start_time,
+                                          sensor_data.gps_data.latitude, sensor_data.gps_data.longitude, sensor_data.gps_data.altitude,
+                                          sensor_data.imu_data.accel_x, sensor_data.imu_data.accel_y, sensor_data.imu_data.accel_z,
+                                          sensor_data.imu_data.gyro_x, sensor_data.imu_data.gyro_y, sensor_data.imu_data.gyro_z);
                 
                 // Update system status
                 system_status.position_x = sensor_data.position.x;
@@ -401,34 +434,51 @@ static void main_processing_task(void *pvParameters)
                 ret = slam_core_process_frame(&frame, &slam_pose);
                 
                 if (ret == ESP_OK) {
-                    // Create a slam_result from slam_pose for web server (disabled - WiFi not available)
-                    /*
-                    slam_result_t slam_result = {
-                        .pose = slam_pose,
-                        .num_features = features.num_features,
-                        .tracking_quality = 0.8f,  // Default value
-                        .is_lost = false
-                    };
-                    
-                    // Update web server with latest data (disabled - WiFi not available)
-                    // web_server_update_slam_data(&slam_result);
-                    // web_server_update_system_status(&system_status);
-                    */
-                    
                     // Log SLAM pose for mission recording (if active)
                     log_current_slam_pose();
+                    
+                    // Get SLAM system statistics and log them
+                    slam_stats_t slam_stats;
+                    esp_err_t stats_ret = slam_core_get_stats(&slam_stats);
+                    if (stats_ret == ESP_OK) {
+                        sd_storage_log_system_status(loop_start_time, &slam_stats);
+                    }
+                } else {
+                    // Log SLAM processing error
+                    sd_storage_log_error_event(loop_start_time, "SLAM_CORE", ret, 
+                                              "Failed to process camera frame");
                 }
+            } else {
+                // Log feature extraction error
+                sd_storage_log_error_event(loop_start_time, "ORB_FEATURES", ret, 
+                                          "Failed to extract ORB features");
             }
             
             // Release frame buffer
             slam_core_release_frame(&frame);
+        } else {
+            // Log camera frame error
+            if (ret != ESP_OK) {
+                sd_storage_log_error_event(loop_start_time, "CAMERA", ret, 
+                                          "Failed to get camera frame");
+            }
+        }
+        
+        // Log memory usage every 30 seconds (at ~30 FPS)
+        if (loop_counter % 900 == 0) {
+            sd_storage_log_memory_usage(loop_start_time);
         }
         
         // Check for auto-save conditions (every few iterations)
         static uint32_t auto_save_counter = 0;
-        if (++auto_save_counter >= 1000) {  // Check every ~20 seconds at 50Hz
+        if (++auto_save_counter >= 1000) {  // Check every ~33 seconds at 30Hz
             auto_save_map_if_needed();
             auto_save_counter = 0;
+            
+            // Log system health status
+            ESP_LOGI(TAG, "🧠 SLAM Status: frames=%lu, features=%lu, mem_free=%zu KB", 
+                     system_status.frame_count, system_status.feature_count,
+                     heap_caps_get_free_size(MALLOC_CAP_8BIT) / 1024);
         }
         
         // Maintain consistent timing
@@ -872,16 +922,21 @@ void app_main(void)
         // Check task health
         if (main_processing_task_handle != NULL && 
             eTaskGetState(main_processing_task_handle) == eDeleted) {
-            ESP_LOGE(TAG, "❌ Main processing task died - restarting system");
+            ESP_LOGE(TAG, "❌ Main processing task died - stopping logging and restarting system");
+            sd_storage_stop_comprehensive_logging();
             esp_restart();
         }
         
         if (web_interface_task_handle != NULL && 
             eTaskGetState(web_interface_task_handle) == eDeleted) {
-            ESP_LOGE(TAG, "❌ Web interface task died - restarting system");
+            ESP_LOGE(TAG, "❌ Web interface task died - stopping logging and restarting system");
+            sd_storage_stop_comprehensive_logging();
             esp_restart();
         }
         
         vTaskDelay(pdMS_TO_TICKS(5000)); // Check every 5 seconds
     }
+    
+    // Cleanup (should never reach here, but good practice)
+    sd_storage_stop_comprehensive_logging();
 }

@@ -33,6 +33,11 @@ static struct {
     // Pre-computed rotation patterns for descriptor
     int16_t* rotation_patterns;         // 256 rotation patterns
     
+    // Previous frame features for matching
+    orb_features_t* previous_features;  // Features from previous frame
+    orb_matches_t* current_matches;     // Current frame matches
+    bool has_previous_frame;            // Flag if previous frame exists
+    
 } g_orb_state = {0};
 
 // Default ORB configuration
@@ -97,6 +102,40 @@ esp_err_t orb_features_init(uint32_t max_features) {
         return ret;
     }
     
+    // Initialize previous frame features buffer
+    g_orb_state.previous_features = heap_caps_malloc(sizeof(orb_features_t), MALLOC_CAP_8BIT);
+    if (!g_orb_state.previous_features) {
+        ESP_LOGE(TAG, "Failed to allocate previous features buffer");
+        cleanup_buffers();
+        vSemaphoreDelete(g_orb_state.orb_mutex);
+        return ESP_ERR_NO_MEM;
+    }
+    memset(g_orb_state.previous_features, 0, sizeof(orb_features_t));
+    
+    // Allocate features array for previous frame
+    ret = orb_alloc_features(g_orb_state.previous_features, max_features);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to allocate previous features array");
+        heap_caps_free(g_orb_state.previous_features);
+        cleanup_buffers();
+        vSemaphoreDelete(g_orb_state.orb_mutex);
+        return ret;
+    }
+    
+    // Initialize matches buffer
+    g_orb_state.current_matches = heap_caps_malloc(sizeof(orb_matches_t), MALLOC_CAP_8BIT);
+    if (!g_orb_state.current_matches) {
+        ESP_LOGE(TAG, "Failed to allocate matches buffer");
+        orb_free_features(g_orb_state.previous_features);
+        heap_caps_free(g_orb_state.previous_features);
+        cleanup_buffers();
+        vSemaphoreDelete(g_orb_state.orb_mutex);
+        return ESP_ERR_NO_MEM;
+    }
+    memset(g_orb_state.current_matches, 0, sizeof(orb_matches_t));
+    
+    g_orb_state.has_previous_frame = false;
+    
     // Initialize performance stats
     memset(&g_orb_state.stats, 0, sizeof(orb_performance_stats_t));
     
@@ -113,7 +152,23 @@ esp_err_t orb_features_deinit(void) {
     
     xSemaphoreTake(g_orb_state.orb_mutex, portMAX_DELAY);
     
+    // Cleanup matching buffers
+    if (g_orb_state.current_matches) {
+        if (g_orb_state.current_matches->matches) {
+            heap_caps_free(g_orb_state.current_matches->matches);
+        }
+        heap_caps_free(g_orb_state.current_matches);
+        g_orb_state.current_matches = NULL;
+    }
+    
+    if (g_orb_state.previous_features) {
+        orb_free_features(g_orb_state.previous_features);
+        heap_caps_free(g_orb_state.previous_features);
+        g_orb_state.previous_features = NULL;
+    }
+    
     cleanup_buffers();
+    g_orb_state.has_previous_frame = false;
     g_orb_state.initialized = false;
     
     xSemaphoreGive(g_orb_state.orb_mutex);
@@ -205,9 +260,45 @@ esp_err_t orb_extract_features(const camera_frame_t* frame, orb_features_t* feat
     
     // Update feature structure
     features->num_features = total_features;
+    features->count = total_features;  // Alias for compatibility
     features->timestamp_us = esp_timer_get_time();
     features->frame_width = frame->width;
     features->frame_height = frame->height;
+    
+    // Perform feature matching with previous frame if available
+    features->num_matches = 0;
+    features->num_good_matches = 0;
+    
+    if (g_orb_state.has_previous_frame && g_orb_state.previous_features && 
+        g_orb_state.current_matches && total_features > 0) {
+        
+        uint64_t matching_start = esp_timer_get_time();
+        esp_err_t match_ret = orb_match_features(g_orb_state.previous_features, features, 
+                                                g_orb_state.current_matches, 0.7f);
+        
+        if (match_ret == ESP_OK) {
+            features->num_matches = g_orb_state.current_matches->num_matches;
+            features->num_good_matches = g_orb_state.current_matches->num_good_matches;
+            
+            uint64_t matching_time = esp_timer_get_time() - matching_start;
+            ESP_LOGD(TAG, "Feature matching: %lu matches (%lu good) in %.1fms", 
+                     features->num_matches, features->num_good_matches, 
+                     matching_time / 1000.0f);
+        }
+    }
+    
+    // Store current features as previous for next frame
+    if (g_orb_state.previous_features) {
+        // Copy current features to previous features buffer
+        memcpy(g_orb_state.previous_features, features, sizeof(orb_features_t));
+        if (g_orb_state.previous_features->features && features->features && total_features > 0) {
+            memcpy(g_orb_state.previous_features->features, features->features, 
+                   total_features * sizeof(orb_feature_point_t));
+        }
+        g_orb_state.previous_features->num_features = total_features;
+        g_orb_state.previous_features->count = total_features;
+    }
+    g_orb_state.has_previous_frame = true;
     
     // Update performance statistics
     g_orb_state.stats.frames_processed++;
@@ -566,4 +657,85 @@ static float compute_orientation(const uint8_t* image, uint16_t width, uint16_t 
 // Compatibility function - alias for orb_extract_features
 esp_err_t orb_features_extract(const camera_frame_t* frame, orb_features_t* features) {
     return orb_extract_features(frame, features);
+}
+
+// Match features between two frames
+esp_err_t orb_match_features(const orb_features_t* query_features, 
+                            const orb_features_t* train_features,
+                            orb_matches_t* matches,
+                            float distance_threshold) {
+    if (!query_features || !train_features || !matches) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    
+    if (query_features->num_features == 0 || train_features->num_features == 0) {
+        matches->num_matches = 0;
+        matches->num_good_matches = 0;
+        matches->average_distance = 0.0f;
+        return ESP_OK;
+    }
+    
+    uint32_t max_possible_matches = MIN(query_features->num_features, train_features->num_features);
+    
+    // Allocate match buffer if needed
+    if (!matches->matches) {
+        matches->matches = heap_caps_malloc(max_possible_matches * sizeof(orb_match_t), 
+                                           MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+        if (!matches->matches) {
+            return ESP_ERR_NO_MEM;
+        }
+    }
+    
+    uint32_t match_count = 0;
+    uint32_t good_match_count = 0;
+    float total_distance = 0.0f;
+    
+    // For each query feature, find best match in train features
+    for (uint32_t q = 0; q < query_features->num_features; q++) {
+        uint32_t best_distance = 256;  // Maximum Hamming distance
+        uint16_t best_train_idx = 0;
+        
+        // Search all train features for best match
+        for (uint32_t t = 0; t < train_features->num_features; t++) {
+            uint32_t distance = orb_hamming_distance(
+                query_features->features[q].descriptor,
+                train_features->features[t].descriptor
+            );
+            
+            if (distance < best_distance) {
+                best_distance = distance;
+                best_train_idx = t;
+            }
+        }
+        
+        // Apply distance threshold and ratio test
+        bool is_good_match = (best_distance <= (uint32_t)(distance_threshold * 256.0f));
+        
+        // Store the match
+        if (match_count < max_possible_matches) {
+            matches->matches[match_count].query_idx = q;
+            matches->matches[match_count].train_idx = best_train_idx;
+            matches->matches[match_count].distance = best_distance / 256.0f;
+            matches->matches[match_count].is_good_match = is_good_match;
+            
+            total_distance += matches->matches[match_count].distance;
+            match_count++;
+            
+            if (is_good_match) {
+                good_match_count++;
+            }
+        }
+    }
+    
+    // Update match statistics
+    matches->num_matches = match_count;
+    matches->num_good_matches = good_match_count;
+    matches->average_distance = (match_count > 0) ? (total_distance / match_count) : 0.0f;
+    
+    ESP_LOGD(TAG, "Feature matching: %lu total matches, %lu good matches (%.1f%%), avg distance: %.3f",
+             match_count, good_match_count, 
+             (match_count > 0) ? (100.0f * good_match_count / match_count) : 0.0f,
+             matches->average_distance);
+    
+    return ESP_OK;
 }

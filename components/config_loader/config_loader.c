@@ -15,6 +15,7 @@
 #include <driver/gpio.h>
 #include <driver/spi_master.h>
 #include "sd_storage.h"
+#include "esp32p4_pin_config.h"
 
 static const char* TAG = "CONFIG_LOADER";
 
@@ -26,6 +27,8 @@ static esp_err_t save_slam_config_to_sd(const extended_slam_config_t* config);
 static esp_err_t save_fusion_config_to_sd(const extended_fusion_config_t* config);
 static esp_err_t save_camera_config_to_sd(const extended_camera_config_t* config);
 static esp_err_t save_imu_config_to_sd(const extended_imu_config_t* config);
+static esp_err_t save_master_config_to_sd(const master_config_t* config);
+static esp_err_t save_master_config_to_spiffs(const master_config_t* config);
 
 // Embedded default configuration JSON strings
 static const char* DEFAULT_SYSTEM_CONFIG_JSON = "{"
@@ -257,11 +260,11 @@ static const char* DEFAULT_CAMERA_CONFIG_JSON = "{"
 static const char* DEFAULT_IMU_CONFIG_JSON = "{"
   "\"imu\": {"
     "\"spi_host\": 2,"
-    "\"miso_pin\": 8,"
-    "\"mosi_pin\": 9,"
-    "\"sclk_pin\": 10,"
-    "\"acc_cs_pin\": 11,"
-    "\"gyro_cs_pin\": 12,"
+    "\"miso_pin\": 20,"
+    "\"mosi_pin\": 21,"
+    "\"sclk_pin\": 22,"
+    "\"acc_cs_pin\": 23,"
+    "\"gyro_cs_pin\": 24,"
     "\"accel_range\": 6,"
     "\"gyro_range\": 500,"
     "\"sample_rate\": 400,"
@@ -1759,11 +1762,11 @@ esp_err_t config_loader_load_imu_config(extended_imu_config_t* config) {
     extended_imu_config_t default_config = {
         .base_config = {
             .spi_host = 2, // SPI3_HOST
-            .miso_pin = 8,
-            .mosi_pin = 9,
-            .sclk_pin = 10,
-            .acc_cs_pin = 11,
-            .gyro_cs_pin = 12,
+            .miso_pin = IMU_SPI_MISO_PIN,
+            .mosi_pin = IMU_SPI_MOSI_PIN,
+            .sclk_pin = IMU_SPI_CLK_PIN,
+            .acc_cs_pin = IMU_ACC_CS_PIN,
+            .gyro_cs_pin = IMU_GYRO_CS_PIN,
             .accel_range = 6,    // BMI088_ACCEL_RANGE_6G
             .gyro_range = 500,   // BMI088_GYRO_RANGE_500DPS
             .sample_rate = 400
@@ -2050,9 +2053,33 @@ void config_loader_print_config(const master_config_t* config) {
 }
 
 esp_err_t config_loader_save_config(const master_config_t* config) {
-    // TODO: Implement configuration saving functionality
-    ESP_LOGW(TAG, "Configuration saving not yet implemented");
-    return ESP_ERR_NOT_SUPPORTED;
+    if (!config) {
+        ESP_LOGE(TAG, "Configuration cannot be NULL");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    ESP_LOGI(TAG, "💾 Saving configuration to SD card");
+
+    // Save to SD card if available
+    if (g_config_state.sd_available) {
+        esp_err_t ret = save_master_config_to_sd(config);
+        if (ret == ESP_OK) {
+            ESP_LOGI(TAG, "✅ Configuration saved to SD card");
+            return ESP_OK;
+        } else {
+            ESP_LOGW(TAG, "Failed to save to SD card, trying SPIFFS");
+        }
+    }
+
+    // Fallback to SPIFFS
+    esp_err_t ret = save_master_config_to_spiffs(config);
+    if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "✅ Configuration saved to SPIFFS");
+    } else {
+        ESP_LOGE(TAG, "❌ Failed to save configuration");
+    }
+
+    return ret;
 }
 
 // =============================================================================
@@ -3343,5 +3370,73 @@ esp_err_t config_loader_get_storage_info(bool* spiffs_available, bool* sd_availa
         *sd_free_space_mb = 0;
     }
 
+    return ESP_OK;
+}
+
+/**
+ * Save master configuration to SD card
+ */
+static esp_err_t save_master_config_to_sd(const master_config_t* config) {
+    if (!g_config_state.sd_available) {
+        return ESP_ERR_NOT_SUPPORTED;
+    }
+
+    // Save individual config files
+    esp_err_t ret;
+
+    ret = save_system_config_to_sd(&config->system);
+    if (ret != ESP_OK) return ret;
+
+    ret = save_gps_config_to_sd(&config->gps);
+    if (ret != ESP_OK) return ret;
+
+    ret = save_msp_config_to_sd(&config->msp);
+    if (ret != ESP_OK) return ret;
+
+    ret = save_slam_config_to_sd(&config->slam);
+    if (ret != ESP_OK) return ret;
+
+    ret = save_fusion_config_to_sd(&config->fusion);
+    if (ret != ESP_OK) return ret;
+
+    ret = save_camera_config_to_sd(&config->camera);
+    if (ret != ESP_OK) return ret;
+
+    ret = save_imu_config_to_sd(&config->imu);
+    if (ret != ESP_OK) return ret;
+
+    ESP_LOGI(TAG, "✅ Saved master config to SD card");
+    return ESP_OK;
+}
+
+/**
+ * Save master configuration to SPIFFS
+ */
+static esp_err_t save_master_config_to_spiffs(const master_config_t* config) {
+    // Save individual config files to SPIFFS
+    esp_err_t ret;
+
+    ret = save_system_config_to_spiffs(&config->system);
+    if (ret != ESP_OK) return ret;
+
+    ret = save_gps_config_to_spiffs(&config->gps);
+    if (ret != ESP_OK) return ret;
+
+    ret = save_msp_config_to_spiffs(&config->msp);
+    if (ret != ESP_OK) return ret;
+
+    ret = save_slam_config_to_spiffs(&config->slam);
+    if (ret != ESP_OK) return ret;
+
+    ret = save_fusion_config_to_spiffs(&config->fusion);
+    if (ret != ESP_OK) return ret;
+
+    ret = save_camera_config_to_spiffs(&config->camera);
+    if (ret != ESP_OK) return ret;
+
+    ret = save_imu_config_to_spiffs(&config->imu);
+    if (ret != ESP_OK) return ret;
+
+    ESP_LOGI(TAG, "✅ Saved master config to SPIFFS");
     return ESP_OK;
 }

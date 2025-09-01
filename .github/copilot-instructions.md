@@ -1,6 +1,6 @@
 # ESP32-P4 Visual SLAM Navigation System - AI Agent Instructions
 
-## Comment Guideline
+## Important Guideline
 keep comments to a minimum
 
 ## Project Overview
@@ -34,6 +34,17 @@ Camera Frame → ORB Features → SLAM Core → Pose Estimation
 
 ### 1. ESP32-P4 Hardware Configuration
 ```c
+// Camera I2C pins (ESP32-P4 MIPI-CSI hardware fixed pins)
+#define CAMERA_I2C_SDA_IO           7       // I2C SDA pin for OV5647 camera
+#define CAMERA_I2C_SCL_IO           8       // I2C SCL pin for OV5647 camera
+
+// IMU SPI pins (configurable, moved to avoid camera conflict)
+#define IMU_SPI_MISO_PIN           GPIO_NUM_20   // SPI MISO for IMU
+#define IMU_SPI_MOSI_PIN           GPIO_NUM_21   // SPI MOSI for IMU  
+#define IMU_SPI_CLK_PIN            GPIO_NUM_22   // SPI Clock for IMU
+#define IMU_ACC_CS_PIN             GPIO_NUM_23   // Accelerometer Chip Select
+#define IMU_GYRO_CS_PIN            GPIO_NUM_24   // Gyroscope Chip Select
+
 // SDMMC pins (ESP32-P4 specific)
 static const sd_card_config_t default_sd_config = {
     .clk_pin = GPIO_NUM_43,     // SDMMC CLK
@@ -45,6 +56,14 @@ static const sd_card_config_t default_sd_config = {
     .max_freq_khz = 20000,      // 20MHz for 4-bit mode
     .format_if_mount_failed = false
 };
+
+// GPS UART pins (moved to avoid SDMMC conflicts)
+#define GPS_UART_TX_PIN            GPIO_NUM_4    // GPS UART TX pin
+#define GPS_UART_RX_PIN            GPIO_NUM_5    // GPS UART RX pin
+
+// MSP UART pins for flight controller communication
+#define MSP_UART_TX_PIN            GPIO_NUM_18   // MSP UART TX
+#define MSP_UART_RX_PIN            GPIO_NUM_19   // MSP UART RX
 ```
 
 ### 2. Component Initialization Pattern
@@ -153,12 +172,16 @@ if (!g_sd_state.mounted) {
 #### Directory Structure
 ```
 /sdcard/
-├── maps/           # SLAM map files
+├── maps/           # SLAM map files (binary format)
 │   ├── slam_map.bin
 │   ├── keyframes.bin
 │   └── map_points.bin
-├── sessions/       # Mission logs
-│   └── session_YYYYMMDD_HHMMSS.csv
+├── sessions/       # Mission logs (CSV format)
+│   ├── slam_YYYYMMDD_HHMMSS.csv
+│   ├── gps_YYYYMMDD_HHMMSS.csv
+│   ├── imu_YYYYMMDD_HHMMSS.csv
+│   ├── features_YYYYMMDD_HHMMSS.csv
+│   └── errors_YYYYMMDD_HHMMSS.csv
 ├── config/         # Configuration files
 │   └── slam_config.json
 └── logs/           # System logs
@@ -182,11 +205,64 @@ typedef struct {
 // Followed by binary keyframe data and map point data
 ```
 
-#### Session Log Format (CSV)
+#### Keyframe Binary Format (keyframes.bin)
+```c
+typedef struct {
+    uint32_t id;                    // Keyframe identifier
+    uint64_t timestamp;             // Frame timestamp (microseconds)
+    slam_pose_t pose;               // Camera pose
+    uint32_t num_features;          // Number of features in this keyframe
+    // Followed by feature data: orb_feature_point_t[num_features]
+} keyframe_data_t;
+```
+
+#### Map Point Binary Format (map_points.bin)
+```c
+typedef struct {
+    uint32_t id;                    // Map point identifier
+    float position[3];              // 3D world position [x, y, z]
+    uint8_t descriptor[32];         // ORB descriptor (256 bits)
+    uint32_t observations;          // Number of keyframes observing this point
+    float confidence;               // Point quality/confidence metric
+} map_point_data_t;
+```
+
+#### Comprehensive CSV Logging System
+
+**SLAM Data Log (slam_YYYYMMDD_HHMMSS.csv)**
 ```csv
 timestamp_us,frame_count,tracked_features,confidence,pos_x,pos_y,pos_z,quat_w,quat_x,quat_y,quat_z
 1693526400000000,1,45,0.85,1.234,-0.567,2.890,0.707,0.0,0.0,0.707
 1693526400333333,2,47,0.87,1.245,-0.569,2.895,0.706,0.001,0.002,0.708
+```
+
+**GPS Data Log (gps_YYYYMMDD_HHMMSS.csv)**
+```csv
+timestamp_us,latitude,longitude,altitude,speed,course,fix_quality,satellites
+1693526400000000,40.123456,-74.654321,45.6,0.0,0.0,3,8
+1693526401000000,40.123457,-74.654322,45.7,0.5,15.2,3,8
+```
+
+**IMU Data Log (imu_YYYYMMDD_HHMMSS.csv)**
+```csv
+timestamp_us,acc_x,acc_y,acc_z,gyro_x,gyro_y,gyro_z,temperature
+1693526400000000,0.05,-0.12,9.81,0.001,-0.002,0.003,25.4
+1693526400002500,0.06,-0.11,9.80,0.002,-0.001,0.002,25.5
+```
+
+**Feature Data Log (features_YYYYMMDD_HHMMSS.csv)**
+```csv
+timestamp_us,frame_count,total_features,matches,match_quality,processing_time_ms
+1693526400000000,1,45,0,0.0,15.2
+1693526400333333,2,47,32,0.87,16.8
+```
+
+**Error/Event Log (errors_YYYYMMDD_HHMMSS.csv)**
+```csv
+timestamp_us,severity,component,error_code,message
+1693526400000000,INFO,SLAM,0,System initialized successfully
+1693526405000000,WARNING,GPS,1001,Signal weak - only 4 satellites
+1693526410000000,ERROR,SD_CARD,2005,Write failed - disk full
 ```
 
 #### Configuration Format (slam_config.json)
@@ -218,21 +294,48 @@ Use the file format specifications above to create programs that prepare SD card
 - Create `slam_map.bin` files with proper headers and binary data
 - Generate keyframe and map point data structures
 - Calculate and include checksums for data integrity
+- Use `sd_storage_save_slam_map()` for binary keyframe/map point persistence
 
 **Configuration Setup:**
 - Generate `slam_config.json` with optimized parameters
 - Validate configuration against SLAM system requirements
 - Include mission-specific parameter sets
 
-**Session Data Templates:**
-- Create CSV templates for session logging
-- Pre-populate with expected data formats
-- Include timestamp and telemetry field definitions
+**Comprehensive Logging Implementation:**
+- **5-File CSV System**: SLAM poses, GPS coordinates, IMU data, feature tracking, error events
+- **Real-time Logging**: Integrated into 30 FPS processing loop
+- **Session Management**: Automatic timestamped session creation
+- **Error Recovery**: Graceful handling of SD card write failures
+- **Format Specifications**: Standardized CSV headers for data analysis
+
+**Key Implemented Functions:**
+```c
+// Binary map data persistence
+esp_err_t sd_storage_save_slam_map(const slam_keyframe_t* keyframes, uint32_t num_keyframes,
+                                   const slam_map_point_t* map_points, uint32_t num_map_points);
+
+// Comprehensive logging functions
+esp_err_t sd_storage_log_slam_data(uint64_t timestamp, uint32_t frame_count, 
+                                   uint32_t tracked_features, float confidence, 
+                                   const slam_pose_t* pose);
+esp_err_t sd_storage_log_gps_data(uint64_t timestamp, double latitude, double longitude, 
+                                  float altitude, float speed, float course, 
+                                  uint8_t fix_quality, uint8_t satellites);
+esp_err_t sd_storage_log_imu_data(uint64_t timestamp, float acc_x, float acc_y, float acc_z,
+                                  float gyro_x, float gyro_y, float gyro_z, float temperature);
+esp_err_t sd_storage_log_feature_data(uint64_t timestamp, uint32_t frame_count, 
+                                      uint32_t total_features, uint32_t matches, 
+                                      float match_quality, float processing_time_ms);
+esp_err_t sd_storage_log_error_event(uint64_t timestamp, const char* severity, 
+                                     const char* component, uint32_t error_code, 
+                                     const char* message);
+```
 
 **Data Integrity Tools:**
 - Implement checksum validation for loaded data
 - Create verification programs for SD card contents
 - Build tools to repair corrupted map files
+- Real-time error event logging for system monitoring
 
 ### 3. Real-time Processing
 ```c
@@ -264,10 +367,27 @@ CONFIG_SPIRAM_USE_MALLOC=y
 
 ### 3. GPIO Pin Conflicts
 ```c
-// GPS UART conflicts with SDMMC pins
+// Camera I2C pins (FIXED - Hardware defined by ESP32-P4 MIPI-CSI interface)
+// These pins CANNOT be changed - they are dedicated camera interface pins
+.camera_config = {
+    .i2c_sda_pin = 7,        // Hardware fixed
+    .i2c_scl_pin = 8         // Hardware fixed
+}
+
+// IMU SPI pins (CONFIGURABLE - Updated to avoid camera conflict)
+// Previously used GPIO 8-12, moved to GPIO 20-24 to avoid camera I2C SCL conflict
+.imu_config = {
+    .miso_pin = 20,          // Changed from 8 (conflicted with camera SCL)
+    .mosi_pin = 21,          // Changed from 9
+    .sclk_pin = 22,          // Changed from 10
+    .acc_cs_pin = 23,        // Changed from 11
+    .gyro_cs_pin = 24        // Changed from 12
+}
+
+// GPS UART pins (moved to avoid conflicts)
 .gps_config = {
-    .tx_pin = GPIO_NUM_15,  // Changed from 43 (SDIO CLK conflict)
-    .rx_pin = GPIO_NUM_16   // Changed from 44 (SDIO CMD conflict)
+    .tx_pin = GPIO_NUM_4,    // Changed from 15 (LED conflict)
+    .rx_pin = GPIO_NUM_5     // Changed from 16 (LED conflict)
 }
 ```
 

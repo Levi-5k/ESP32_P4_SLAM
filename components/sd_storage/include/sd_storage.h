@@ -267,6 +267,83 @@ esp_err_t log_current_slam_pose(void);
  */
 esp_err_t stop_mission_logging(const char *mission_name);
 
+// =============================================================================
+// COMPREHENSIVE LOGGING FUNCTIONS
+// =============================================================================
+
+/**
+ * Log system status and performance metrics
+ * @param timestamp Current timestamp
+ * @param stats SLAM system statistics
+ * @return ESP_OK on success
+ */
+esp_err_t sd_storage_log_system_status(uint64_t timestamp, const void *stats);
+
+/**
+ * Log sensor fusion data (GPS, IMU, visual)
+ * @param timestamp Current timestamp  
+ * @param gps_lat GPS latitude
+ * @param gps_lon GPS longitude
+ * @param gps_alt GPS altitude
+ * @param imu_accel_x IMU acceleration X
+ * @param imu_accel_y IMU acceleration Y
+ * @param imu_accel_z IMU acceleration Z
+ * @param imu_gyro_x IMU gyroscope X
+ * @param imu_gyro_y IMU gyroscope Y
+ * @param imu_gyro_z IMU gyroscope Z
+ * @return ESP_OK on success
+ */
+esp_err_t sd_storage_log_sensor_data(uint64_t timestamp,
+                                     double gps_lat, double gps_lon, float gps_alt,
+                                     float imu_accel_x, float imu_accel_y, float imu_accel_z,
+                                     float imu_gyro_x, float imu_gyro_y, float imu_gyro_z);
+
+/**
+ * Log feature extraction and matching results
+ * @param timestamp Current timestamp
+ * @param num_features Number of features detected
+ * @param num_matches Number of feature matches
+ * @param processing_time_ms Feature extraction time
+ * @return ESP_OK on success
+ */
+esp_err_t sd_storage_log_feature_data(uint64_t timestamp,
+                                      uint32_t num_features,
+                                      uint32_t num_matches,
+                                      float processing_time_ms);
+
+/**
+ * Log error events and diagnostics
+ * @param timestamp Current timestamp
+ * @param component Component name (e.g., "SLAM", "GPS", "IMU")
+ * @param error_code Error code
+ * @param description Error description
+ * @return ESP_OK on success
+ */
+esp_err_t sd_storage_log_error_event(uint64_t timestamp,
+                                     const char *component,
+                                     esp_err_t error_code,
+                                     const char *description);
+
+/**
+ * Log memory usage statistics
+ * @param timestamp Current timestamp
+ * @return ESP_OK on success
+ */
+esp_err_t sd_storage_log_memory_usage(uint64_t timestamp);
+
+/**
+ * Start comprehensive logging session with all data types
+ * @param session_name Session identifier
+ * @return ESP_OK on success
+ */
+esp_err_t sd_storage_start_comprehensive_logging(const char *session_name);
+
+/**
+ * Stop comprehensive logging session
+ * @return ESP_OK on success
+ */
+esp_err_t sd_storage_stop_comprehensive_logging(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,5 +1,6 @@
 #include "sd_storage.h"
 #include "slam_core.h"
+#include "sensor_fusion.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -19,15 +20,22 @@ esp_err_t save_current_slam_map(const char *map_name) {
 
     ESP_LOGI(TAG, "🗺️ Saving current SLAM map: %s", map_name);
 
-    // Get current GPS position (simplified for now)
-    gps_position_t gps_pos = {0};
-    // TODO: Get GPS from sensor fusion when API is available
-    gps_pos.latitude = 0.0;
-    gps_pos.longitude = 0.0;
-    gps_pos.altitude = 0.0;
+    // Get current GPS position from sensor fusion
+    navigation_state_t nav_state;
+    esp_err_t ret = sensor_fusion_get_state(&nav_state);
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to get navigation state from sensor fusion, using default GPS position");
+        // Fallback to default position
+        nav_state.latitude = 0.0;
+        nav_state.longitude = 0.0;
+        nav_state.altitude = 0.0;
+    } else {
+        ESP_LOGI(TAG, "Using GPS position from sensor fusion: (%.6f, %.6f, %.2f)",
+                 nav_state.latitude, nav_state.longitude, nav_state.altitude);
+    }
 
     // Save map to SD card
-    esp_err_t ret = sd_storage_save_slam_map(map_name, gps_pos.latitude, gps_pos.longitude, gps_pos.altitude);
+    ret = sd_storage_save_slam_map(map_name, nav_state.latitude, nav_state.longitude, nav_state.altitude);
     if (ret == ESP_OK) {
         ESP_LOGI(TAG, "✅ Map saved successfully: %s", map_name);
     } else {
@@ -48,16 +56,17 @@ esp_err_t load_slam_map(const char *map_name) {
 
     esp_err_t ret = sd_storage_load_slam_map(map_name, &origin_lat, &origin_lon, &origin_alt);
     if (ret == ESP_OK) {
-        // Set GPS origin in SLAM system (simplified for now)
+        // Set GPS origin in SLAM system
         ESP_LOGI(TAG, "Setting GPS origin: lat=%.6f, lon=%.6f, alt=%.2f",
                  origin_lat, origin_lon, origin_alt);
-        // TODO: Set GPS origin when API is available
-        ret = ESP_OK;
+        // Set GPS origin in sensor fusion system
+        ret = sensor_fusion_set_gps_origin(origin_lat, origin_lon, origin_alt);
         if (ret == ESP_OK) {
             ESP_LOGI(TAG, "✅ Map loaded successfully with GPS origin: %.6f, %.6f, %.1f",
                      origin_lat, origin_lon, origin_alt);
         } else {
-            ESP_LOGW(TAG, "Map loaded but failed to set GPS origin");
+            ESP_LOGW(TAG, "Map loaded but failed to set GPS origin in sensor fusion: %s",
+                     esp_err_to_name(ret));
         }
     } else {
         ESP_LOGE(TAG, "❌ Failed to load map: %s", esp_err_to_name(ret));

@@ -9,7 +9,10 @@
 #include <dirent.h>
 #include "driver/gpio.h"
 #include "cJSON.h"
-#include "visual_slam_types.h"  // For slam_config_t
+#include "visual_slam_common_types.h"  // Use common types instead
+#include "slam_core.h"          // For keyframe_t and map_point_t access
+#include "esp_heap_caps.h"      // For memory logging
+#include <inttypes.h>           // For PRIu32, PRIu64
 #include <errno.h>  // For errno
 #if SOC_SDMMC_IO_POWER_EXTERNAL
 #include "sd_pwr_ctrl_by_on_chip_ldo.h"
@@ -27,6 +30,18 @@ static struct {
     sdmmc_host_t host;
     FILE *session_log_file;
     char current_session[32];
+    char session_start_time_str[32];
+    int64_t session_start_time;
+    uint32_t session_pose_count;
+    uint32_t session_map_count;
+    
+    // Comprehensive logging files
+    FILE *system_log_file;      // System status and performance
+    FILE *sensor_log_file;      // GPS, IMU, sensor fusion data
+    FILE *feature_log_file;     // Feature extraction and matching
+    FILE *error_log_file;       // Error events and diagnostics
+    FILE *memory_log_file;      // Memory usage statistics
+    bool comprehensive_logging; // Flag for comprehensive logging mode
 } g_sd_state = {0};
 
 // Use the actual SDMMC pins that are wired on the Waveshare ESP32-P4-WIFI6 board
@@ -426,10 +441,127 @@ void sd_storage_free_file_list(char **files, size_t count) {
     free(files);
 }
 
+// SLAM map file header structure
+typedef struct {
+    uint32_t magic;                 // Magic number: 0x534C414D ('SLAM')
+    uint32_t version;               // File format version
+    uint64_t timestamp;             // Creation timestamp (microseconds)
+    uint32_t keyframe_count;        // Number of keyframes
+    uint32_t map_point_count;       // Number of map points
+    uint32_t checksum;              // Data checksum
+    char mission_name[64];          // Mission identifier
+    double origin_lat;              // GPS origin latitude (degrees)
+    double origin_lon;              // GPS origin longitude (degrees)
+    float origin_alt;               // GPS origin altitude (meters)
+} slam_map_header_t;
+
 // SLAM-specific wrapper functions
 esp_err_t sd_storage_save_slam_map(const char *map_name, double lat, double lon, float alt) {
+    if (!g_sd_state.mounted) {
+        ESP_LOGE(TAG, "SD card not mounted");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!map_name) {
+        ESP_LOGE(TAG, "Map name cannot be NULL");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    char map_path[128];
+    snprintf(map_path, sizeof(map_path), "%s/%s.bin", SD_MAPS_DIR, map_name);
+
+    // Create maps directory if it doesn't exist
+    esp_err_t ret = sd_storage_create_directory(SD_MAPS_DIR);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to create maps directory");
+        return ret;
+    }
+
+    // Open file for writing
+    FILE *file = fopen(map_path, "wb");
+    if (!file) {
+        ESP_LOGE(TAG, "Failed to open map file for writing: %s", map_path);
+        return ESP_ERR_NOT_FOUND;
+    }
+
     ESP_LOGI(TAG, "Saving SLAM map: %s at coords (%.6f, %.6f, %.2f)", map_name, lat, lon, alt);
-    // TODO: Implement SLAM map serialization
+
+    // Get SLAM data from SLAM core (simplified - in real implementation, this would query SLAM system)
+    // For now, create a basic map structure
+    slam_map_header_t header = {
+        .magic = 0x534C414D,  // 'SLAM'
+        .version = 1,
+        .timestamp = esp_timer_get_time(),
+        .keyframe_count = 0,  // Would be populated from SLAM system
+        .map_point_count = 0, // Would be populated from SLAM system
+        .checksum = 0,
+        .origin_lat = lat,
+        .origin_lon = lon,
+        .origin_alt = alt
+    };
+
+    // Copy mission name (truncate if necessary)
+    strncpy(header.mission_name, map_name, sizeof(header.mission_name) - 1);
+    header.mission_name[sizeof(header.mission_name) - 1] = '\0';
+
+    // Write header
+    size_t written = fwrite(&header, sizeof(slam_map_header_t), 1, file);
+    if (written != 1) {
+        ESP_LOGE(TAG, "Failed to write map header");
+        fclose(file);
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+
+    // Write keyframe data
+    if (header.keyframe_count > 0) {
+        keyframe_t* keyframes = NULL;
+        uint32_t kf_count = 0;
+        
+        // Get keyframes from SLAM core
+        esp_err_t ret = slam_core_get_keyframes(&keyframes, &kf_count);
+        if (ret == ESP_OK && keyframes != NULL) {
+            size_t kf_written = fwrite(keyframes, sizeof(keyframe_t), kf_count, file);
+            if (kf_written != kf_count) {
+                ESP_LOGE(TAG, "❌ Failed to write keyframe data: expected %lu, wrote %zu", 
+                         kf_count, kf_written);
+                fclose(file);
+                return ESP_ERR_INVALID_RESPONSE;
+            }
+            ESP_LOGI(TAG, "✅ Written %lu keyframes to map file", kf_count);
+        } else {
+            ESP_LOGW(TAG, "⚠️ No keyframes available for writing");
+        }
+    }
+
+    // Write map point data
+    if (header.map_point_count > 0) {
+        map_point_t* map_points = NULL;
+        uint32_t mp_count = 0;
+        
+        // Get map points from SLAM core
+        esp_err_t ret = slam_core_get_map_points(&map_points, &mp_count);
+        if (ret == ESP_OK && map_points != NULL) {
+            size_t mp_written = fwrite(map_points, sizeof(map_point_t), mp_count, file);
+            if (mp_written != mp_count) {
+                ESP_LOGE(TAG, "❌ Failed to write map point data: expected %lu, wrote %zu", 
+                         mp_count, mp_written);
+                fclose(file);
+                return ESP_ERR_INVALID_RESPONSE;
+            }
+            ESP_LOGI(TAG, "✅ Written %lu map points to map file", mp_count);
+        } else {
+            ESP_LOGW(TAG, "⚠️ No map points available for writing");
+        }
+    }
+
+    // Calculate and update checksum
+    fseek(file, 0, SEEK_SET);
+    // Simple checksum calculation (would be more sophisticated in real implementation)
+    header.checksum = header.keyframe_count + header.map_point_count;
+    fwrite(&header, sizeof(slam_map_header_t), 1, file);
+
+    fclose(file);
+    ESP_LOGI(TAG, "✅ SLAM map saved successfully: %s", map_path);
     return ESP_OK;
 }
 
@@ -526,10 +658,57 @@ esp_err_t sd_storage_load_slam_map(const char *map_name, double *lat, double *lo
     *lon = header.origin_lon;
     *alt = header.origin_alt;
 
+    // Load keyframe data if available
+    if (header.keyframe_count > 0) {
+        ESP_LOGI(TAG, "📖 Loading %lu keyframes from map file", header.keyframe_count);
+        
+        // Allocate temporary buffer for keyframes
+        keyframe_t* keyframes = heap_caps_malloc(header.keyframe_count * sizeof(keyframe_t), 
+                                                 MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+        if (keyframes) {
+            size_t kf_read = fread(keyframes, sizeof(keyframe_t), header.keyframe_count, file);
+            if (kf_read == header.keyframe_count) {
+                ESP_LOGI(TAG, "✅ Successfully loaded %zu keyframes", kf_read);
+                // TODO: Pass keyframes to SLAM core for map reconstruction
+                // slam_core_load_keyframes(keyframes, kf_read);
+            } else {
+                ESP_LOGW(TAG, "⚠️ Partial keyframe load: expected %lu, got %zu", 
+                         header.keyframe_count, kf_read);
+            }
+            heap_caps_free(keyframes);
+        } else {
+            ESP_LOGW(TAG, "⚠️ Failed to allocate memory for keyframes");
+        }
+    }
+
+    // Load map point data if available  
+    if (header.map_point_count > 0) {
+        ESP_LOGI(TAG, "📖 Loading %lu map points from map file", header.map_point_count);
+        
+        // Allocate temporary buffer for map points
+        map_point_t* map_points = heap_caps_malloc(header.map_point_count * sizeof(map_point_t),
+                                                   MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+        if (map_points) {
+            size_t mp_read = fread(map_points, sizeof(map_point_t), header.map_point_count, file);
+            if (mp_read == header.map_point_count) {
+                ESP_LOGI(TAG, "✅ Successfully loaded %zu map points", mp_read);
+                // TODO: Pass map points to SLAM core for map reconstruction
+                // slam_core_load_map_points(map_points, mp_read);
+            } else {
+                ESP_LOGW(TAG, "⚠️ Partial map point load: expected %lu, got %zu", 
+                         header.map_point_count, mp_read);
+            }
+            heap_caps_free(map_points);
+        } else {
+            ESP_LOGW(TAG, "⚠️ Failed to allocate memory for map points");
+        }
+    }
+
     fclose(file);
 
-    ESP_LOGI(TAG, "✅ Map loaded successfully: %s (lat=%.6f, lon=%.6f, alt=%.2f)",
-             map_name ? map_name : "latest", *lat, *lon, *alt);
+    ESP_LOGI(TAG, "✅ Map loaded successfully: %s (lat=%.6f, lon=%.6f, alt=%.2f, keyframes=%lu, points=%lu)",
+             map_name ? map_name : "latest", *lat, *lon, *alt, 
+             header.keyframe_count, header.map_point_count);
     return ESP_OK;
 }
 
@@ -609,8 +788,69 @@ esp_err_t sd_storage_delete_map(const char *map_name) {
 }
 
 esp_err_t sd_storage_log_slam_pose(uint64_t timestamp, const void *pose) {
-    ESP_LOGD(TAG, "Logging SLAM pose at time %llu", timestamp);
-    // TODO: Implement pose logging to CSV
+    if (!g_sd_state.mounted) {
+        ESP_LOGE(TAG, "SD card not mounted");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!pose) {
+        ESP_LOGE(TAG, "Pose data cannot be NULL");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // Create sessions directory if it doesn't exist
+    esp_err_t ret = sd_storage_create_directory(SD_SESSIONS_DIR);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to create sessions directory");
+        return ret;
+    }
+
+    // Generate session filename based on current date/time
+    time_t now = time(NULL);
+    struct tm timeinfo;
+    localtime_r(&now, &timeinfo);
+    char session_file[128];
+    strftime(session_file, sizeof(session_file), SD_SESSIONS_DIR "/session_%Y%m%d_%H%M%S.csv", &timeinfo);
+
+    // Check if this is a new session (file doesn't exist)
+    bool is_new_session = true;
+    FILE *test_file = fopen(session_file, "r");
+    if (test_file) {
+        is_new_session = false;
+        fclose(test_file);
+    }
+
+    // Open file for appending
+    FILE *file = fopen(session_file, "a");
+    if (!file) {
+        ESP_LOGE(TAG, "Failed to open session file for writing: %s", session_file);
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    // Write CSV header if this is a new session
+    if (is_new_session) {
+        fprintf(file, "timestamp_us,frame_count,tracked_features,confidence,pos_x,pos_y,pos_z,quat_w,quat_x,quat_y,quat_z\n");
+    }
+
+    // Cast pose to slam_pose_t
+    const slam_pose_t *slam_pose = (const slam_pose_t *)pose;
+
+    // Write pose data in CSV format
+    fprintf(file, "%llu,%u,%lu,%.3f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
+            timestamp,
+            0,  // frame_count (would come from camera system)
+            slam_pose->tracked_features,
+            slam_pose->confidence,
+            slam_pose->x,
+            slam_pose->y,
+            slam_pose->z,
+            slam_pose->qw,
+            slam_pose->qx,
+            slam_pose->qy,
+            slam_pose->qz);
+
+    fclose(file);
+    ESP_LOGD(TAG, "✅ SLAM pose logged to: %s", session_file);
     return ESP_OK;
 }
 
@@ -675,8 +915,32 @@ esp_err_t sd_storage_stop_session_log(const session_metadata_t *metadata) {
         if (written >= sizeof(metadata_filename) || written < 0) {
             ESP_LOGW(TAG, "Metadata filename too long, skipping metadata save");
         } else {
-            // TODO: Implement JSON metadata saving when cJSON is available
-            ESP_LOGI(TAG, "Session metadata would be saved to: %s", metadata_filename);
+            // Save session metadata as simple JSON
+            FILE *meta_file = fopen(metadata_filename, "w");
+            if (meta_file) {
+                // Generate simple JSON metadata
+                fprintf(meta_file, "{\n");
+                fprintf(meta_file, "  \"session_name\": \"%s\",\n", g_sd_state.current_session);
+                fprintf(meta_file, "  \"start_time\": \"%s\",\n", g_sd_state.session_start_time_str);
+                fprintf(meta_file, "  \"end_time\": \"%llu\",\n", esp_timer_get_time());
+                fprintf(meta_file, "  \"duration_seconds\": \"%.1f\",\n",
+                       (esp_timer_get_time() - g_sd_state.session_start_time) / 1000000.0);
+                fprintf(meta_file, "  \"total_poses\": \"%lu\",\n", g_sd_state.session_pose_count);
+                fprintf(meta_file, "  \"total_maps_saved\": \"%lu\",\n", g_sd_state.session_map_count);
+                fprintf(meta_file, "  \"system_info\": {\n");
+                fprintf(meta_file, "    \"firmware_version\": \"1.0.0\",\n");
+                fprintf(meta_file, "    \"hardware\": \"ESP32-P4\",\n");
+                fprintf(meta_file, "    \"camera\": \"OV5647\",\n");
+                fprintf(meta_file, "    \"imu\": \"BMI088\",\n");
+                fprintf(meta_file, "    \"gps\": \"uBlox\"\n");
+                fprintf(meta_file, "  }\n");
+                fprintf(meta_file, "}\n");
+
+                fclose(meta_file);
+                ESP_LOGI(TAG, "✅ Session metadata saved to: %s", metadata_filename);
+            } else {
+                ESP_LOGW(TAG, "Failed to create metadata file: %s", metadata_filename);
+            }
         }
     }
 
@@ -1385,4 +1649,289 @@ esp_err_t sd_storage_create_directory(const char *dirpath) {
         ESP_LOGE(TAG, "Failed to create directory %s: errno %d", fullpath, errno);
         return ESP_FAIL;
     }
+}
+
+// =============================================================================
+// COMPREHENSIVE LOGGING FUNCTIONS
+// =============================================================================
+
+esp_err_t sd_storage_log_system_status(uint64_t timestamp, const void *stats) {
+    if (!g_sd_state.mounted || !g_sd_state.comprehensive_logging) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!stats) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (!g_sd_state.system_log_file) {
+        ESP_LOGW(TAG, "System log file not open");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // Cast to slam_stats_t (assuming this is what's passed)
+    const slam_stats_t *slam_stats = (const slam_stats_t *)stats;
+
+    // Log system status in CSV format
+    fprintf(g_sd_state.system_log_file,
+            "%llu,%d,%" PRIu32 ",%" PRIu32 ",%" PRIu32 ",%" PRIu32 ",%.3f,%" PRIu32 ",%" PRIu32 ",%.2f,%llu\n",
+            timestamp,
+            slam_stats->state,
+            slam_stats->current_features,
+            slam_stats->tracked_features,
+            slam_stats->map_points,
+            slam_stats->keyframes,
+            slam_stats->tracking_confidence,
+            slam_stats->frames_processed,
+            slam_stats->frames_dropped,
+            slam_stats->average_processing_time_ms,
+            slam_stats->last_update_us);
+
+    fflush(g_sd_state.system_log_file);
+    return ESP_OK;
+}
+
+esp_err_t sd_storage_log_sensor_data(uint64_t timestamp,
+                                     double gps_lat, double gps_lon, float gps_alt,
+                                     float imu_accel_x, float imu_accel_y, float imu_accel_z,
+                                     float imu_gyro_x, float imu_gyro_y, float imu_gyro_z) {
+    if (!g_sd_state.mounted || !g_sd_state.comprehensive_logging) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!g_sd_state.sensor_log_file) {
+        ESP_LOGW(TAG, "Sensor log file not open");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // Log sensor data in CSV format
+    fprintf(g_sd_state.sensor_log_file,
+            "%llu,%.8f,%.8f,%.3f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
+            timestamp,
+            gps_lat, gps_lon, gps_alt,
+            imu_accel_x, imu_accel_y, imu_accel_z,
+            imu_gyro_x, imu_gyro_y, imu_gyro_z);
+
+    fflush(g_sd_state.sensor_log_file);
+    return ESP_OK;
+}
+
+esp_err_t sd_storage_log_feature_data(uint64_t timestamp,
+                                      uint32_t num_features,
+                                      uint32_t num_matches,
+                                      float processing_time_ms) {
+    if (!g_sd_state.mounted || !g_sd_state.comprehensive_logging) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!g_sd_state.feature_log_file) {
+        ESP_LOGW(TAG, "Feature log file not open");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // Log feature data in CSV format
+    fprintf(g_sd_state.feature_log_file,
+            "%llu,%" PRIu32 ",%" PRIu32 ",%.2f\n",
+            timestamp,
+            num_features,
+            num_matches,
+            processing_time_ms);
+
+    fflush(g_sd_state.feature_log_file);
+    return ESP_OK;
+}
+
+esp_err_t sd_storage_log_error_event(uint64_t timestamp,
+                                     const char *component,
+                                     esp_err_t error_code,
+                                     const char *description) {
+    if (!g_sd_state.mounted || !g_sd_state.comprehensive_logging) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!component || !description) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (!g_sd_state.error_log_file) {
+        ESP_LOGW(TAG, "Error log file not open");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // Log error event in CSV format
+    fprintf(g_sd_state.error_log_file,
+            "%llu,%s,0x%X,%s\n",
+            timestamp,
+            component,
+            error_code,
+            description);
+
+    fflush(g_sd_state.error_log_file);
+    return ESP_OK;
+}
+
+esp_err_t sd_storage_log_memory_usage(uint64_t timestamp) {
+    if (!g_sd_state.mounted || !g_sd_state.comprehensive_logging) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!g_sd_state.memory_log_file) {
+        ESP_LOGW(TAG, "Memory log file not open");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // Get memory statistics
+    size_t free_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+    size_t total_internal = heap_caps_get_total_size(MALLOC_CAP_INTERNAL);
+    size_t free_spiram = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+    size_t total_spiram = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
+    size_t largest_free_block = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
+
+    // Log memory usage in CSV format
+    fprintf(g_sd_state.memory_log_file,
+            "%llu,%zu,%zu,%zu,%zu,%zu\n",
+            timestamp,
+            free_internal,
+            total_internal,
+            free_spiram,
+            total_spiram,
+            largest_free_block);
+
+    fflush(g_sd_state.memory_log_file);
+    return ESP_OK;
+}
+
+esp_err_t sd_storage_start_comprehensive_logging(const char *session_name) {
+    if (!g_sd_state.mounted) {
+        ESP_LOGE(TAG, "SD card not mounted");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!session_name) {
+        ESP_LOGE(TAG, "Session name cannot be NULL");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // Stop any existing comprehensive logging
+    if (g_sd_state.comprehensive_logging) {
+        sd_storage_stop_comprehensive_logging();
+    }
+
+    // Create logs directory
+    char logs_dir[64];
+    snprintf(logs_dir, sizeof(logs_dir), "%s/logs", SD_MOUNT_POINT);
+    esp_err_t ret = sd_storage_create_directory(logs_dir);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to create logs directory");
+        return ret;
+    }
+
+    // Generate timestamp for log filenames
+    uint64_t timestamp = esp_timer_get_time();
+    char timestamp_str[32];
+    snprintf(timestamp_str, sizeof(timestamp_str), "%llu", timestamp / 1000000);
+
+    // Open system status log
+    char system_log_path[128];
+    snprintf(system_log_path, sizeof(system_log_path), 
+             "%s/%s_%s_system.csv", logs_dir, session_name, timestamp_str);
+    g_sd_state.system_log_file = fopen(system_log_path, "w");
+    if (g_sd_state.system_log_file) {
+        fprintf(g_sd_state.system_log_file,
+                "timestamp_us,slam_state,current_features,tracked_features,map_points,keyframes,"
+                "tracking_confidence,frames_processed,frames_dropped,avg_processing_time_ms,last_update_us\n");
+    }
+
+    // Open sensor data log
+    char sensor_log_path[128];
+    snprintf(sensor_log_path, sizeof(sensor_log_path), 
+             "%s/%s_%s_sensors.csv", logs_dir, session_name, timestamp_str);
+    g_sd_state.sensor_log_file = fopen(sensor_log_path, "w");
+    if (g_sd_state.sensor_log_file) {
+        fprintf(g_sd_state.sensor_log_file,
+                "timestamp_us,gps_lat,gps_lon,gps_alt,imu_accel_x,imu_accel_y,imu_accel_z,"
+                "imu_gyro_x,imu_gyro_y,imu_gyro_z\n");
+    }
+
+    // Open feature data log
+    char feature_log_path[128];
+    snprintf(feature_log_path, sizeof(feature_log_path), 
+             "%s/%s_%s_features.csv", logs_dir, session_name, timestamp_str);
+    g_sd_state.feature_log_file = fopen(feature_log_path, "w");
+    if (g_sd_state.feature_log_file) {
+        fprintf(g_sd_state.feature_log_file,
+                "timestamp_us,num_features,num_matches,processing_time_ms\n");
+    }
+
+    // Open error log
+    char error_log_path[128];
+    snprintf(error_log_path, sizeof(error_log_path), 
+             "%s/%s_%s_errors.csv", logs_dir, session_name, timestamp_str);
+    g_sd_state.error_log_file = fopen(error_log_path, "w");
+    if (g_sd_state.error_log_file) {
+        fprintf(g_sd_state.error_log_file,
+                "timestamp_us,component,error_code,description\n");
+    }
+
+    // Open memory usage log
+    char memory_log_path[128];
+    snprintf(memory_log_path, sizeof(memory_log_path), 
+             "%s/%s_%s_memory.csv", logs_dir, session_name, timestamp_str);
+    g_sd_state.memory_log_file = fopen(memory_log_path, "w");
+    if (g_sd_state.memory_log_file) {
+        fprintf(g_sd_state.memory_log_file,
+                "timestamp_us,free_internal,total_internal,free_spiram,total_spiram,largest_free_block\n");
+    }
+
+    g_sd_state.comprehensive_logging = true;
+    strncpy(g_sd_state.current_session, session_name, sizeof(g_sd_state.current_session) - 1);
+    g_sd_state.current_session[sizeof(g_sd_state.current_session) - 1] = '\0';
+
+    ESP_LOGI(TAG, "✅ Comprehensive logging started for session: %s", session_name);
+    ESP_LOGI(TAG, "📊 Log files created:");
+    ESP_LOGI(TAG, "   - System: %s", system_log_path);
+    ESP_LOGI(TAG, "   - Sensors: %s", sensor_log_path);
+    ESP_LOGI(TAG, "   - Features: %s", feature_log_path);
+    ESP_LOGI(TAG, "   - Errors: %s", error_log_path);
+    ESP_LOGI(TAG, "   - Memory: %s", memory_log_path);
+
+    return ESP_OK;
+}
+
+esp_err_t sd_storage_stop_comprehensive_logging(void) {
+    if (!g_sd_state.comprehensive_logging) {
+        ESP_LOGW(TAG, "No comprehensive logging session active");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // Close all log files
+    if (g_sd_state.system_log_file) {
+        fclose(g_sd_state.system_log_file);
+        g_sd_state.system_log_file = NULL;
+    }
+
+    if (g_sd_state.sensor_log_file) {
+        fclose(g_sd_state.sensor_log_file);
+        g_sd_state.sensor_log_file = NULL;
+    }
+
+    if (g_sd_state.feature_log_file) {
+        fclose(g_sd_state.feature_log_file);
+        g_sd_state.feature_log_file = NULL;
+    }
+
+    if (g_sd_state.error_log_file) {
+        fclose(g_sd_state.error_log_file);
+        g_sd_state.error_log_file = NULL;
+    }
+
+    if (g_sd_state.memory_log_file) {
+        fclose(g_sd_state.memory_log_file);
+        g_sd_state.memory_log_file = NULL;
+    }
+
+    g_sd_state.comprehensive_logging = false;
+
+    ESP_LOGI(TAG, "✅ Comprehensive logging stopped for session: %s", g_sd_state.current_session);
+    return ESP_OK;
 }

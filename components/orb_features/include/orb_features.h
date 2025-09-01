@@ -34,6 +34,10 @@ typedef struct {
     uint32_t max_features;              // Maximum capacity
     uint64_t timestamp_us;              // Frame timestamp
     uint16_t frame_width, frame_height; // Frame dimensions
+    
+    // Feature matching results (with previous frame)
+    uint32_t num_matches;               // Total number of matches
+    uint32_t num_good_matches;          // Number of good quality matches
 } orb_features_t;
 
 // Feature matching

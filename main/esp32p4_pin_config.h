@@ -24,11 +24,11 @@
 // ============================================================================
 
 /** BMI088 IMU SPI Interface Pins */
-#define IMU_SPI_MISO_PIN           GPIO_NUM_8    /**< SPI MISO for IMU */
-#define IMU_SPI_MOSI_PIN           GPIO_NUM_9    /**< SPI MOSI for IMU */
-#define IMU_SPI_CLK_PIN            GPIO_NUM_10   /**< SPI Clock for IMU */
-#define IMU_ACC_CS_PIN             GPIO_NUM_11   /**< Accelerometer Chip Select */
-#define IMU_GYRO_CS_PIN            GPIO_NUM_12   /**< Gyroscope Chip Select */
+#define IMU_SPI_MISO_PIN           GPIO_NUM_20   /**< SPI MISO for IMU (changed to avoid camera conflict) */
+#define IMU_SPI_MOSI_PIN           GPIO_NUM_21   /**< SPI MOSI for IMU */
+#define IMU_SPI_CLK_PIN            GPIO_NUM_22   /**< SPI Clock for IMU */
+#define IMU_ACC_CS_PIN             GPIO_NUM_23   /**< Accelerometer Chip Select */
+#define IMU_GYRO_CS_PIN            GPIO_NUM_24   /**< Gyroscope Chip Select */
 
 // ============================================================================
 // GPS MODULE PINS (UART Interface)
@@ -86,11 +86,11 @@
 
 // IMU SPI pins validation
 #define _VALIDATE_IMU_SPI_PINS \
-    _Static_assert(IMU_SPI_MISO_PIN == GPIO_NUM_8, "IMU SPI MISO pin conflict detected"); \
-    _Static_assert(IMU_SPI_MOSI_PIN == GPIO_NUM_9, "IMU SPI MOSI pin conflict detected"); \
-    _Static_assert(IMU_SPI_CLK_PIN == GPIO_NUM_10, "IMU SPI CLK pin conflict detected"); \
-    _Static_assert(IMU_ACC_CS_PIN == GPIO_NUM_11, "IMU ACC CS pin conflict detected"); \
-    _Static_assert(IMU_GYRO_CS_PIN == GPIO_NUM_12, "IMU GYRO CS pin conflict detected");
+    _Static_assert(IMU_SPI_MISO_PIN == GPIO_NUM_20, "IMU SPI MISO pin conflict detected"); \
+    _Static_assert(IMU_SPI_MOSI_PIN == GPIO_NUM_21, "IMU SPI MOSI pin conflict detected"); \
+    _Static_assert(IMU_SPI_CLK_PIN == GPIO_NUM_22, "IMU SPI CLK pin conflict detected"); \
+    _Static_assert(IMU_ACC_CS_PIN == GPIO_NUM_23, "IMU ACC CS pin conflict detected"); \
+    _Static_assert(IMU_GYRO_CS_PIN == GPIO_NUM_24, "IMU GYRO CS pin conflict detected");
 
 // GPS UART pins validation
 #define _VALIDATE_GPS_UART_PINS \

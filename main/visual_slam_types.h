@@ -143,6 +143,21 @@ typedef struct {
     bool map_optimization_enabled;     // Enable map optimization
 } slam_config_t;
 
+// SLAM pose structure
+typedef struct {
+    float x, y, z;          // Position components
+    float qw, qx, qy, qz;   // Orientation quaternion
+    
+    // Legacy array formats for compatibility
+    float position[3];      // Position array {x, y, z}
+    float orientation[4];   // Quaternion array {w, x, y, z}
+    
+    uint64_t timestamp_us;  // Timestamp
+    float confidence;       // Confidence [0-1]
+    bool is_lost;          // Tracking lost flag
+    uint32_t tracked_features;  // Number of tracked features
+} slam_pose_t;
+
 // SLAM processing result
 typedef struct {
     vector3_t camera_position;      // Camera position in world frame

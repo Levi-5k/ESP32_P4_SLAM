@@ -156,6 +156,7 @@ typedef struct {
     float keyframe_distance_threshold;  // Meters - when to create new keyframe
     float keyframe_angle_threshold;     // Radians - when to create new keyframe
     uint32_t max_keyframes;             // Maximum keyframes in local map
+    uint32_t max_map_points;            // Maximum map points in local map
     bool enable_loop_closure;           // Enable loop closure detection
     float loop_closure_threshold;       // Similarity threshold for loop detection
     
@@ -182,6 +183,14 @@ typedef struct {
     float imu_weight;             // IMU fusion weight (0.0-1.0)
     float imu_dt;                 // IMU sample time
     float max_prediction_time;    // Maximum prediction time
+    
+    // Advanced features
+    bool enable_bias_estimation;      // Enable automatic bias estimation
+    bool enable_outlier_detection;    // Enable outlier detection
+    float gps_outlier_threshold;      // GPS outlier threshold (meters)
+    float slam_outlier_threshold;     // SLAM outlier threshold (meters)
+    float stationary_accel_threshold; // Stationary detection accel threshold (m/s²)
+    float stationary_gyro_threshold;  // Stationary detection gyro threshold (rad/s)
 } fusion_config_t;
 
 typedef struct {
