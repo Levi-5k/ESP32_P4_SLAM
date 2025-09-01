@@ -14,6 +14,12 @@
 # EXTERNAL cache entries
 ########################
 
+//No help, variable specified on the command line.
+CCACHE_ENABLE:UNINITIALIZED=1
+
+//Path to a program.
+CCACHE_FOUND:FILEPATH=W:/Espressif/tools/ccache/4.10.2/ccache-4.10.2-windows-x86_64/ccache.exe
+
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=W:/Espressif/tools/riscv32-esp-elf/esp-14.2.0_20241119/riscv32-esp-elf/bin/riscv32-esp-elf-addr2line.exe
 
@@ -347,6 +353,9 @@ Mbed TLS_IS_TOP_LEVEL:STATIC=OFF
 Mbed TLS_SOURCE_DIR:STATIC=W:/Espressif/frameworks/esp-idf-v5.5/components/mbedtls/mbedtls
 
 //No help, variable specified on the command line.
+PYTHON:UNINITIALIZED=w:\Espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe
+
+//No help, variable specified on the command line.
 PYTHON_DEPS_CHECKED:UNINITIALIZED=1
 
 //No help, variable specified on the command line.
@@ -542,7 +551,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=134
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=135
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -590,7 +599,7 @@ C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS:INTERNAL=1
 //Details about finding Git
 FIND_PACKAGE_MESSAGE_DETAILS_Git:INTERNAL=[W:/Espressif/tools/idf-git/2.44.0/cmd/git.exe][v2.44.0.windows.1()]
 //Details about finding Python3
-FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[w:/Espressif/python_env/idf5.5_py3.11_env/Scripts/python.exe][cfound components: Interpreter ][v3.11.2()]
+FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[w:/Espressif/python_env/idf5.5_py3.13_env/Scripts/python.exe][cfound components: Interpreter ][v3.13.5()]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 //ADVANCED property for variable: GIT_EXECUTABLE
@@ -601,10 +610,10 @@ _GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=C:/Program Files (x86)/Visual
 _Python3_Compiler_REASON_FAILURE:INTERNAL=
 //Development reason failure
 _Python3_Development_REASON_FAILURE:INTERNAL=
-_Python3_EXECUTABLE:INTERNAL=w:/Espressif/python_env/idf5.5_py3.11_env/Scripts/python.exe
+_Python3_EXECUTABLE:INTERNAL=w:/Espressif/python_env/idf5.5_py3.13_env/Scripts/python.exe
 //Python3 Properties
-_Python3_INTERPRETER_PROPERTIES:INTERNAL=Python;3;11;2;32;64;;;abi3;w:\Espressif\tools\idf-python\3.11.2\Lib;w:\Espressif\python_env\idf5.5_py3.11_env\Lib;w:\Espressif\python_env\idf5.5_py3.11_env\Lib\site-packages;w:\Espressif\python_env\idf5.5_py3.11_env\Lib\site-packages
-_Python3_INTERPRETER_SIGNATURE:INTERNAL=9ee24d1d180386ae2a821d5dc5ef0fe0
+_Python3_INTERPRETER_PROPERTIES:INTERNAL=Python;3;13;5;32;64;;;abi3;C:\Program Files\Python313\Lib;w:\Espressif\python_env\idf5.5_py3.13_env\Lib;w:\Espressif\python_env\idf5.5_py3.13_env\Lib\site-packages;w:\Espressif\python_env\idf5.5_py3.13_env\Lib\site-packages
+_Python3_INTERPRETER_SIGNATURE:INTERNAL=25ad16ace8d6c0e573c72d1a09cb2a08
 //NumPy reason failure
 _Python3_NumPy_REASON_FAILURE:INTERNAL=
 

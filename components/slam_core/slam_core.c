@@ -45,6 +45,26 @@ static struct {
     bool initialized;
 } g_slam_state = {0};
 
+// Default SLAM configuration
+static const slam_config_t default_config = {
+    .max_features = 500,
+    .fast_threshold = 20.0f,
+    .levels = 8,
+    .scale_factor = 1.2f,
+    .max_keypoints_per_level = 100,
+    .use_harris_detector = false,
+    .harris_k = 0.04f,
+    .descriptor_distance_threshold = 50,
+    .match_threshold = 0.7f,
+    .min_tracked_features = 30,
+    .keyframe_distance_threshold = 1.0f,
+    .keyframe_angle_threshold = 0.2f,
+    .max_keyframes = 50,
+    .enable_loop_closure = true,
+    .loop_closure_threshold = 0.8f,
+    .map_optimization_enabled = true
+};
+
 // Global camera configuration
 static camera_config_t g_camera_config = {
     .resolution = CAMERA_RES_640x480,
@@ -65,25 +85,6 @@ static camera_config_t g_camera_config = {
 // Earth radius for GPS calculations (meters)
 #define EARTH_RADIUS_M 6378137.0
 
-// Default SLAM configuration
-static const slam_config_t default_config = {
-    .max_features = 500,
-    .fast_threshold = 20.0f,
-    .levels = 8,
-    .scale_factor = 1.2f,
-    .max_keypoints_per_level = 100,
-    .use_harris_detector = false,
-    .harris_k = 0.04f,
-    .descriptor_distance_threshold = 50,
-    .match_threshold = 0.7f,
-    .min_tracked_features = 30,
-    .keyframe_distance_threshold = 1.0f,
-    .keyframe_angle_threshold = 0.2f,  // ~11 degrees
-    .max_keyframes = 50,
-    .enable_loop_closure = true,
-    .loop_closure_threshold = 0.8f
-};
-
 // Forward declarations
 static esp_err_t initialize_map_memory(void);
 static void cleanup_map_memory(void);
@@ -103,9 +104,13 @@ esp_err_t slam_core_init(const slam_config_t* config) {
     // Use provided config or default
     if (config) {
         g_slam_state.config = *config;
+        ESP_LOGI(TAG, "Using provided SLAM config: max_features=%d", config->max_features);
     } else {
         g_slam_state.config = default_config;
+        ESP_LOGI(TAG, "Using default SLAM config: max_features=%d", default_config.max_features);
     }
+    
+    ESP_LOGI(TAG, "SLAM config after assignment: max_features=%d", g_slam_state.config.max_features);
     
     // Create mutex for thread safety
     g_slam_state.slam_mutex = xSemaphoreCreateMutex();

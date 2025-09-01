@@ -1,0 +1,39 @@
+{
+  "fusion": {
+    "description": "Sensor fusion EKF configuration",
+    "position_noise": 0.1,
+    "velocity_noise": 0.01,
+    "attitude_noise": 0.001,
+    "slam_attitude_noise": 0.01,
+    "gps_position_noise": 2.5,
+    "gps_velocity_noise": 0.5,
+    "slam_position_noise": 0.1,
+    "accel_bias_noise": 1e-6,
+    "gyro_bias_noise": 1e-8,
+    "imu_dt": 0.01,
+    "max_prediction_time": 1.0
+  },
+  "fusion_weights": {
+    "gps_weight": 0.8,
+    "slam_weight": 0.9,
+    "imu_weight": 1.0,
+    "gps_rejection_threshold": 3.0,
+    "slam_rejection_threshold": 2.0,
+    "imu_rejection_threshold": 5.0
+  },
+  "fusion_filters": {
+    "outlier_detection_enabled": true,
+    "gps_outlier_threshold": 10.0,
+    "slam_outlier_threshold": 5.0,
+    "imu_outlier_threshold": 20.0,
+    "filter_reset_enabled": true,
+    "filter_reset_threshold": 100.0
+  },
+  "fusion_timing": {
+    "imu_update_rate_hz": 100,
+    "gps_update_rate_hz": 5,
+    "slam_update_rate_hz": 30,
+    "prediction_rate_hz": 100,
+    "correction_timeout_ms": 100
+  }
+}

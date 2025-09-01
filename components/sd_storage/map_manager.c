@@ -119,6 +119,16 @@ esp_err_t map_manager_init(void) {
     esp_err_t ret = sd_storage_init(NULL);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "❌ Failed to initialize SD storage: %s", esp_err_to_name(ret));
+
+        // Run diagnostics to help troubleshoot
+        ESP_LOGI(TAG, "🔍 Running SD card diagnostics...");
+        esp_err_t diag_ret = sd_storage_diagnose();
+        if (diag_ret == ESP_OK) {
+            ESP_LOGI(TAG, "✅ Diagnostics passed - SD card is working");
+        } else {
+            ESP_LOGE(TAG, "❌ Diagnostics failed - check hardware connections");
+        }
+
         return ret;
     }
 

@@ -1,2 +1,2 @@
 --flash_mode dio --flash_freq 80m --flash_size 32MB
-0x10000 VisualSLAM_INAV.bin
+0x110000 VisualSLAM_INAV.bin

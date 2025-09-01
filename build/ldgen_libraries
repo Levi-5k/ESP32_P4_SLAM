@@ -181,7 +181,14 @@ D:/ESP-IDF-projects/DroneCam/build/esp-idf/slam_core/libslam_core.a
 D:/ESP-IDF-projects/DroneCam/build/esp-idf/main/libmain.a
 D:/ESP-IDF-projects/DroneCam/build/esp-idf/sensor_fusion/libsensor_fusion.a
 D:/ESP-IDF-projects/DroneCam/build/esp-idf/sd_storage/libsd_storage.a
+D:/ESP-IDF-projects/DroneCam/build/esp-idf/gps_ublox/libgps_ublox.a
+D:/ESP-IDF-projects/DroneCam/build/esp-idf/msp_protocol/libmsp_protocol.a
+D:/ESP-IDF-projects/DroneCam/build/esp-idf/imu_bmi088/libimu_bmi088.a
+D:/ESP-IDF-projects/DroneCam/build/esp-idf/config_loader/libconfig_loader.a
+D:/ESP-IDF-projects/DroneCam/build/esp-idf/spiffs/libspiffs.a
 D:/ESP-IDF-projects/DroneCam/build/esp-idf/esp_driver_jpeg/libesp_driver_jpeg.a
 D:/ESP-IDF-projects/DroneCam/build/esp-idf/gps_ublox/libgps_ublox.a
-D:/ESP-IDF-projects/DroneCam/build/esp-idf/imu_bmi088/libimu_bmi088.a
 D:/ESP-IDF-projects/DroneCam/build/esp-idf/msp_protocol/libmsp_protocol.a
+D:/ESP-IDF-projects/DroneCam/build/esp-idf/imu_bmi088/libimu_bmi088.a
+D:/ESP-IDF-projects/DroneCam/build/esp-idf/config_loader/libconfig_loader.a
+D:/ESP-IDF-projects/DroneCam/build/esp-idf/main/libmain.a

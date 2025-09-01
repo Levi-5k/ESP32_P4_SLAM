@@ -604,12 +604,12 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("D:/ESP-IDF-projects/DroneCam/build/esp-idf/main/cmake_install.cmake")
+  include("D:/ESP-IDF-projects/DroneCam/build/esp-idf/gps_ublox/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("D:/ESP-IDF-projects/DroneCam/build/esp-idf/gps_ublox/cmake_install.cmake")
+  include("D:/ESP-IDF-projects/DroneCam/build/esp-idf/msp_protocol/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
@@ -619,6 +619,11 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("D:/ESP-IDF-projects/DroneCam/build/esp-idf/msp_protocol/cmake_install.cmake")
+  include("D:/ESP-IDF-projects/DroneCam/build/esp-idf/config_loader/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("D:/ESP-IDF-projects/DroneCam/build/esp-idf/main/cmake_install.cmake")
 endif()
 

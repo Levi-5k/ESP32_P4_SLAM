@@ -217,6 +217,12 @@ esp_err_t sd_storage_create_directory(const char *dirpath);
  */
 esp_err_t sd_storage_cleanup_old_sessions(uint32_t keep_count);
 
+/**
+ * Run SD card diagnostic tests
+ * @return ESP_OK if SD card is working, error code otherwise
+ */
+esp_err_t sd_storage_diagnose(void);
+
 // =============================================================================
 // MAP MANAGER FUNCTIONS (High-level interface)
 // =============================================================================

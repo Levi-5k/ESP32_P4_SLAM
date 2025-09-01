@@ -1,5 +1,8 @@
 # ESP32-P4 Visual SLAM Navigation System - AI Agent Instructions
 
+## Comment Guideline
+keep comments to a minimum
+
 ## Project Overview
 This is a real-time Visual SLAM (Simultaneous Localization and Mapping) navigation system running on ESP32-P4 microcontroller with OV5647 MIPI-CSI camera. The system integrates GPS, IMU, and visual odometry for autonomous drone navigation.
 
@@ -92,10 +95,10 @@ idf.py build
 idf.py clean && idf.py build
 
 # Flash to device
-idf.py flash -p COM9
+idf.py flash -p "COM port"
 
 # Monitor serial output
-idf.py monitor -p COM9
+idf.py monitor -p "COM port"
 ```
 
 ### Configuration Files

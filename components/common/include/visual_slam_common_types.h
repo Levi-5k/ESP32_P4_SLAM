@@ -7,8 +7,8 @@
 // Hardware constants and definitions
 #define CAMERA_RES_640x480        0
 #define CAMERA_FORMAT_RGB565      1
-#define UART_NUM_1               1
-#define I2C_NUM_0                0
+// #define UART_NUM_1               1  // Conflicts with ESP-IDF
+// #define I2C_NUM_0                0  // Conflicts with ESP-IDF - use hal/i2c_types.h
 #define BMI088_ACCEL_RANGE_6G    6
 #define BMI088_GYRO_RANGE_500DPS 500
 
@@ -117,6 +117,8 @@ typedef struct {
     bool camera_available;
     bool camera_initialized;
     bool gps_connected;
+    bool imu_connected;
+    bool msp_connected;
     bool imu_calibrated;
     bool slam_active;
     bool wifi_connected;
@@ -218,6 +220,7 @@ typedef struct {
     uint32_t baud_rate;          // Baud rate
     uint32_t tx_pin;             // TX pin
     uint32_t rx_pin;             // RX pin
+    uint32_t update_rate_hz;     // GPS update rate in Hz
 } gps_config_t;
 
 typedef struct {

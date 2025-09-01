@@ -3,14 +3,14 @@
  * Full implementation for ESP-IDF v5.5 compatibility
  */
 
+#include "../../main/esp32p4_pin_config.h"
+
 #define MIPI_LDO_CHANNEL_ID         3      // LDO channel 3 for MIPI PHY
 #define MIPI_LDO_VOLTAGE_MV         2500   // 2.5V for MIPI DPHY
 
 // Camera configuration constants
 #define CAMERA_WIDTH                1920
 #define CAMERA_HEIGHT               1080
-#define CAMERA_I2C_SDA_IO           7
-#define CAMERA_I2C_SCL_IO           8
 #define CAMERA_LANE_BITRATE_MBPS    200
 #define CAMERA_DATA_LANES           2
 #define RGB565_BITS_PER_PIXEL       16
@@ -50,8 +50,8 @@ static uint32_t s_finished_trans_counter = 0;
 // Continuous capture management
 static void *s_frame_buffer_1 = NULL;
 static void *s_frame_buffer_2 = NULL;
-static esp_cam_ctlr_trans_t s_new_trans_1;
-static esp_cam_ctlr_trans_t s_new_trans_2;
+// Note: s_new_trans_1 and s_new_trans_2 are not used in this component
+// They are used in main/camera_init.c for continuous capture
 static volatile bool s_continuous_capture_running = false;
 static volatile void *s_latest_frame_buffer = NULL;  // Pointer to latest captured frame
 static volatile size_t s_latest_frame_size = 0;     // Size of latest captured frame

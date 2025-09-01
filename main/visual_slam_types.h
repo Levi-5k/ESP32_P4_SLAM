@@ -115,10 +115,32 @@ typedef struct {
 
 // SLAM configuration
 typedef struct {
-    uint16_t orb_features;          // Number of ORB features to extract
-    uint8_t keyframe_threshold;     // Frames between keyframes
-    bool loop_closure_enabled;     // Enable loop closure detection
-    bool map_optimization_enabled; // Enable map optimization
+    // ORB Feature Detection Parameters
+    uint16_t max_features;              // Maximum number of features to extract (500)
+    float fast_threshold;               // FAST corner detection threshold (20.0)
+    uint8_t levels;                     // Number of pyramid levels (8)
+    float scale_factor;                 // Scale factor between levels (1.2)
+    uint16_t max_keypoints_per_level;   // Max keypoints per pyramid level (100)
+    bool use_harris_detector;           // Use Harris corner detector (false)
+    float harris_k;                     // Harris detector k parameter (0.04)
+    uint16_t descriptor_distance_threshold; // Descriptor matching distance threshold (50)
+    
+    // SLAM Algorithm Parameters
+    float match_threshold;              // Feature matching threshold (0.7)
+    uint16_t min_tracked_features;      // Minimum features for tracking (30)
+    float keyframe_distance_threshold;  // Keyframe insertion distance threshold (1.0)
+    float keyframe_angle_threshold;     // Keyframe insertion angle threshold (0.2)
+    uint16_t max_keyframes;             // Maximum number of keyframes (50)
+    
+    // Loop Closure and Optimization
+    bool enable_loop_closure;           // Enable loop closure detection (true)
+    float loop_closure_threshold;       // Loop closure detection threshold (0.8)
+    
+    // Legacy compatibility fields (maintained for backward compatibility)
+    uint16_t orb_features;              // Number of ORB features to extract
+    uint8_t keyframe_threshold;         // Frames between keyframes
+    bool loop_closure_enabled;         // Enable loop closure detection
+    bool map_optimization_enabled;     // Enable map optimization
 } slam_config_t;
 
 // SLAM processing result

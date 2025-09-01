@@ -74,7 +74,7 @@ esp_err_t sensor_fusion_deinit(void);
 
 // Initialize individual sensors
 esp_err_t sensor_fusion_init_gps(const gps_config_t* config);
-esp_err_t sensor_fusion_init_imu(const imu_config_t* config);
+esp_err_t sensor_fusion_register_imu(const imu_config_t* config);
 
 // Get current sensor fusion data
 esp_err_t sensor_fusion_get_data(sensor_fusion_data_t* data);

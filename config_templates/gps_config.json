@@ -1,0 +1,35 @@
+{
+  "gps": {
+    "description": "uBlox GPS module configuration",
+    "uart_port": 1,
+    "baud_rate": 115600,
+    "tx_pin": 15,
+    "rx_pin": 16,
+    "update_rate_hz": 10,
+    "enable_sbas": true,
+    "enable_differential": false,
+    "timeout_ms": 5000,
+    "auto_reconnect": true,
+    "reconnect_attempts": 3,
+    "reconnect_delay_ms": 1000
+  },
+  "gps_filters": {
+    "minimum_satellites": 7,
+    "maximum_hdop": 5.0,
+    "maximum_speed_ms": 50.0,
+    "speed_filter_enabled": true,
+    "altitude_filter_enabled": true,
+    "minimum_altitude_m": -100.0,
+    "maximum_altitude_m": 10000.0
+  },
+  "gps_advanced": {
+    "dynamic_model": 0,
+    "fix_mode": 6,
+    "enable_gps": true,
+    "enable_glonass": true,
+    "enable_galileo": true,
+    "enable_beidou": true,
+    "time_pulse_enabled": false,
+    "antenna_detection": false
+  }
+}

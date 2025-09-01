@@ -42,8 +42,8 @@ static const char *TAG = "VisualSLAM_INAV";
 #define TELEMETRY_UPDATE_RATE_HZ 20     // Telemetry broadcast rate
 
 // WiFi Configuration - Will fallback to captive portal if connection fails
-#define DEFAULT_WIFI_SSID      "_2G"
-#define DEFAULT_WIFI_PASS      "modernbug2.4"
+#define DEFAULT_WIFI_SSID      "-----"
+#define DEFAULT_WIFI_PASS      "--------"
 #define CAPTIVE_PORTAL_SSID    "VisualSLAM_Setup"
 #define CAPTIVE_PORTAL_PASS    "12345678"
 

@@ -568,3 +568,56 @@ esp_err_t sensor_fusion_get_data(sensor_fusion_data_t* data) {
     
     return ESP_OK;
 }
+
+// GPS sensor initialization
+esp_err_t sensor_fusion_init_gps(const gps_config_t* config) {
+    if (!config) {
+        ESP_LOGE(TAG, "GPS config is NULL");
+        return ESP_ERR_INVALID_ARG;
+    }
+    
+    ESP_LOGI(TAG, "Initializing GPS sensor with UART%d, baud %d", 
+             config->uart_port, config->baud_rate);
+    
+    // For now, just mark GPS as available in sensor status
+    // The actual GPS hardware initialization should be done by the GPS component
+    g_fusion_state.sensor_status.gps_available = true;
+    g_fusion_state.sensor_status.last_gps_update_us = esp_timer_get_time();
+    
+    ESP_LOGI(TAG, "GPS sensor initialized successfully");
+    return ESP_OK;
+}
+
+// IMU sensor initialization  
+esp_err_t sensor_fusion_register_imu(const imu_config_t* config) {
+    if (!config) {
+        ESP_LOGE(TAG, "IMU config is NULL");
+        return ESP_ERR_INVALID_ARG;
+    }
+    
+    ESP_LOGI(TAG, "Registering IMU sensor in fusion system");
+    
+    // For now, just mark IMU as available in sensor status
+    // The actual IMU hardware initialization should be done by the IMU component
+    g_fusion_state.sensor_status.imu_available = true;
+    g_fusion_state.sensor_status.last_imu_update_us = esp_timer_get_time();
+    
+    ESP_LOGI(TAG, "IMU sensor registered in fusion system");
+    return ESP_OK;
+}
+
+esp_err_t sensor_fusion_get_sensor_status(sensor_status_t* status) {
+    if (!status) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    
+    if (!g_fusion_state.initialized) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    
+    xSemaphoreTake(g_fusion_state.fusion_mutex, portMAX_DELAY);
+    memcpy(status, &g_fusion_state.sensor_status, sizeof(sensor_status_t));
+    xSemaphoreGive(g_fusion_state.fusion_mutex);
+    
+    return ESP_OK;
+}
