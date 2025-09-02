@@ -2,25 +2,10 @@
 
 A real-time visual navigation system for autonomous drones using the ESP32-P4 microcontroller. This project combines computer vision, GPS, and IMU sensors to create a robust SLAM (Simultaneous Localization and Mapping) solution for drone navigation.
 
-## 🚀 Current System Status - **FULLY OPERATIONAL** ✅
+## 🚀 Current System Status - **MOSTLY OPERATIONAL** ✅
 
-### ✅ Major Achievements
-- **Real-time SLAM Processing**: 30 FPS camera processing with ORB feature detection (500 max features)
-- **Dual Storage System**: SPIFFS + SD card configuration with automatic validation and fallback
-- **Sensor Integration**: GPS, IMU, and camera fully integrated with Extended Kalman Filter
-- **Memory Management**: PSRAM integration for frame buffers and feature storage
-- **Configuration Management**: Automatic parameter validation and correction system
-- **MSP Protocol**: Ready for INAV flight controller integration
-- **Error Recovery**: System detects issues and applies sensible defaults automatically
 
-### 📊 Live System Metrics
-- **Processing Rate**: 30 FPS camera input, <33ms per frame processing
-- **Memory Usage**: ~748KB for SLAM data structures, 32MB PSRAM available
-- **Storage**: 14.6GB free on SD card, 5522 bytes free in SPIFFS
-- **Configuration**: 7/7 files loaded successfully with automatic validation
-- **Components**: All sensors and communication protocols operational
-
-## ✨ Features
+### ✨ Features
 
 - **Real-time SLAM Processing** - 30 FPS camera processing with ORB feature detection
 - **Multi-sensor Fusion** - Combines GPS, IMU, and camera data using Extended Kalman Filter
@@ -102,7 +87,7 @@ idf.py monitor -p <PORT>
 #### GPS (uBlox) - UART Interface
 - **TX Pin**: GPIO_NUM_15 (ESP32-P4 → GPS RX)
 - **RX Pin**: GPIO_NUM_16 (GPS TX → ESP32-P4)
-- **Baud Rate**: 9600 (configurable)
+- **Baud Rate**: 115600
 - **Update Rate**: 10Hz
 
 #### IMU (BMI088) - SPI Interface
