@@ -87,6 +87,16 @@ esp_err_t gps_ublox_save_configuration(void);
 bool gps_ublox_is_connected(void);
 bool gps_ublox_has_fix(void);
 
+// AssistNow Offline functions
+esp_err_t gps_ublox_inject_assistnow_data(const uint8_t *data, size_t size);
+esp_err_t gps_ublox_clear_assistnow_data(void);
+
+// Position Aiding functions
+esp_err_t gps_ublox_set_position_aiding(double latitude, double longitude, float altitude,
+                                       float position_accuracy, float altitude_accuracy);
+esp_err_t gps_ublox_clear_position_aiding(void);
+esp_err_t gps_ublox_get_position_aiding_status(bool *enabled);
+
 // Legacy compatibility functions
 esp_err_t gps_ublox_init_legacy(const gps_ublox_config_t *config);
 

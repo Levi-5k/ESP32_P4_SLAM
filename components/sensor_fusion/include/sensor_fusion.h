@@ -45,14 +45,28 @@ typedef struct {
     float P[15][15];          // 15x15 covariance matrix
 } ekf_covariance_t;
 
+// WiFi position data structure
+typedef struct {
+    double latitude;          // degrees
+    double longitude;         // degrees
+    float altitude;           // meters
+    float accuracy_h;         // horizontal accuracy in meters
+    float accuracy_v;         // vertical accuracy in meters
+    uint8_t ap_count;         // number of access points used
+    uint64_t timestamp;       // timestamp in milliseconds
+    bool valid;               // whether position is valid
+} wifi_position_t;
+
 // Sensor availability status
 typedef struct {
     bool gps_available;
     bool imu_available;
     bool slam_available;
+    bool wifi_available;
     uint64_t last_gps_update_us;
     uint64_t last_imu_update_us;
     uint64_t last_slam_update_us;
+    uint64_t last_wifi_update_us;
 } sensor_status_t;
 
 // Fusion system statistics
@@ -60,6 +74,7 @@ typedef struct {
     uint32_t imu_updates;
     uint32_t gps_updates;
     uint32_t slam_updates;
+    uint32_t wifi_updates;
     uint32_t prediction_steps;
     uint32_t correction_steps;
     float average_update_time_ms;
@@ -86,6 +101,7 @@ esp_err_t sensor_fusion_set_gps_origin(double lat, double lon, float alt);
 esp_err_t sensor_fusion_update_imu(const imu_data_t* imu_data);
 esp_err_t sensor_fusion_update_gps(const gps_position_t* gps_data);
 esp_err_t sensor_fusion_update_slam(const slam_pose_t* slam_pose);
+esp_err_t sensor_fusion_update_wifi(const wifi_position_t* wifi_position);
 
 // Get fused navigation state
 esp_err_t sensor_fusion_get_state(navigation_state_t* nav_state);

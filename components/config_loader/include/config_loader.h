@@ -52,6 +52,11 @@ typedef struct {
     uint32_t i2c_clock_speed;
     uint32_t spi_clock_speed;
     uint32_t communication_timeout_ms;
+    // WiFi settings
+    char wifi_ssid[32];
+    char wifi_password[64];
+    uint32_t wifi_connect_timeout_ms;
+    bool wifi_auto_reconnect;
 } system_config_t;
 
 // Extended configuration structures with additional fields
@@ -78,6 +83,22 @@ typedef struct {
     bool enable_beidou;
     bool time_pulse_enabled;
     bool antenna_detection;
+    // AssistNow Offline configuration
+    bool assistnow_enabled;
+    char assistnow_token[64];
+    uint32_t assistnow_update_interval_hours;
+    uint32_t assistnow_validity_hours;
+    bool assistnow_auto_download;
+    char assistnow_server_url[128];
+    // Position Aiding configuration
+    bool position_aiding_enabled;
+    bool use_takeoff_position;
+    double takeoff_latitude;
+    double takeoff_longitude;
+    float takeoff_altitude_m;
+    float position_accuracy_m;
+    float altitude_accuracy_m;
+    bool auto_update_from_gps;
 } extended_gps_config_t;
 
 typedef struct {

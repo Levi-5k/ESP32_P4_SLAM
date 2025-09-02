@@ -6,3 +6,6 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 # Set project name
 project(VisualSLAM_INAV)
+
+# Add local components
+set(EXTRA_COMPONENT_DIRS components/wigle_db)

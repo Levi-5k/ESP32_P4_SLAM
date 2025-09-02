@@ -1,0 +1,10 @@
+idf_component_register(
+    SRCS
+        "wigle_db.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        esp_common
+        sd_storage
+        freertos
+)

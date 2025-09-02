@@ -99,6 +99,10 @@ esp_err_t slam_core_get_camera_config(camera_config_t* config);
 esp_err_t slam_core_get_keyframes(keyframe_t** keyframes, uint32_t* count);
 esp_err_t slam_core_get_map_points(map_point_t** points, uint32_t* count);
 
+// Map loading functions
+esp_err_t slam_core_load_keyframes(const keyframe_t* keyframes, uint32_t count);
+esp_err_t slam_core_load_map_points(const map_point_t* points, uint32_t count);
+
 #ifdef __cplusplus
 }
 #endif

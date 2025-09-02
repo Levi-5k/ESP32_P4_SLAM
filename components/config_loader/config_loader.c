@@ -108,6 +108,24 @@ static const char* DEFAULT_GPS_CONFIG_JSON = "{"
     "\"enable_beidou\": true,"
     "\"time_pulse_enabled\": false,"
     "\"antenna_detection\": false"
+  "},"
+  "\"assistnow\": {"
+    "\"enabled\": false,"
+    "\"token\": \"\","
+    "\"update_interval_hours\": 24,"
+    "\"validity_hours\": 168,"
+    "\"auto_download\": true,"
+    "\"server_url\": \"https://online-live1.services.u-blox.com/GetOfflineData.ashx\""
+  "},"
+  "\"position_aiding\": {"
+    "\"enabled\": true,"
+    "\"use_takeoff_position\": true,"
+    "\"takeoff_latitude\": 0.0,"
+    "\"takeoff_longitude\": 0.0,"
+    "\"takeoff_altitude_m\": 0.0,"
+    "\"position_accuracy_m\": 100.0,"
+    "\"altitude_accuracy_m\": 50.0,"
+    "\"auto_update_from_gps\": true"
   "}"
 "}";
 
@@ -550,8 +568,15 @@ esp_err_t config_loader_load_system_config(system_config_t* config) {
         .uart_buffer_size = 2048,
         .i2c_clock_speed = 400000,
         .spi_clock_speed = 10000000,
-        .communication_timeout_ms = 5000
+        .communication_timeout_ms = 5000,
+        // WiFi defaults
+        .wifi_connect_timeout_ms = 30000,
+        .wifi_auto_reconnect = false
     };
+
+    // Set default WiFi credentials (empty)
+    strcpy(default_config.wifi_ssid, "");
+    strcpy(default_config.wifi_password, "");
 
     // Copy defaults to output config
     memcpy(config, &default_config, sizeof(system_config_t));
@@ -818,6 +843,30 @@ esp_err_t config_loader_load_system_config(system_config_t* config) {
         }
     }
 
+    // Load WiFi configuration
+    cJSON* wifi = cJSON_GetObjectItem(root, "wifi");
+    if (wifi) {
+        cJSON* wifi_item = cJSON_GetObjectItem(wifi, "ssid");
+        if (wifi_item && cJSON_IsString(wifi_item)) {
+            strncpy(config->wifi_ssid, wifi_item->valuestring, sizeof(config->wifi_ssid) - 1);
+        }
+
+        wifi_item = cJSON_GetObjectItem(wifi, "password");
+        if (wifi_item && cJSON_IsString(wifi_item)) {
+            strncpy(config->wifi_password, wifi_item->valuestring, sizeof(config->wifi_password) - 1);
+        }
+
+        wifi_item = cJSON_GetObjectItem(wifi, "connect_timeout_ms");
+        if (wifi_item && cJSON_IsNumber(wifi_item)) {
+            config->wifi_connect_timeout_ms = (uint32_t)wifi_item->valuedouble;
+        }
+
+        wifi_item = cJSON_GetObjectItem(wifi, "auto_reconnect");
+        if (wifi_item && cJSON_IsBool(wifi_item)) {
+            config->wifi_auto_reconnect = cJSON_IsTrue(wifi_item);
+        }
+    }
+
     cJSON_Delete(root);
 
     // If we loaded from SPIFFS but SD card is available and file didn't exist, save to SD card
@@ -863,26 +912,97 @@ esp_err_t config_loader_load_gps_config(extended_gps_config_t* config) {
         .enable_galileo = false,
         .enable_beidou = false,
         .time_pulse_enabled = false,
-        .antenna_detection = false
+        .antenna_detection = false,
+        // AssistNow defaults
+        .assistnow_enabled = false,
+        .assistnow_update_interval_hours = 24,
+        .assistnow_validity_hours = 168,
+        .assistnow_auto_download = true,
+        // Position Aiding defaults
+        .position_aiding_enabled = true,
+        .use_takeoff_position = true,
+        .takeoff_latitude = 0.0,
+        .takeoff_longitude = 0.0,
+        .takeoff_altitude_m = 0.0,
+        .position_accuracy_m = 100.0,
+        .altitude_accuracy_m = 50.0,
+        .auto_update_from_gps = true
     };
+
+    // Set default AssistNow server URL
+    strcpy(default_config.assistnow_server_url,
+           "https://online-live1.services.u-blox.com/GetOfflineData.ashx");
 
     // Copy defaults to output config
     memcpy(config, &default_config, sizeof(extended_gps_config_t));
 
     char* buffer = NULL;
     size_t size = 0;
+    bool sd_file_exists = false;
 
-    esp_err_t ret = read_config_file_with_fallback(GPS_CONFIG_FILE_SD, GPS_CONFIG_FILE_SPIFFS, &buffer, &size);
-    if (ret != ESP_OK) {
-        ESP_LOGW(TAG, "Failed to read GPS config file, using defaults: %s", esp_err_to_name(ret));
-        return ESP_OK; // Return OK since we have defaults
+    // Try to read from SD card first
+    if (g_config_state.sd_available) {
+        esp_err_t sd_ret = read_config_file_sd(GPS_CONFIG_FILE_SD, &buffer, &size);
+        if (sd_ret == ESP_OK) {
+            sd_file_exists = true;
+            ESP_LOGD(TAG, "Loaded GPS config from SD card");
+        } else if (sd_ret == ESP_ERR_NOT_FOUND) {
+            ESP_LOGI(TAG, "GPS config not found on SD card, will save defaults");
+        } else {
+            ESP_LOGW(TAG, "Error reading SD card GPS config: %s", esp_err_to_name(sd_ret));
+        }
     }
 
+    // If SD card read failed, try SPIFFS
+    if (!sd_file_exists && buffer == NULL) {
+        esp_err_t spiffs_ret = read_config_file_spiffs(GPS_CONFIG_FILE_SPIFFS, &buffer, &size);
+        if (spiffs_ret == ESP_OK) {
+            ESP_LOGD(TAG, "Loaded GPS config from SPIFFS");
+        } else {
+            ESP_LOGW(TAG, "Failed to read GPS config from SPIFFS: %s", esp_err_to_name(spiffs_ret));
+            // No config file found anywhere, save defaults to SD card if available
+            if (g_config_state.sd_available) {
+                esp_err_t save_ret = save_gps_config_to_sd(&default_config);
+                if (save_ret == ESP_OK) {
+                    ESP_LOGI(TAG, "✅ Saved default GPS config to SD card");
+                } else {
+                    ESP_LOGW(TAG, "Failed to save default GPS config to SD card: %s", esp_err_to_name(save_ret));
+                }
+            }
+            return ESP_OK; // Return OK since we have defaults
+        }
+    }
+
+    // If we got here, we have a buffer with config data
+    if (buffer == NULL) {
+        ESP_LOGE(TAG, "No config buffer available, using defaults");
+        // Save defaults to SD card if available
+        if (g_config_state.sd_available) {
+            esp_err_t save_ret = save_gps_config_to_sd(&default_config);
+            if (save_ret == ESP_OK) {
+                ESP_LOGI(TAG, "✅ Saved default GPS config to SD card");
+            } else {
+                ESP_LOGW(TAG, "Failed to save default GPS config to SD card: %s", esp_err_to_name(save_ret));
+            }
+        }
+        return ESP_OK;
+    }
+
+    esp_err_t ret = ESP_OK; // Config loaded successfully
     cJSON* root = cJSON_Parse(buffer);
     free(buffer);
 
     if (root == NULL) {
         ESP_LOGE(TAG, "Failed to parse GPS config JSON, using defaults");
+        // Save defaults to SD card if available and file didn't exist
+        if (g_config_state.sd_available && !sd_file_exists) {
+            esp_err_t save_ret = save_gps_config_to_sd(&default_config);
+            if (save_ret == ESP_OK) {
+                ESP_LOGI(TAG, "✅ Saved default GPS config to SD card");
+            } else {
+                ESP_LOGW(TAG, "Failed to save default GPS config to SD card: %s", esp_err_to_name(save_ret));
+            }
+        }
         return ESP_OK; // Return OK since we have defaults
     }
 
@@ -1028,7 +1148,98 @@ esp_err_t config_loader_load_gps_config(extended_gps_config_t* config) {
         }
     }
 
+    // Load AssistNow settings
+    cJSON* assistnow = cJSON_GetObjectItem(root, "assistnow");
+    if (assistnow) {
+        cJSON* item = cJSON_GetObjectItem(assistnow, "enabled");
+        if (item && cJSON_IsBool(item)) {
+            config->assistnow_enabled = cJSON_IsTrue(item);
+        }
+
+        item = cJSON_GetObjectItem(assistnow, "token");
+        if (item && cJSON_IsString(item)) {
+            strncpy(config->assistnow_token, item->valuestring,
+                    sizeof(config->assistnow_token) - 1);
+        }
+
+        item = cJSON_GetObjectItem(assistnow, "update_interval_hours");
+        if (item && cJSON_IsNumber(item)) {
+            config->assistnow_update_interval_hours = (uint32_t)item->valuedouble;
+        }
+
+        item = cJSON_GetObjectItem(assistnow, "validity_hours");
+        if (item && cJSON_IsNumber(item)) {
+            config->assistnow_validity_hours = (uint32_t)item->valuedouble;
+        }
+
+        item = cJSON_GetObjectItem(assistnow, "auto_download");
+        if (item && cJSON_IsBool(item)) {
+            config->assistnow_auto_download = cJSON_IsTrue(item);
+        }
+
+        item = cJSON_GetObjectItem(assistnow, "server_url");
+        if (item && cJSON_IsString(item)) {
+            strncpy(config->assistnow_server_url, item->valuestring,
+                    sizeof(config->assistnow_server_url) - 1);
+        }
+    }
+
+    // Parse Position Aiding configuration
+    cJSON *position_aiding = cJSON_GetObjectItem(root, "position_aiding");
+    if (position_aiding && cJSON_IsObject(position_aiding)) {
+        cJSON *item = cJSON_GetObjectItem(position_aiding, "enabled");
+        if (item && cJSON_IsBool(item)) {
+            config->position_aiding_enabled = cJSON_IsTrue(item);
+        }
+
+        item = cJSON_GetObjectItem(position_aiding, "use_takeoff_position");
+        if (item && cJSON_IsBool(item)) {
+            config->use_takeoff_position = cJSON_IsTrue(item);
+        }
+
+        item = cJSON_GetObjectItem(position_aiding, "takeoff_latitude");
+        if (item && cJSON_IsNumber(item)) {
+            config->takeoff_latitude = item->valuedouble;
+        }
+
+        item = cJSON_GetObjectItem(position_aiding, "takeoff_longitude");
+        if (item && cJSON_IsNumber(item)) {
+            config->takeoff_longitude = item->valuedouble;
+        }
+
+        item = cJSON_GetObjectItem(position_aiding, "takeoff_altitude_m");
+        if (item && cJSON_IsNumber(item)) {
+            config->takeoff_altitude_m = (float)item->valuedouble;
+        }
+
+        item = cJSON_GetObjectItem(position_aiding, "position_accuracy_m");
+        if (item && cJSON_IsNumber(item)) {
+            config->position_accuracy_m = (float)item->valuedouble;
+        }
+
+        item = cJSON_GetObjectItem(position_aiding, "altitude_accuracy_m");
+        if (item && cJSON_IsNumber(item)) {
+            config->altitude_accuracy_m = (float)item->valuedouble;
+        }
+
+        item = cJSON_GetObjectItem(position_aiding, "auto_update_from_gps");
+        if (item && cJSON_IsBool(item)) {
+            config->auto_update_from_gps = cJSON_IsTrue(item);
+        }
+    }
+
     cJSON_Delete(root);
+
+    // If we loaded from SPIFFS but SD card is available and file didn't exist, save to SD card
+    if (g_config_state.sd_available && !sd_file_exists) {
+        esp_err_t save_ret = save_gps_config_to_sd(config);
+        if (save_ret == ESP_OK) {
+            ESP_LOGI(TAG, "✅ Saved loaded GPS config to SD card");
+        } else {
+            ESP_LOGW(TAG, "Failed to save GPS config to SD card: %s", esp_err_to_name(save_ret));
+        }
+    }
+
     return ESP_OK;
 }
 
@@ -2245,6 +2456,30 @@ static esp_err_t save_gps_config_to_sd(const extended_gps_config_t* config) {
         cJSON_AddBoolToObject(advanced, "antenna_detection", config->antenna_detection);
     }
 
+    // Add AssistNow configuration
+    cJSON* assistnow = cJSON_AddObjectToObject(root, "assistnow");
+    if (assistnow) {
+        cJSON_AddBoolToObject(assistnow, "enabled", config->assistnow_enabled);
+        cJSON_AddStringToObject(assistnow, "token", config->assistnow_token);
+        cJSON_AddNumberToObject(assistnow, "update_interval_hours", config->assistnow_update_interval_hours);
+        cJSON_AddNumberToObject(assistnow, "validity_hours", config->assistnow_validity_hours);
+        cJSON_AddBoolToObject(assistnow, "auto_download", config->assistnow_auto_download);
+        cJSON_AddStringToObject(assistnow, "server_url", config->assistnow_server_url);
+    }
+
+    // Add Position Aiding configuration
+    cJSON* position_aiding = cJSON_AddObjectToObject(root, "position_aiding");
+    if (position_aiding) {
+        cJSON_AddBoolToObject(position_aiding, "enabled", config->position_aiding_enabled);
+        cJSON_AddBoolToObject(position_aiding, "use_takeoff_position", config->use_takeoff_position);
+        cJSON_AddNumberToObject(position_aiding, "takeoff_latitude", config->takeoff_latitude);
+        cJSON_AddNumberToObject(position_aiding, "takeoff_longitude", config->takeoff_longitude);
+        cJSON_AddNumberToObject(position_aiding, "takeoff_altitude_m", config->takeoff_altitude_m);
+        cJSON_AddNumberToObject(position_aiding, "position_accuracy_m", config->position_accuracy_m);
+        cJSON_AddNumberToObject(position_aiding, "altitude_accuracy_m", config->altitude_accuracy_m);
+        cJSON_AddBoolToObject(position_aiding, "auto_update_from_gps", config->auto_update_from_gps);
+    }
+
     char* json_str = cJSON_Print(root);
     cJSON_Delete(root);
 
@@ -2964,6 +3199,42 @@ static esp_err_t save_gps_config_to_spiffs(const extended_gps_config_t* config) 
         cJSON_AddBoolToObject(filters, "altitude_filter_enabled", config->altitude_filter_enabled);
         cJSON_AddNumberToObject(filters, "minimum_altitude_m", config->minimum_altitude_m);
         cJSON_AddNumberToObject(filters, "maximum_altitude_m", config->maximum_altitude_m);
+    }
+
+    cJSON* advanced = cJSON_AddObjectToObject(root, "gps_advanced");
+    if (advanced) {
+        cJSON_AddNumberToObject(advanced, "dynamic_model", config->dynamic_model);
+        cJSON_AddNumberToObject(advanced, "fix_mode", config->fix_mode);
+        cJSON_AddBoolToObject(advanced, "enable_gps", config->enable_gps);
+        cJSON_AddBoolToObject(advanced, "enable_glonass", config->enable_glonass);
+        cJSON_AddBoolToObject(advanced, "enable_galileo", config->enable_galileo);
+        cJSON_AddBoolToObject(advanced, "enable_beidou", config->enable_beidou);
+        cJSON_AddBoolToObject(advanced, "time_pulse_enabled", config->time_pulse_enabled);
+        cJSON_AddBoolToObject(advanced, "antenna_detection", config->antenna_detection);
+    }
+
+    // Add AssistNow configuration
+    cJSON* assistnow = cJSON_AddObjectToObject(root, "assistnow");
+    if (assistnow) {
+        cJSON_AddBoolToObject(assistnow, "enabled", config->assistnow_enabled);
+        cJSON_AddStringToObject(assistnow, "token", config->assistnow_token);
+        cJSON_AddNumberToObject(assistnow, "update_interval_hours", config->assistnow_update_interval_hours);
+        cJSON_AddNumberToObject(assistnow, "validity_hours", config->assistnow_validity_hours);
+        cJSON_AddBoolToObject(assistnow, "auto_download", config->assistnow_auto_download);
+        cJSON_AddStringToObject(assistnow, "server_url", config->assistnow_server_url);
+    }
+
+    // Add Position Aiding configuration
+    cJSON* position_aiding = cJSON_AddObjectToObject(root, "position_aiding");
+    if (position_aiding) {
+        cJSON_AddBoolToObject(position_aiding, "enabled", config->position_aiding_enabled);
+        cJSON_AddBoolToObject(position_aiding, "use_takeoff_position", config->use_takeoff_position);
+        cJSON_AddNumberToObject(position_aiding, "takeoff_latitude", config->takeoff_latitude);
+        cJSON_AddNumberToObject(position_aiding, "takeoff_longitude", config->takeoff_longitude);
+        cJSON_AddNumberToObject(position_aiding, "takeoff_altitude_m", config->takeoff_altitude_m);
+        cJSON_AddNumberToObject(position_aiding, "position_accuracy_m", config->position_accuracy_m);
+        cJSON_AddNumberToObject(position_aiding, "altitude_accuracy_m", config->altitude_accuracy_m);
+        cJSON_AddBoolToObject(position_aiding, "auto_update_from_gps", config->auto_update_from_gps);
     }
 
     char* json_str = cJSON_Print(root);

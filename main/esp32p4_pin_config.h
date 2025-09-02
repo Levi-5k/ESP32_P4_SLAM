@@ -71,6 +71,14 @@
 #define MSP_UART_RX_PIN            GPIO_NUM_19   /**< MSP UART RX */
 
 // ============================================================================
+// WIFI TOGGLE BUTTON PIN
+// ============================================================================
+
+/** WIFI Toggle Button Pin */
+/** @note GPIO 14 is available and used for WIFI on/off toggle */
+#define WIFI_TOGGLE_BUTTON_PIN   GPIO_NUM_14   /**< WIFI toggle button input */
+
+// ============================================================================
 // PIN USAGE VALIDATION MACROS
 // ============================================================================
 
@@ -117,6 +125,10 @@
     _Static_assert(MSP_UART_TX_PIN == GPIO_NUM_18, "MSP UART TX pin conflict detected"); \
     _Static_assert(MSP_UART_RX_PIN == GPIO_NUM_19, "MSP UART RX pin conflict detected");
 
+// WIFI toggle button pin validation
+#define _VALIDATE_WIFI_TOGGLE_PIN \
+    _Static_assert(WIFI_TOGGLE_BUTTON_PIN == GPIO_NUM_14, "WIFI toggle button pin conflict detected");
+
 /**
  * Master validation macro - call this in main.c to validate all pin assignments
  */
@@ -126,7 +138,8 @@
     _VALIDATE_GPS_UART_PINS \
     _VALIDATE_SDMMC_PINS \
     _VALIDATE_SYSTEM_LED_PINS \
-    _VALIDATE_MSP_UART_PINS
+    _VALIDATE_MSP_UART_PINS \
+    _VALIDATE_WIFI_TOGGLE_PIN
 
 // ============================================================================
 // PIN FUNCTION COMPATIBILITY CHECKS

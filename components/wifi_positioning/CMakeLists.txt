@@ -1,0 +1,12 @@
+idf_component_register(
+    SRCS
+        "wifi_positioning.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        esp_wifi
+        esp_event
+        sd_storage
+        esp_timer
+        freertos
+)

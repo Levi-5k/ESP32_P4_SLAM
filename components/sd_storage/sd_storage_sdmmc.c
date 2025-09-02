@@ -669,8 +669,13 @@ esp_err_t sd_storage_load_slam_map(const char *map_name, double *lat, double *lo
             size_t kf_read = fread(keyframes, sizeof(keyframe_t), header.keyframe_count, file);
             if (kf_read == header.keyframe_count) {
                 ESP_LOGI(TAG, "✅ Successfully loaded %zu keyframes", kf_read);
-                // TODO: Pass keyframes to SLAM core for map reconstruction
-                // slam_core_load_keyframes(keyframes, kf_read);
+                // Load keyframes into SLAM core for map reconstruction
+                esp_err_t ret = slam_core_load_keyframes(keyframes, kf_read);
+                if (ret != ESP_OK) {
+                    ESP_LOGW(TAG, "⚠️ Failed to load keyframes into SLAM core: %s", esp_err_to_name(ret));
+                } else {
+                    ESP_LOGI(TAG, "✅ Keyframes loaded into SLAM system");
+                }
             } else {
                 ESP_LOGW(TAG, "⚠️ Partial keyframe load: expected %lu, got %zu", 
                          header.keyframe_count, kf_read);
@@ -692,8 +697,13 @@ esp_err_t sd_storage_load_slam_map(const char *map_name, double *lat, double *lo
             size_t mp_read = fread(map_points, sizeof(map_point_t), header.map_point_count, file);
             if (mp_read == header.map_point_count) {
                 ESP_LOGI(TAG, "✅ Successfully loaded %zu map points", mp_read);
-                // TODO: Pass map points to SLAM core for map reconstruction
-                // slam_core_load_map_points(map_points, mp_read);
+                // Load map points into SLAM core for map reconstruction
+                esp_err_t ret = slam_core_load_map_points(map_points, mp_read);
+                if (ret != ESP_OK) {
+                    ESP_LOGW(TAG, "⚠️ Failed to load map points into SLAM core: %s", esp_err_to_name(ret));
+                } else {
+                    ESP_LOGI(TAG, "✅ Map points loaded into SLAM system");
+                }
             } else {
                 ESP_LOGW(TAG, "⚠️ Partial map point load: expected %lu, got %zu", 
                          header.map_point_count, mp_read);

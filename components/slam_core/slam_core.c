@@ -862,3 +862,78 @@ esp_err_t slam_core_get_map_points(map_point_t** points, uint32_t* count) {
     
     return ESP_OK;
 }
+
+// Map loading functions for map reconstruction
+esp_err_t slam_core_load_keyframes(const keyframe_t* keyframes, uint32_t count) {
+    if (!keyframes || count == 0) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    
+    if (!g_slam_state.initialized) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    
+    xSemaphoreTake(g_slam_state.slam_mutex, portMAX_DELAY);
+    
+    // Free existing keyframes if any
+    if (g_slam_state.keyframes) {
+        heap_caps_free(g_slam_state.keyframes);
+        g_slam_state.keyframes = NULL;
+        g_slam_state.num_keyframes = 0;
+    }
+    
+    // Allocate memory for new keyframes
+    size_t keyframes_size = count * sizeof(keyframe_t);
+    g_slam_state.keyframes = heap_caps_malloc(keyframes_size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (!g_slam_state.keyframes) {
+        ESP_LOGE(TAG, "Failed to allocate memory for %u keyframes", count);
+        xSemaphoreGive(g_slam_state.slam_mutex);
+        return ESP_ERR_NO_MEM;
+    }
+    
+    // Copy keyframes data
+    memcpy(g_slam_state.keyframes, keyframes, keyframes_size);
+    g_slam_state.num_keyframes = count;
+    
+    xSemaphoreGive(g_slam_state.slam_mutex);
+    
+    ESP_LOGI(TAG, "✅ Loaded %u keyframes into SLAM system", count);
+    return ESP_OK;
+}
+
+esp_err_t slam_core_load_map_points(const map_point_t* points, uint32_t count) {
+    if (!points || count == 0) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    
+    if (!g_slam_state.initialized) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    
+    xSemaphoreTake(g_slam_state.slam_mutex, portMAX_DELAY);
+    
+    // Free existing map points if any
+    if (g_slam_state.map_points) {
+        heap_caps_free(g_slam_state.map_points);
+        g_slam_state.map_points = NULL;
+        g_slam_state.num_map_points = 0;
+    }
+    
+    // Allocate memory for new map points
+    size_t map_points_size = count * sizeof(map_point_t);
+    g_slam_state.map_points = heap_caps_malloc(map_points_size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (!g_slam_state.map_points) {
+        ESP_LOGE(TAG, "Failed to allocate memory for %u map points", count);
+        xSemaphoreGive(g_slam_state.slam_mutex);
+        return ESP_ERR_NO_MEM;
+    }
+    
+    // Copy map points data
+    memcpy(g_slam_state.map_points, points, map_points_size);
+    g_slam_state.num_map_points = count;
+    
+    xSemaphoreGive(g_slam_state.slam_mutex);
+    
+    ESP_LOGI(TAG, "✅ Loaded %u map points into SLAM system", count);
+    return ESP_OK;
+}

@@ -31,5 +31,23 @@
     "enable_beidou": true,
     "time_pulse_enabled": false,
     "antenna_detection": false
+  },
+  "assistnow": {
+    "enabled": false,
+    "token": "",
+    "update_interval_hours": 24,
+    "validity_hours": 168,
+    "auto_download": true,
+    "server_url": "https://online-live1.services.u-blox.com/GetOfflineData.ashx"
+  },
+  "position_aiding": {
+    "enabled": true,
+    "use_takeoff_position": true,
+    "takeoff_latitude": 0.0,
+    "takeoff_longitude": 0.0,
+    "takeoff_altitude_m": 0.0,
+    "position_accuracy_m": 100.0,
+    "altitude_accuracy_m": 50.0,
+    "auto_update_from_gps": true
   }
 }

@@ -259,6 +259,58 @@ esp_err_t sensor_fusion_update_slam(const slam_pose_t* slam_pose) {
     return ret;
 }
 
+esp_err_t sensor_fusion_update_wifi(const wifi_position_t* wifi_position) {
+    if (!g_fusion_state.initialized || !wifi_position) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // Only process WiFi data if position is valid and accuracy is reasonable
+    if (!wifi_position->valid || wifi_position->accuracy_h > 100.0f) {
+        return ESP_OK;
+    }
+
+    // Only use WiFi if we have enough access points
+    if (wifi_position->ap_count < 3) {
+        return ESP_OK;
+    }
+
+    xSemaphoreTake(g_fusion_state.fusion_mutex, portMAX_DELAY);
+
+    // Create a GPS-like position structure for WiFi data
+    gps_position_t wifi_as_gps = {
+        .latitude = wifi_position->latitude,
+        .longitude = wifi_position->longitude,
+        .altitude = wifi_position->altitude,
+        .accuracy = wifi_position->accuracy_h,
+        .gps_fix_type = 3,  // 3D fix
+        .satellites = wifi_position->ap_count,  // Use AP count as "satellites"
+        .timestamp_us = wifi_position->timestamp
+    };
+
+    // Use GPS correction function but with WiFi-specific noise characteristics
+    float original_gps_noise = g_fusion_state.config.gps_position_noise;
+    g_fusion_state.config.gps_position_noise = wifi_position->accuracy_h / 3.0f;  // WiFi is less accurate
+
+    esp_err_t ret = correct_with_gps(&wifi_as_gps);
+
+    // Restore original GPS noise
+    g_fusion_state.config.gps_position_noise = original_gps_noise;
+
+    if (ret == ESP_OK) {
+        uint64_t current_time = esp_timer_get_time();
+        g_fusion_state.stats.correction_steps++;
+        g_fusion_state.stats.wifi_updates++;
+        g_fusion_state.sensor_status.last_wifi_update_us = current_time;
+        g_fusion_state.sensor_status.wifi_available = true;
+        ESP_LOGI(TAG, "WiFi position update: %.6f, %.6f (accuracy: %.1fm, %u APs)",
+                 wifi_position->latitude, wifi_position->longitude,
+                 wifi_position->accuracy_h, wifi_position->ap_count);
+    }
+
+    xSemaphoreGive(g_fusion_state.fusion_mutex);
+    return ret;
+}
+
 esp_err_t sensor_fusion_get_state(navigation_state_t* nav_state) {
     if (!g_fusion_state.initialized || !nav_state) {
         return ESP_ERR_INVALID_ARG;

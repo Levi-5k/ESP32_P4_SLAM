@@ -13,7 +13,7 @@
 #include <freertos/event_groups.h>
 #include <esp_log.h>
 #include <esp_system.h>
-// #include <esp_wifi.h>  // Disabled - WiFi not available
+// #include <esp_wifi.h>  // WIFI remote disabled temporarily
 #include <driver/spi_master.h>
 #include <esp_event.h>
 #include <nvs_flash.h>
@@ -26,12 +26,15 @@
 #include "slam_core.h"
 #include "orb_features.h"
 #include "sensor_fusion.h"
-// #include "web_server.h"  // Disabled - WiFi not available
+#include "web_server.h"  // WIFI remote enabled
 #include "sd_storage.h"
 #include "gps_ublox.h"    // GPS uBlox module
 #include "imu_bmi088.h"   // BMI088 IMU sensor
 #include "msp_protocol.h" // MSP protocol for INAV
 #include "config_loader.h" // Configuration management
+#include "assistnow.h"    // AssistNow Offline GPS enhancement
+#include "wifi_assistnow.h" // WiFi for AssistNow downloads
+#include "wifi_positioning.h" // WiFi positioning using WiGLE database
 
 // Centralized pin configuration
 #include "esp32p4_pin_config.h"
@@ -47,7 +50,7 @@ static EventGroupHandle_t system_event_group;
 #define GPS_READY_BIT          BIT1
 #define IMU_READY_BIT          BIT2
 #define SLAM_READY_BIT         BIT3
-// #define WEB_SERVER_READY_BIT   BIT4  // Disabled - WiFi not available
+#define WEB_SERVER_READY_BIT   BIT4  // WIFI remote enabled
 #define ALL_SYSTEMS_READY      (CAMERA_READY_BIT | GPS_READY_BIT | IMU_READY_BIT | SLAM_READY_BIT)
 
 // Task handles
@@ -58,6 +61,17 @@ static TaskHandle_t sensor_monitoring_task_handle = NULL;
 
 // System status instance
 static system_status_t system_status = {0};
+
+// WIFI remote functionality
+// static bool wifi_enabled = false;
+// static bool wifi_connected = false;
+// static SemaphoreHandle_t wifi_mutex = NULL;
+
+// Forward declarations for WIFI functions
+// static void IRAM_ATTR wifi_toggle_button_isr(void* arg);
+// static void wifi_toggle_task(void* arg);
+// static esp_err_t wifi_enable(void);
+// static esp_err_t wifi_disable(void);
 
 // Master configuration instance
 static master_config_t master_config = {0};
@@ -92,6 +106,20 @@ static void initialize_gpio(void)
         .pull_up_en = 0,
     };
     gpio_config(&gpio_conf);
+
+    // WIFI toggle button input
+    // gpio_config_t button_conf = {
+    //     .intr_type = GPIO_INTR_NEGEDGE,  // Trigger on falling edge (button press)
+    //     .mode = GPIO_MODE_INPUT,
+    //     .pin_bit_mask = (1ULL << WIFI_TOGGLE_BUTTON_PIN),
+    //     .pull_down_en = 0,
+    //     .pull_up_en = 1,  // Enable internal pull-up resistor
+    // };
+    // gpio_config(&button_conf);
+
+    // Install GPIO ISR service for button interrupt
+    // gpio_install_isr_service(0);
+    // gpio_isr_handler_add(WIFI_TOGGLE_BUTTON_PIN, wifi_toggle_button_isr, NULL);
 
     // Set initial LED states
     gpio_set_level(SYSTEM_STATUS_LED_PIN, 0);   // System status LED
@@ -227,7 +255,108 @@ static esp_err_t initialize_gps(void)
     } else {
         ESP_LOGE(TAG, "❌ GPS initialization failed: %s", esp_err_to_name(ret));
     }
-    
+
+    // Initialize AssistNow Offline if enabled and token is configured
+    if (master_config.gps.assistnow_enabled &&
+        strlen(master_config.gps.assistnow_token) > 0) {
+
+        assistnow_config_t assistnow_config = {
+            .enabled = master_config.gps.assistnow_enabled,
+            .update_interval_hours = master_config.gps.assistnow_update_interval_hours,
+            .validity_hours = master_config.gps.assistnow_validity_hours,
+            .auto_download = master_config.gps.assistnow_auto_download,
+            .period_days = 4,           // Match u-blox software default
+            .resolution_hours = 1,      // Match u-blox software default
+        };
+
+        strcpy(assistnow_config.token, master_config.gps.assistnow_token);
+        strcpy(assistnow_config.server_url, master_config.gps.assistnow_server_url);
+        strcpy(assistnow_config.data_file_path, "/sdcard/assistnow/assistnow.ubx");
+        strcpy(assistnow_config.gnss_constellations, "gps,glo,bds,gal");  // Include BeiDou
+
+        ret = assistnow_init(&assistnow_config);
+        if (ret == ESP_OK) {
+            ESP_LOGI(TAG, "✅ AssistNow Offline initialized");
+
+            // Set WiFi configuration for AssistNow downloads
+            wifi_assistnow_config_t wifi_config = {
+                .connect_timeout_ms = master_config.system.wifi_connect_timeout_ms > 0 ?
+                                    master_config.system.wifi_connect_timeout_ms : 30000,
+                .auto_reconnect = master_config.system.wifi_auto_reconnect
+            };
+            strcpy(wifi_config.ssid, master_config.system.wifi_ssid);
+            strcpy(wifi_config.password, master_config.system.wifi_password);
+
+            ret = assistnow_set_wifi_config(&wifi_config);
+            if (ret == ESP_OK) {
+                ESP_LOGI(TAG, "✅ WiFi configuration set for AssistNow downloads");
+            } else {
+                ESP_LOGW(TAG, "⚠️ Failed to set WiFi config for AssistNow: %s", esp_err_to_name(ret));
+            }
+
+            // Configure WiFi for AssistNow downloads if credentials are provided
+            if (strlen(master_config.system.wifi_ssid) > 0 &&
+                strlen(master_config.system.wifi_password) > 0) {
+
+                ret = wifi_assistnow_init(&wifi_config);
+                if (ret == ESP_OK) {
+                    ESP_LOGI(TAG, "✅ WiFi configured for AssistNow downloads");
+                } else {
+                    ESP_LOGW(TAG, "⚠️ WiFi configuration failed: %s", esp_err_to_name(ret));
+                }
+            } else {
+                ESP_LOGI(TAG, "ℹ️ WiFi credentials not configured for AssistNow");
+            }
+
+            // Load existing AssistNow data to GPS if available
+            if (assistnow_is_data_valid()) {
+                assistnow_upload_to_gps();
+            }
+
+            // Start auto-update if enabled
+            if (master_config.gps.assistnow_auto_download) {
+                assistnow_start_auto_update();
+            }
+        } else {
+            ESP_LOGW(TAG, "⚠️ AssistNow Offline initialization failed: %s", esp_err_to_name(ret));
+        }
+    } else {
+        ESP_LOGI(TAG, "ℹ️ AssistNow Offline disabled or no token configured");
+    }
+
+    // Initialize Position Aiding if enabled
+    if (master_config.gps.position_aiding_enabled) {
+        ESP_LOGI(TAG, "🎯 Initializing Position Aiding...");
+
+        if (master_config.gps.use_takeoff_position &&
+            master_config.gps.takeoff_latitude != 0.0 &&
+            master_config.gps.takeoff_longitude != 0.0) {
+
+            // Use takeoff position for position aiding
+            ret = gps_ublox_set_position_aiding(
+                master_config.gps.takeoff_latitude,
+                master_config.gps.takeoff_longitude,
+                master_config.gps.takeoff_altitude_m,
+                master_config.gps.position_accuracy_m,
+                master_config.gps.altitude_accuracy_m
+            );
+
+            if (ret == ESP_OK) {
+                ESP_LOGI(TAG, "✅ Position aiding set to takeoff coordinates: %.6f, %.6f, %.1fm",
+                         master_config.gps.takeoff_latitude,
+                         master_config.gps.takeoff_longitude,
+                         master_config.gps.takeoff_altitude_m);
+            } else {
+                ESP_LOGW(TAG, "⚠️ Failed to set position aiding: %s", esp_err_to_name(ret));
+            }
+        } else {
+            ESP_LOGI(TAG, "ℹ️ Position aiding enabled but no takeoff coordinates configured");
+            ESP_LOGI(TAG, "💡 Configure takeoff coordinates in gps_config.json for better GPS performance");
+        }
+    } else {
+        ESP_LOGI(TAG, "ℹ️ Position aiding disabled");
+    }
+
     return ret;
 }
 
@@ -414,6 +543,20 @@ static void main_processing_task(void *pvParameters)
                 // Get sensor fusion data
                 sensor_fusion_data_t sensor_data;
                 sensor_fusion_get_data(&sensor_data);
+                
+                // Update WiFi positioning if available
+                if (wifi_positioning_is_available()) {
+                    wifi_position_t wifi_pos;
+                    esp_err_t wifi_ret = wifi_positioning_get_position(&wifi_pos);
+                    if (wifi_ret == ESP_OK && wifi_pos.valid) {
+                        // Update sensor fusion with WiFi position
+                        sensor_fusion_update_wifi(&wifi_pos);
+                        
+                        // Log WiFi position data
+                        ESP_LOGD(TAG, "WiFi position: %.6f, %.6f (accuracy: %.1fm)",
+                                wifi_pos.latitude, wifi_pos.longitude, wifi_pos.accuracy_h);
+                    }
+                }
                 
                 // Log sensor data (GPS, IMU)
                 sd_storage_log_sensor_data(loop_start_time,
@@ -705,6 +848,203 @@ static void sensor_monitoring_task(void *pvParameters)
 }
 
 /**
+ * WIFI toggle button interrupt service routine
+ */
+/*
+static void IRAM_ATTR wifi_toggle_button_isr(void* arg)
+{
+    // Create a task to handle WIFI toggle to avoid ISR complexity
+    xTaskCreate(wifi_toggle_task, "wifi_toggle", 2048, NULL, 5, NULL);
+}
+*/
+
+/**
+ * WIFI toggle task - handles WIFI on/off logic
+ */
+/*
+void wifi_toggle_task(void* arg)
+{
+    // Debounce delay
+    vTaskDelay(pdMS_TO_TICKS(50));
+
+    // Check if button is still pressed (debounce)
+    if (gpio_get_level(WIFI_TOGGLE_BUTTON_PIN) == 0) {
+        // Toggle WIFI state
+        if (wifi_enabled) {
+            wifi_disable();
+        } else {
+            wifi_enable();
+        }
+    }
+
+    vTaskDelete(NULL);
+}
+*/
+
+/**
+ * Enable WIFI remote functionality
+ */
+/*
+esp_err_t wifi_enable(void)
+{
+    if (wifi_enabled) {
+        ESP_LOGW(TAG, "⚠️ WIFI is already enabled");
+        return ESP_OK;
+    }
+
+    ESP_LOGI(TAG, "📡 Enabling WIFI remote...");
+
+    // Take WIFI mutex
+    if (xSemaphoreTake(wifi_mutex, pdMS_TO_TICKS(1000)) != pdTRUE) {
+        ESP_LOGE(TAG, "❌ Failed to acquire WIFI mutex");
+        return ESP_ERR_TIMEOUT;
+    }
+
+    esp_err_t ret = ESP_OK;
+
+    // Initialize WIFI if not already done
+    if (!wifi_connected) {
+        // Configure web server
+        web_server_config_t config = {
+            .port = 80,
+            .max_clients = 4,
+            .enable_cors = true,
+            .enable_auth = false,
+            .ssid = "DroneCam-SLAM",
+            .password = "dronecam123",
+            .channel = 6,
+            .max_connection = 4
+        };
+
+        ret = web_server_init(&config);
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "❌ Web server initialization failed: %s", esp_err_to_name(ret));
+            xSemaphoreGive(wifi_mutex);
+            return ret;
+        }
+
+        // Start WIFI in AP mode
+        ret = web_server_wifi_start();
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "❌ WIFI AP start failed: %s", esp_err_to_name(ret));
+            xSemaphoreGive(wifi_mutex);
+            return ret;
+        }
+
+        // Start web server
+        ret = web_server_start();
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "❌ Web server start failed: %s", esp_err_to_name(ret));
+            xSemaphoreGive(wifi_mutex);
+            return ret;
+        }
+
+        wifi_connected = true;
+        system_status.web_server_running = true;
+        xEventGroupSetBits(system_event_group, WEB_SERVER_READY_BIT);
+    }
+
+    wifi_enabled = true;
+    xSemaphoreGive(wifi_mutex);
+
+    // Download AssistNow data if needed and configured
+    if (master_config.gps.assistnow_enabled &&
+        strlen(master_config.gps.assistnow_token) > 0 &&
+        assistnow_is_download_needed()) {
+
+        ESP_LOGI(TAG, "📡 WiFi available - checking for AssistNow data update...");
+        esp_err_t assistnow_ret = assistnow_download_data();
+        if (assistnow_ret == ESP_OK) {
+            ESP_LOGI(TAG, "✅ AssistNow data downloaded successfully");
+
+            // Load the new data to GPS
+            assistnow_upload_to_gps();
+        } else {
+            ESP_LOGW(TAG, "⚠️ AssistNow data download failed: %s", esp_err_to_name(assistnow_ret));
+        }
+    }
+
+    ESP_LOGI(TAG, "🌐 Web interface: Connect to WiFi or use captive portal");
+    ESP_LOGI(TAG, "📱 Access dashboard at: http://dronecam.local or device IP");
+
+    return ESP_OK;
+}
+*/
+
+/**
+ * Disable WIFI remote functionality
+ */
+/*
+esp_err_t wifi_disable(void)
+{
+    if (!wifi_enabled) {
+        ESP_LOGW(TAG, "⚠️ WIFI is already disabled");
+        return ESP_OK;
+    }
+
+    ESP_LOGI(TAG, "📡 Disabling WIFI remote...");
+
+    // Take WIFI mutex
+    if (xSemaphoreTake(wifi_mutex, pdMS_TO_TICKS(1000)) != pdTRUE) {
+        ESP_LOGE(TAG, "❌ Failed to acquire WIFI mutex");
+        return ESP_ERR_TIMEOUT;
+    }
+
+    esp_err_t ret = ESP_OK;
+
+    // Stop web server and WIFI
+    if (wifi_connected) {
+        ret = web_server_stop();
+        if (ret != ESP_OK) {
+            ESP_LOGW(TAG, "⚠️ Web server stop warning: %s", esp_err_to_name(ret));
+        }
+
+        ret = web_server_wifi_stop();
+        if (ret != ESP_OK) {
+            ESP_LOGW(TAG, "⚠️ WIFI stop warning: %s", esp_err_to_name(ret));
+        }
+
+        wifi_connected = false;
+        system_status.web_server_running = false;
+        xEventGroupClearBits(system_event_group, WEB_SERVER_READY_BIT);
+    }
+
+    wifi_enabled = false;
+    xSemaphoreGive(wifi_mutex);
+
+    ESP_LOGI(TAG, "✅ WIFI remote disabled");
+
+    return ESP_OK;
+}
+*/
+
+/**
+ * Initialize WIFI system
+ */
+/*
+static esp_err_t initialize_wifi(void)
+{
+    ESP_LOGI(TAG, "📡 Initializing WIFI system...");
+
+    // Create WIFI mutex
+    wifi_mutex = xSemaphoreCreateMutex();
+    if (wifi_mutex == NULL) {
+        ESP_LOGE(TAG, "❌ Failed to create WIFI mutex");
+        return ESP_ERR_NO_MEM;
+    }
+
+    // Initialize WIFI state
+    wifi_enabled = false;
+    wifi_connected = false;
+
+    ESP_LOGI(TAG, "✅ WIFI system initialized (disabled by default)");
+    ESP_LOGI(TAG, "🔘 Press GPIO%d button to toggle WIFI on/off", WIFI_TOGGLE_BUTTON_PIN);
+
+    return ESP_OK;
+}
+*/
+
+/**
  * Application main entry point
  */
 void app_main(void)
@@ -725,7 +1065,10 @@ void app_main(void)
     // Initialize system components
     initialize_nvs();
     initialize_gpio();
-    
+
+    // Initialize WIFI system (disabled by default)
+    // initialize_wifi();
+
     // Create system synchronization objects
     system_mutex = xSemaphoreCreateMutex();
     system_event_group = xEventGroupCreate();
@@ -863,6 +1206,35 @@ void app_main(void)
     ret = initialize_slam();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "SLAM initialization failed, continuing anyway...");
+    }
+
+    // Initialize WiFi positioning system
+    ESP_LOGI(TAG, "📍 Initializing WiFi positioning system...");
+    wifi_positioning_config_t wifi_pos_config = {
+        .scan_interval_ms = 30000,        // Scan every 30 seconds
+        .min_ap_count = 3,                // Need at least 3 APs
+        .max_ap_count = 10,               // Use up to 10 APs
+        .min_rssi_threshold = -85,        // Minimum RSSI -85dBm
+        .wigle_db_size = 10000,           // Support up to 10k entries
+        .wigle_db_path = "/sdcard/wigle/wigle.db",
+        .enable_auto_scan = true,         // Enable automatic scanning
+        .position_timeout_ms = 5000       // 5 second timeout
+    };
+
+    ret = wifi_positioning_init(&wifi_pos_config);
+    if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "✅ WiFi positioning initialized successfully");
+
+        // Start WiFi positioning
+        ret = wifi_positioning_start();
+        if (ret == ESP_OK) {
+            ESP_LOGI(TAG, "✅ WiFi positioning started successfully");
+        } else {
+            ESP_LOGW(TAG, "⚠️ Failed to start WiFi positioning: %s", esp_err_to_name(ret));
+        }
+    } else {
+        ESP_LOGW(TAG, "⚠️ WiFi positioning initialization failed: %s", esp_err_to_name(ret));
+        ESP_LOGW(TAG, "ℹ️ Continuing without WiFi positioning - GPS/SLAM will still work");
     }
 
     // Save current configuration to SD card (if SD card is available)

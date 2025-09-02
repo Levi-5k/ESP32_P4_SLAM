@@ -40,5 +40,11 @@
     "i2c_clock_speed": 400000,
     "spi_clock_speed": 10000000,
     "communication_timeout_ms": 5000
+  },
+  "wifi": {
+    "ssid": "",
+    "password": "",
+    "connect_timeout_ms": 30000,
+    "auto_reconnect": false
   }
 }

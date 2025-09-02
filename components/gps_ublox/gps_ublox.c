@@ -643,6 +643,196 @@ static gps_status_t convert_ubx_flags(uint8_t flags) {
     }
 }
 
+// AssistNow Offline data injection functions
+esp_err_t gps_ublox_inject_assistnow_data(const uint8_t *data, size_t size) {
+    if (!gps_state.initialized) {
+        ESP_LOGE(TAG, "GPS not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!data || size == 0) {
+        ESP_LOGE(TAG, "Invalid AssistNow data");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    ESP_LOGI(TAG, "Injecting AssistNow data (%d bytes) to GPS", size);
+
+    // Send data in chunks to avoid overwhelming the GPS
+    const size_t CHUNK_SIZE = 512;
+    size_t sent = 0;
+
+    while (sent < size) {
+        size_t chunk_size = (size - sent > CHUNK_SIZE) ? CHUNK_SIZE : (size - sent);
+
+        // Send raw AssistNow data as UBX-MGA messages
+        // The data should already be in the correct UBX format from u-blox servers
+        int written = uart_write_bytes(gps_state.uart_port, data + sent, chunk_size);
+        if (written != chunk_size) {
+            ESP_LOGE(TAG, "Failed to send AssistNow chunk (%d/%d)", sent, size);
+            return ESP_FAIL;
+        }
+
+        sent += chunk_size;
+
+        // Small delay between chunks to allow GPS to process
+        vTaskDelay(pdMS_TO_TICKS(10));
+
+        ESP_LOGD(TAG, "Sent AssistNow chunk: %d/%d bytes", sent, size);
+    }
+
+    ESP_LOGI(TAG, "✅ AssistNow data injection complete");
+    return ESP_OK;
+}
+
+esp_err_t gps_ublox_clear_assistnow_data(void) {
+    if (!gps_state.initialized) {
+        ESP_LOGE(TAG, "GPS not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    ESP_LOGI(TAG, "Clearing AssistNow data from GPS");
+
+    // Send UBX-MGA-INI message to clear all assistance data
+    uint8_t clear_payload[16] = {
+        0x00, 0x00, 0x00, 0x00,  // type (all)
+        0x00, 0x00, 0x00, 0x00,  // version
+        0x00, 0x00, 0x00, 0x00,  // flags
+        0x00, 0x00, 0x00, 0x00   // reserved
+    };
+
+    esp_err_t ret = send_ubx_message(0x13, 0x40, clear_payload, sizeof(clear_payload)); // UBX-MGA-INI
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to send clear AssistNow command");
+        return ret;
+    }
+
+    ESP_LOGI(TAG, "✅ AssistNow data cleared from GPS");
+    return ESP_OK;
+}
+
+// Position Aiding functions
+esp_err_t gps_ublox_set_position_aiding(double latitude, double longitude, float altitude,
+                                       float position_accuracy, float altitude_accuracy) {
+    if (!gps_state.initialized) {
+        ESP_LOGE(TAG, "GPS not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    ESP_LOGI(TAG, "Setting position aiding: lat=%.6f, lon=%.6f, alt=%.1f, pos_acc=%.1f, alt_acc=%.1f",
+             latitude, longitude, altitude, position_accuracy, altitude_accuracy);
+
+    // Convert latitude/longitude to integers (degrees * 1e7 for 0.1mm precision)
+    int32_t lat_int = (int32_t)(latitude * 10000000.0);
+    int32_t lon_int = (int32_t)(longitude * 10000000.0);
+    int32_t alt_int = (int32_t)(altitude * 100.0); // Convert to cm
+
+    // Convert accuracies to integers (0.1mm precision)
+    uint32_t pos_acc_int = (uint32_t)(position_accuracy * 10.0);
+    uint32_t alt_acc_int = (uint32_t)(altitude_accuracy * 10.0);
+
+    // UBX-MGA-INI message payload for position aiding
+    uint8_t payload[48] = {
+        0x00, 0x00, 0x00, 0x00,  // type (position)
+        0x00, 0x00, 0x00, 0x00,  // version
+        0x00, 0x00, 0x00, 0x00,  // ref frame (ECEF)
+        // ECEF X coordinate (set to 0 for LLA mode)
+        0x00, 0x00, 0x00, 0x00,
+        // ECEF Y coordinate (set to 0 for LLA mode)
+        0x00, 0x00, 0x00, 0x00,
+        // ECEF Z coordinate (set to 0 for LLA mode)
+        0x00, 0x00, 0x00, 0x00,
+        // Position accuracy (3D)
+        (uint8_t)(pos_acc_int & 0xFF),
+        (uint8_t)((pos_acc_int >> 8) & 0xFF),
+        (uint8_t)((pos_acc_int >> 16) & 0xFF),
+        (uint8_t)((pos_acc_int >> 24) & 0xFF),
+        // Latitude
+        (uint8_t)(lat_int & 0xFF),
+        (uint8_t)((lat_int >> 8) & 0xFF),
+        (uint8_t)((lat_int >> 16) & 0xFF),
+        (uint8_t)((lat_int >> 24) & 0xFF),
+        // Longitude
+        (uint8_t)(lon_int & 0xFF),
+        (uint8_t)((lon_int >> 8) & 0xFF),
+        (uint8_t)((lon_int >> 16) & 0xFF),
+        (uint8_t)((lon_int >> 24) & 0xFF),
+        // Altitude
+        (uint8_t)(alt_int & 0xFF),
+        (uint8_t)((alt_int >> 8) & 0xFF),
+        (uint8_t)((alt_int >> 16) & 0xFF),
+        (uint8_t)((alt_int >> 24) & 0xFF),
+        // Altitude accuracy
+        (uint8_t)(alt_acc_int & 0xFF),
+        (uint8_t)((alt_acc_int >> 8) & 0xFF),
+        (uint8_t)((alt_acc_int >> 16) & 0xFF),
+        (uint8_t)((alt_acc_int >> 24) & 0xFF),
+        // Reserved
+        0x00, 0x00, 0x00, 0x00
+    };
+
+    esp_err_t ret = send_ubx_message(0x13, 0x40, payload, sizeof(payload)); // UBX-MGA-INI
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to send position aiding data");
+        return ret;
+    }
+
+    ESP_LOGI(TAG, "✅ Position aiding data sent to GPS");
+    return ESP_OK;
+}
+
+esp_err_t gps_ublox_clear_position_aiding(void) {
+    if (!gps_state.initialized) {
+        ESP_LOGE(TAG, "GPS not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    ESP_LOGI(TAG, "Clearing position aiding from GPS");
+
+    // Send UBX-MGA-INI message with type=0 to clear position aiding
+    uint8_t clear_payload[48] = {
+        0x00, 0x00, 0x00, 0x00,  // type (clear position)
+        0x00, 0x00, 0x00, 0x00,  // version
+        0x00, 0x00, 0x00, 0x00,  // ref frame
+        0x00, 0x00, 0x00, 0x00,  // ECEF X
+        0x00, 0x00, 0x00, 0x00,  // ECEF Y
+        0x00, 0x00, 0x00, 0x00,  // ECEF Z
+        0x00, 0x00, 0x00, 0x00,  // pos accuracy
+        0x00, 0x00, 0x00, 0x00,  // latitude
+        0x00, 0x00, 0x00, 0x00,  // longitude
+        0x00, 0x00, 0x00, 0x00,  // altitude
+        0x00, 0x00, 0x00, 0x00,  // reserved
+        0x00, 0x00, 0x00, 0x00   // reserved
+    };
+
+    esp_err_t ret = send_ubx_message(0x13, 0x40, clear_payload, sizeof(clear_payload)); // UBX-MGA-INI
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to send clear position aiding command");
+        return ret;
+    }
+
+    ESP_LOGI(TAG, "✅ Position aiding cleared from GPS");
+    return ESP_OK;
+}
+
+esp_err_t gps_ublox_get_position_aiding_status(bool *enabled) {
+    if (!gps_state.initialized) {
+        ESP_LOGE(TAG, "GPS not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!enabled) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // For now, we don't have a way to query the current position aiding status
+    // from the GPS module. This would require parsing UBX-NAV-PVT messages
+    // or other status messages. For now, return false (not implemented)
+    *enabled = false;
+
+    ESP_LOGW(TAG, "Position aiding status query not implemented");
+    return ESP_ERR_NOT_SUPPORTED;
+}
+
 static uint16_t calculate_checksum(const uint8_t *data, size_t len) {
     uint16_t checksum = 0;
     for (size_t i = 0; i < len; i++) {

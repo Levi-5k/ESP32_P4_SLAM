@@ -309,37 +309,6 @@ void wifi_init_sta(void)
     ESP_LOGI(TAG, "WiFi init delegated to web server component");
 }
 
-// Generate a test pattern image (placeholder for OV5647 camera)
-void generate_test_image(void)
-{
-    // Use smaller resolution to save memory on ESP32-P4
-    const int width = 320;   // Reduced from 640 for memory optimization
-    const int height = 240;  // Reduced from 480 for memory optimization
-    const int bytes_per_pixel = 2; // RGB565 instead of RGB888 for memory savings
-    
-    camera_buffer_size = width * height * bytes_per_pixel;
-    
-    if (camera_buffer == NULL) {
-        camera_buffer = malloc(camera_buffer_size);
-    }
-    
-    if (camera_buffer) {
-        // Generate RGB565 test pattern 
-        uint16_t *buffer_16 = (uint16_t*)camera_buffer;
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int pos = y * width + x;
-                // Create RGB565 format: 5 bits red, 6 bits green, 5 bits blue
-                uint8_t r = (x * 31) / width;      // 5-bit red
-                uint8_t g = (y * 63) / height;     // 6-bit green  
-                uint8_t b = ((x + y) * 31) / (width + height); // 5-bit blue
-                buffer_16[pos] = (r << 11) | (g << 5) | b;  // RGB565 format
-            }
-        }
-        ESP_LOGI(TAG, "Generated OV5647 test image: %dx%d RGB565, %d bytes", width, height, camera_buffer_size);
-    }
-}
-
 // Convert RGB565 to BMP format for web display
 // Initialize JPEG encoder
 esp_err_t init_jpeg_encoder(void) {
@@ -579,7 +548,7 @@ esp_err_t api_set_settings_handler(httpd_req_t *req)
 esp_err_t camera_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "📷 Camera handler called! Active streams: %d", active_streams);
-    
+
     // Limit concurrent streams to prevent overload
     if (active_streams >= MAX_STREAMS) {
         ESP_LOGW(TAG, "⚠️ Too many streams (%d), rejecting request", active_streams);
@@ -587,30 +556,40 @@ esp_err_t camera_handler(httpd_req_t *req)
         httpd_resp_send(req, "Too many streams", -1);
         return ESP_FAIL;
     }
-    
+
     active_streams++;
     esp_err_t res = ESP_OK;
-    
-    // Try to capture real image from camera first
+
+    // Capture real image from OV5647 camera
     uint8_t *image_buffer = NULL;
     size_t image_len = 0;
-    
+
     esp_err_t cam_ret = camera_capture(&image_buffer, &image_len);
-    
+
     if (cam_ret == ESP_OK && image_buffer != NULL && image_len > 0) {
         // Successfully captured real camera image (RGB565 format)
-        ESP_LOGI(TAG, "📸 Captured real camera image: %d bytes (RGB565)", image_len);
-        
-        // Check first few pixels to see if we have real data
+        ESP_LOGI(TAG, "📸 Captured real OV5647 camera image: %d bytes (RGB565)", image_len);
+
+        // Check first few pixels to verify we have real data
         uint16_t *pixel_data = (uint16_t*)image_buffer;
-        ESP_LOGI(TAG, "📸 First 8 pixels: %04x %04x %04x %04x %04x %04x %04x %04x", 
-                 pixel_data[0], pixel_data[1], pixel_data[2], pixel_data[3],
-                 pixel_data[4], pixel_data[5], pixel_data[6], pixel_data[7]);
-        
+        bool has_real_data = false;
+        for (int i = 0; i < 100 && i < (image_len / 2); i++) {
+            if (pixel_data[i] != 0 && pixel_data[i] != 0xFFFF) {
+                has_real_data = true;
+                break;
+            }
+        }
+
+        if (has_real_data) {
+            ESP_LOGI(TAG, "✅ Frame contains real camera data");
+        } else {
+            ESP_LOGW(TAG, "⚠️ Frame appears to contain invalid data (all zeros or 0xFFFF)");
+        }
+
         // Convert RGB565 to JPEG format using hardware encoder
         uint8_t *jpeg_data = NULL;
         size_t jpeg_size = create_jpeg_from_rgb565(image_buffer, image_len, &jpeg_data);
-        
+
         if (jpeg_data && jpeg_size > 0) {
             // Set headers for JPEG image response
             httpd_resp_set_type(req, "image/jpeg");
@@ -619,99 +598,47 @@ esp_err_t camera_handler(httpd_req_t *req)
             httpd_resp_set_hdr(req, "Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
             httpd_resp_set_hdr(req, "Pragma", "no-cache");
             httpd_resp_set_hdr(req, "Expires", "0");
-            
+
             // Send the JPEG image
             res = httpd_resp_send(req, (const char*)jpeg_data, jpeg_size);
             ESP_LOGI(TAG, "📸 Sent JPEG image: %d bytes (converted from %d bytes RGB565)", jpeg_size, image_len);
-            
+
             // Free the JPEG buffer
             free(jpeg_data);
         } else {
-            ESP_LOGE(TAG, "Failed to convert RGB565 to JPEG");
-            res = ESP_FAIL;
-        }
-        
-    } else if (cam_ret == ESP_ERR_TIMEOUT && image_buffer != NULL && image_len > 0) {
-        // Camera timeout but we have the frame buffer - might be empty or contain old data
-        ESP_LOGW(TAG, "Camera timeout but frame buffer available: %d bytes", image_len);
-        
-        // Check first few pixels to see what's in the buffer
-        uint16_t *pixel_data = (uint16_t*)image_buffer;
-        ESP_LOGI(TAG, "📸 Buffer pixels: %04x %04x %04x %04x %04x %04x %04x %04x", 
-                 pixel_data[0], pixel_data[1], pixel_data[2], pixel_data[3],
-                 pixel_data[4], pixel_data[5], pixel_data[6], pixel_data[7]);
-        
-        // Generate a test pattern in the frame buffer since camera data might be invalid
-        generate_test_image();
-        
-        // Convert to JPEG anyway to see what we get
-        uint8_t *jpeg_data = NULL;
-        size_t jpeg_size = create_jpeg_from_rgb565(image_buffer, image_len, &jpeg_data);
-        
-        if (jpeg_data && jpeg_size > 0) {
-            // Set headers for JPEG image response
-            httpd_resp_set_type(req, "image/jpeg");
-            httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=test_capture.jpg");
-            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-            httpd_resp_set_hdr(req, "Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
-            httpd_resp_set_hdr(req, "Pragma", "no-cache");
-            httpd_resp_set_hdr(req, "Expires", "0");
-            
-            // Send the JPEG image
-            res = httpd_resp_send(req, (const char*)jpeg_data, jpeg_size);
-            ESP_LOGI(TAG, "📸 Sent test JPEG image: %d bytes (from timeout fallback)", jpeg_size);
-            
-            // Free the JPEG buffer
-            free(jpeg_data);
-        } else {
-            ESP_LOGE(TAG, "Failed to convert test pattern to JPEG");
-            res = ESP_FAIL;
-        }
-        
-    } else {
-        // Complete camera failure - fall back to test image
-        ESP_LOGE(TAG, "Camera capture completely failed (%s), using test pattern", esp_err_to_name(cam_ret));
-        generate_test_image();
-        
-        if (camera_buffer && camera_buffer_size > 0) {
-            // Convert test pattern to JPEG format too
-            uint8_t *jpeg_data = NULL;
-            size_t jpeg_size = create_jpeg_from_rgb565(camera_buffer, camera_buffer_size, &jpeg_data);
-            
-            if (jpeg_data && jpeg_size > 0) {
-                httpd_resp_set_type(req, "image/jpeg");
-                httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=test.jpg");
-                httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-                httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
-                
-                res = httpd_resp_send(req, (const char*)jpeg_data, jpeg_size);
-                ESP_LOGI(TAG, "📸 Sent test JPEG image: %d bytes", jpeg_size);
-                free(jpeg_data);
-            } else {
-                const char* error_msg = 
-                    "<html><body style='text-align: center; font-family: Arial;'>"
-                    "<h1>🚁 DroneCam ESP32-P4-Pico</h1>"
-                    "<h2>📷 Camera Error</h2>"
-                    "<p>Failed to convert camera data to JPEG format</p>"
-                    "<p><strong>Status:</strong> WiFi ✅ | HTTP ✅ | Camera ❌</p>"
-                    "</body></html>";
-                httpd_resp_set_type(req, "text/html");
-                res = httpd_resp_send(req, error_msg, strlen(error_msg));
-            }
-        } else {
-            ESP_LOGW(TAG, "Failed to generate test image");
-            const char* error_msg = 
+            ESP_LOGE(TAG, "❌ Failed to convert RGB565 to JPEG");
+            const char* error_msg =
                 "<html><body style='text-align: center; font-family: Arial;'>"
                 "<h1>🚁 DroneCam ESP32-P4-Pico</h1>"
                 "<h2>📷 Camera Error</h2>"
-                "<p>Failed to capture from OV5647 MIPI-CSI camera</p>"
-                "<p><strong>Status:</strong> WiFi ✅ | HTTP ✅ | Camera ❌</p>"
+                "<p>Failed to convert camera data to JPEG format</p>"
+                "<p><strong>Status:</strong> Camera ✅ | JPEG ❌</p>"
                 "</body></html>";
             httpd_resp_set_type(req, "text/html");
             res = httpd_resp_send(req, error_msg, strlen(error_msg));
         }
+
+    } else {
+        // Camera capture failed
+        ESP_LOGE(TAG, "❌ Camera capture failed: %s", esp_err_to_name(cam_ret));
+
+        const char* error_msg =
+            "<html><body style='text-align: center; font-family: Arial;'>"
+            "<h1>🚁 DroneCam ESP32-P4-Pico</h1>"
+            "<h2>📷 Camera Error</h2>"
+            "<p>Failed to capture from OV5647 MIPI-CSI camera</p>"
+            "<p><strong>Error:</strong> %s</p>"
+            "<p><strong>Status:</strong> WiFi ✅ | HTTP ✅ | Camera ❌</p>"
+            "<p>Please check camera connection and power</p>"
+            "</body></html>";
+
+        char formatted_msg[1024];
+        snprintf(formatted_msg, sizeof(formatted_msg), error_msg, esp_err_to_name(cam_ret));
+
+        httpd_resp_set_type(req, "text/html");
+        res = httpd_resp_send(req, formatted_msg, strlen(formatted_msg));
     }
-    
+
     active_streams--;
     ESP_LOGI(TAG, "📷 Camera request completed. Active streams: %d", active_streams);
     return res;
