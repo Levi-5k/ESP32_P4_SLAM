@@ -1,7 +1,7 @@
 {
   "system": {
     "name": "ESP32-P4 Visual SLAM Navigation System",
-    "version": "1.0.0",
+    "version": "1.1.5",
     "description": "Real-time Visual SLAM navigation system for autonomous drone",
     "debug_mode": false,
     "log_level": "INFO",
@@ -18,7 +18,8 @@
     "sensor_fusion_enabled": true,
     "msp_enabled": true,
     "sd_storage_enabled": true,
-    "web_server_enabled": false
+    "web_server_enabled": true,
+    "wifi_enabled": true
   },
   "performance": {
     "target_fps": 30,
@@ -40,5 +41,14 @@
     "i2c_clock_speed": 400000,
     "spi_clock_speed": 10000000,
     "communication_timeout_ms": 5000
+  },
+  "wifi": {
+    "enabled_on_boot": true,
+    "ssid": "",
+    "password": "",
+    "connect_timeout_ms": 30000,
+    "auto_reconnect": true,
+    "max_retry_attempts": 5,
+    "retry_delay_ms": 5000
   }
 }

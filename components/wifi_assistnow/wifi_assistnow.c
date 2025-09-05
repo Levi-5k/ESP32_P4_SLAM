@@ -75,11 +75,16 @@ esp_err_t wifi_assistnow_init(const wifi_assistnow_config_t *config)
     ESP_LOGI(TAG, "Initializing WiFi for AssistNow downloads");
 
     #ifdef CONFIG_ESP_WIFI_ENABLED
-    // Initialize TCP/IP stack
-    ESP_ERROR_CHECK(esp_netif_init());
+    // Initialize TCP/IP stack (only if not already initialized)
+    esp_err_t ret = esp_netif_init();
+    if (ret == ESP_ERR_INVALID_STATE) {
+        ESP_LOGI(TAG, "TCP/IP stack already initialized");
+    } else if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "TCP/IP stack initialization failed: %s", esp_err_to_name(ret));
+        return ret;
+    }
 
-    // Create default event loop
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    // Note: Event loop is created by main application, don't create it here
 
     // Create network interface
     netif = esp_netif_create_default_wifi_sta();

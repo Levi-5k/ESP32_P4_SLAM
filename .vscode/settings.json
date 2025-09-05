@@ -1,7 +1,7 @@
 {
   "C_Cpp.intelliSenseEngine": "default",
   "idf.espIdfPathWin": "W:/Espressif/frameworks/esp-idf-v5.5/",
-  "idf.pythonInstallPath": "w:\\Espressif\\tools\\idf-python\\3.11.2\\python.exe",
+  "idf.pythonInstallPath": "/opt/esp/python_env/idf6.0_py3.12_env/bin/python",
   "idf.openOcdConfigs": [
     "board/esp32p4-builtin.cfg"
   ],
@@ -16,5 +16,6 @@
     "--query-driver=w:\\Espressif\\tools\\riscv32-esp-elf\\esp-14.2.0_20241119\\riscv32-esp-elf\\bin\\riscv32-esp-elf-gcc.exe",
     "--compile-commands-dir=d:\\ESP-IDF-projects\\DroneCam\\build"
   ],
-  "idf.flashType": "UART"
+  "idf.flashType": "UART",
+  "idf.currentSetup": "W:/Espressif/frameworks/esp-idf-v5.5/"
 }

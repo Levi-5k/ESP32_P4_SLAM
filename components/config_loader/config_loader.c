@@ -34,7 +34,7 @@ static esp_err_t save_master_config_to_spiffs(const master_config_t* config);
 static const char* DEFAULT_SYSTEM_CONFIG_JSON = "{"
   "\"system\": {"
     "\"name\": \"ESP32-P4 Visual SLAM Navigation System\","
-    "\"version\": \"1.0.0\","
+    "\"version\": \"1.1.5\","
     "\"description\": \"Real-time Visual SLAM navigation system for autonomous drone\","
     "\"debug_mode\": false,"
     "\"log_level\": \"INFO\","
@@ -51,7 +51,8 @@ static const char* DEFAULT_SYSTEM_CONFIG_JSON = "{"
     "\"sensor_fusion_enabled\": true,"
     "\"msp_enabled\": true,"
     "\"sd_storage_enabled\": true,"
-    "\"web_server_enabled\": false"
+    "\"web_server_enabled\": true,"
+    "\"wifi_enabled\": true"
   "},"
   "\"performance\": {"
     "\"target_fps\": 30,"
@@ -73,6 +74,15 @@ static const char* DEFAULT_SYSTEM_CONFIG_JSON = "{"
     "\"i2c_clock_speed\": 400000,"
     "\"spi_clock_speed\": 10000000,"
     "\"communication_timeout_ms\": 5000"
+  "},"
+  "\"wifi\": {"
+    "\"enabled_on_boot\": true,"
+    "\"ssid\": \"\","
+    "\"password\": \"\","
+    "\"connect_timeout_ms\": 30000,"
+    "\"auto_reconnect\": true,"
+    "\"max_retry_attempts\": 5,"
+    "\"retry_delay_ms\": 5000"
   "}"
 "}";
 
@@ -534,7 +544,7 @@ esp_err_t config_loader_load_system_config(system_config_t* config) {
     // Initialize with default values first
     system_config_t default_config = {
         .name = "ESP32-P4 Visual SLAM Navigation System",
-        .version = "1.0.0",
+        .version = "1.1.5",
         .description = "Real-time Visual SLAM navigation system for autonomous drone",
         .debug_mode = false,
         .log_level = "INFO",
@@ -551,6 +561,7 @@ esp_err_t config_loader_load_system_config(system_config_t* config) {
         .msp_enabled = true,
         .sd_storage_enabled = true,
         .web_server_enabled = false,
+        .wifi_enabled = true,
         // Performance defaults
         .target_fps = 30,
         .max_processing_time_ms = 33,
@@ -754,6 +765,11 @@ esp_err_t config_loader_load_system_config(system_config_t* config) {
         if (comp_item && cJSON_IsBool(comp_item)) {
             config->web_server_enabled = cJSON_IsTrue(comp_item);
         }
+
+        comp_item = cJSON_GetObjectItem(components, "wifi_enabled");
+        if (comp_item && cJSON_IsBool(comp_item)) {
+            config->wifi_enabled = cJSON_IsTrue(comp_item);
+        }
     }
 
     // Load performance configuration
@@ -846,7 +862,12 @@ esp_err_t config_loader_load_system_config(system_config_t* config) {
     // Load WiFi configuration
     cJSON* wifi = cJSON_GetObjectItem(root, "wifi");
     if (wifi) {
-        cJSON* wifi_item = cJSON_GetObjectItem(wifi, "ssid");
+        cJSON* wifi_item = cJSON_GetObjectItem(wifi, "enabled_on_boot");
+        if (wifi_item && cJSON_IsBool(wifi_item)) {
+            config->wifi_enabled = cJSON_IsTrue(wifi_item);
+        }
+
+        wifi_item = cJSON_GetObjectItem(wifi, "ssid");
         if (wifi_item && cJSON_IsString(wifi_item)) {
             strncpy(config->wifi_ssid, wifi_item->valuestring, sizeof(config->wifi_ssid) - 1);
         }
@@ -2340,6 +2361,7 @@ static esp_err_t save_system_config_to_sd(const system_config_t* config) {
     cJSON_AddBoolToObject(components, "msp_enabled", config->msp_enabled);
     cJSON_AddBoolToObject(components, "sd_storage_enabled", config->sd_storage_enabled);
     cJSON_AddBoolToObject(components, "web_server_enabled", config->web_server_enabled);
+    cJSON_AddBoolToObject(components, "wifi_enabled", config->wifi_enabled);
 
     // Create performance object
     cJSON* performance = cJSON_AddObjectToObject(root, "performance");
@@ -2379,6 +2401,19 @@ static esp_err_t save_system_config_to_sd(const system_config_t* config) {
     cJSON_AddNumberToObject(communication, "i2c_clock_speed", config->i2c_clock_speed);
     cJSON_AddNumberToObject(communication, "spi_clock_speed", config->spi_clock_speed);
     cJSON_AddNumberToObject(communication, "communication_timeout_ms", config->communication_timeout_ms);
+
+    // Create wifi object
+    cJSON* wifi = cJSON_AddObjectToObject(root, "wifi");
+    if (!wifi) {
+        cJSON_Delete(root);
+        return ESP_ERR_NO_MEM;
+    }
+
+    cJSON_AddBoolToObject(wifi, "enabled_on_boot", config->wifi_enabled);
+    cJSON_AddStringToObject(wifi, "ssid", config->wifi_ssid);
+    cJSON_AddStringToObject(wifi, "password", config->wifi_password);
+    cJSON_AddNumberToObject(wifi, "connect_timeout_ms", config->wifi_connect_timeout_ms);
+    cJSON_AddBoolToObject(wifi, "auto_reconnect", config->wifi_auto_reconnect);
 
     char* json_str = cJSON_Print(root);
     cJSON_Delete(root);

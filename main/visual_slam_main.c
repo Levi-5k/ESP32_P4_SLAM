@@ -16,6 +16,7 @@
 // #include <esp_wifi.h>  // WIFI remote disabled temporarily
 #include <driver/spi_master.h>
 #include <esp_event.h>
+#include <esp_netif.h>
 #include <nvs_flash.h>
 #include <driver/gpio.h>
 #include <esp_timer.h>
@@ -26,7 +27,7 @@
 #include "slam_core.h"
 #include "orb_features.h"
 #include "sensor_fusion.h"
-#include "web_server.h"  // WIFI remote enabled
+#include "communication_manager.h"  // Communication with ESP32-C6
 #include "sd_storage.h"
 #include "gps_ublox.h"    // GPS uBlox module
 #include "imu_bmi088.h"   // BMI088 IMU sensor
@@ -489,7 +490,7 @@ static void main_processing_task(void *pvParameters)
     
     if ((bits & ALL_SYSTEMS_READY) == ALL_SYSTEMS_READY) {
         ESP_LOGI(TAG, "🚀 All systems ready - starting main processing loop");
-        gpio_set_level(GPIO_NUM_15, 1); // System ready LED
+        gpio_set_level(SYSTEM_STATUS_LED_PIN, 1); // System ready LED
         
         // Start comprehensive logging session
         char session_name[64];
@@ -521,10 +522,12 @@ static void main_processing_task(void *pvParameters)
         if (ret == ESP_OK && frame.data != NULL) {
             system_status.frame_count++;
             
-            // Toggle SLAM activity LED
-            static bool slam_led_state = false;
-            slam_led_state = !slam_led_state;
-            gpio_set_level(GPIO_NUM_16, slam_led_state);
+            // Toggle SLAM activity LED (only every 15 frames to reduce GPIO overhead)
+            if (system_status.frame_count % 15 == 0) {
+                static bool slam_led_state = false;
+                slam_led_state = !slam_led_state;
+                gpio_set_level(SLAM_ACTIVITY_LED_PIN, slam_led_state);
+            }
             
             // Process frame through ORB feature detection
             uint64_t feature_start_time = esp_timer_get_time();
@@ -536,16 +539,14 @@ static void main_processing_task(void *pvParameters)
             if (ret == ESP_OK) {
                 system_status.feature_count = features.count;
                 
-                // Log feature extraction data
-                sd_storage_log_feature_data(loop_start_time, features.count, 
-                                          features.num_good_matches, feature_processing_time);
-                
                 // Get sensor fusion data
                 sensor_fusion_data_t sensor_data;
                 sensor_fusion_get_data(&sensor_data);
                 
-                // Update WiFi positioning if available
-                if (wifi_positioning_is_available()) {
+                // Update WiFi positioning periodically (every 10 frames = ~3 Hz)
+                static uint32_t wifi_counter = 0;
+                if (++wifi_counter >= 10 && wifi_positioning_is_available()) {
+                    wifi_counter = 0;
                     wifi_position_t wifi_pos;
                     esp_err_t wifi_ret = wifi_positioning_get_position(&wifi_pos);
                     if (wifi_ret == ESP_OK && wifi_pos.valid) {
@@ -558,11 +559,18 @@ static void main_processing_task(void *pvParameters)
                     }
                 }
                 
-                // Log sensor data (GPS, IMU)
-                sd_storage_log_sensor_data(loop_start_time,
-                                          sensor_data.gps_data.latitude, sensor_data.gps_data.longitude, sensor_data.gps_data.altitude,
-                                          sensor_data.imu_data.accel_x, sensor_data.imu_data.accel_y, sensor_data.imu_data.accel_z,
-                                          sensor_data.imu_data.gyro_x, sensor_data.imu_data.gyro_y, sensor_data.imu_data.gyro_z);
+                // Log data periodically to reduce SD card wear (every 10 frames = ~3 Hz)
+                if (system_status.frame_count % 10 == 0) {
+                    // Log feature extraction data
+                    sd_storage_log_feature_data(loop_start_time, features.count, 
+                                              features.num_good_matches, feature_processing_time);
+                    
+                    // Log sensor data (GPS, IMU)
+                    sd_storage_log_sensor_data(loop_start_time,
+                                              sensor_data.gps_data.latitude, sensor_data.gps_data.longitude, sensor_data.gps_data.altitude,
+                                              sensor_data.imu_data.accel_x, sensor_data.imu_data.accel_y, sensor_data.imu_data.accel_z,
+                                              sensor_data.imu_data.gyro_x, sensor_data.imu_data.gyro_y, sensor_data.imu_data.gyro_z);
+                }
                 
                 // Update system status
                 system_status.position_x = sensor_data.position.x;
@@ -634,68 +642,114 @@ static void main_processing_task(void *pvParameters)
  */
 static void web_interface_task(void *pvParameters)
 {
-    ESP_LOGI(TAG, "🌐 Web interface task started (WiFi disabled)");
-    
-    // Web server initialization disabled - WiFi not available
-    /*
-    web_server_config_t config = {
-        .enable_captive_portal = true,
-        .max_clients = 4,
-        .websocket_enabled = true
-    };
-    
-    // Web server and WiFi completely disabled to avoid SDMMC conflicts
-    esp_err_t ret = web_server_init(&config);
-    if (ret == ESP_OK) {
-        // Try to start WiFi in AP mode for captive portal
-        ret = web_server_wifi_start();
-        if (ret == ESP_OK) {
-            ret = web_server_start();
-            if (ret == ESP_OK) {
-                // system_status.web_server_running = true;  // Disabled - WiFi not available
-                // xEventGroupSetBits(system_event_group, WEB_SERVER_READY_BIT);
-                ESP_LOGI(TAG, "✅ Web server started successfully");
-                gpio_set_level(GPIO_NUM_17, 1); // Communication LED
-            } else {
-                ESP_LOGW(TAG, "⚠️  HTTP server failed to start: %s", esp_err_to_name(ret));
-                ESP_LOGI(TAG, "📡 Web server will retry in background");
+    ESP_LOGI(TAG, "🌐 Web interface task started");
+
+    // Wait for WiFi manager to be ready if WiFi is enabled
+    if (master_config.loaded && master_config.system.wifi_enabled) {
+        ESP_LOGI(TAG, "🌐 Waiting for WiFi manager to establish connection...");
+
+        // Wait up to 30 seconds for WiFi to be ready
+        uint32_t wait_count = 0;
+        while (wait_count < 30) {
+            wifi_manager_status_t wifi_status = wifi_manager_get_status();
+
+            if (wifi_status == WIFI_MGR_STATUS_CONNECTED ||
+                wifi_status == WIFI_MGR_STATUS_AP_MODE) {
+                ESP_LOGI(TAG, "🌐 WiFi connection established, starting web server");
+
+                // Get connection info for logging
+                wifi_connection_info_t conn_info;
+                if (wifi_manager_get_connection_info(&conn_info) == ESP_OK) {
+                    if (conn_info.is_ap_mode) {
+                        ESP_LOGI(TAG, "📶 Web server starting in AP mode");
+                        ESP_LOGI(TAG, "📶 AP SSID: %s", conn_info.ssid);
+                        ESP_LOGI(TAG, "🌐 Access at: http://192.168.4.1:80");
+                    } else {
+                        ESP_LOGI(TAG, "📶 Web server starting in station mode");
+                        ESP_LOGI(TAG, "📶 Connected to: %s", conn_info.ssid);
+                        ESP_LOGI(TAG, "🌐 Access at: http://%s:80", conn_info.ip_addr);
+                    }
+                }
+                break;
+            } else if (wifi_status == WIFI_MGR_STATUS_ERROR) {
+                ESP_LOGW(TAG, "⚠️ WiFi manager in error state, starting web server anyway");
+                break;
             }
-        } else {
-            ESP_LOGW(TAG, "⚠️  WiFi AP failed to start: %s", esp_err_to_name(ret));
-            ESP_LOGI(TAG, "📡 System continuing without WiFi interface");
+
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            wait_count++;
+        }
+
+        if (wait_count >= 30) {
+            ESP_LOGW(TAG, "⚠️ WiFi manager timeout, starting web server anyway");
         }
     } else {
-        ESP_LOGW(TAG, "⚠️  Web server init failed: %s", esp_err_to_name(ret));
-        ESP_LOGI(TAG, "📡 System continuing without web interface - proceeding with SLAM");
+        ESP_LOGI(TAG, "🌐 WiFi disabled, starting web server without network connectivity");
     }
-    */
-    
-    ESP_LOGI(TAG, "📡 Web server and WiFi disabled - SDMMC available for SD storage");
-    
-    // Set the bit to allow system to continue (WiFi disabled)
-    ESP_LOGI(TAG, "📡 System continuing without web interface - WiFi disabled");
-    // xEventGroupSetBits(system_event_group, WEB_SERVER_READY_BIT);  // Not needed anymore
-    
+
+    // Start the web server
+    esp_err_t ret = web_server_start();
+    if (ret == ESP_OK) {
+        system_status.web_server_running = true;
+        xEventGroupSetBits(system_event_group, WEB_SERVER_READY_BIT);
+        ESP_LOGI(TAG, "✅ Web server started on port 80");
+
+        // Send startup notification
+        web_server_send_notification("Visual SLAM system started successfully", "info");
+    } else {
+        ESP_LOGW(TAG, "⚠️ HTTP server failed to start: %s", esp_err_to_name(ret));
+        ESP_LOGI(TAG, "📡 Web server will retry in background");
+    }
+
     // Web server runs indefinitely
     while (1) {
-        // Web server handles its own event loop
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        
         // Update uptime
         system_status.uptime_seconds = esp_timer_get_time() / 1000000;
-    }
-}
 
-/**
+        // Send periodic status updates if web server is running
+        if (system_status.web_server_running) {
+            static uint32_t telemetry_counter = 0;
+            if (++telemetry_counter >= 10) { // Every 10 seconds
+                telemetry_counter = 0;
+                web_server_broadcast_telemetry(&system_status);
+            }
+        }
+
+        // Monitor WiFi status and log changes
+        if (master_config.loaded && master_config.system.wifi_enabled) {
+            static wifi_manager_status_t last_wifi_status = WIFI_MGR_STATUS_DISABLED;
+            wifi_manager_status_t current_wifi_status = wifi_manager_get_status();
+
+            if (current_wifi_status != last_wifi_status) {
+                switch (current_wifi_status) {
+                    case WIFI_MGR_STATUS_CONNECTED:
+                        ESP_LOGI(TAG, "📶 WiFi status changed: Connected to network");
+                        break;
+                    case WIFI_MGR_STATUS_AP_MODE:
+                        ESP_LOGI(TAG, "📶 WiFi status changed: AP mode active");
+                        break;
+                    case WIFI_MGR_STATUS_ERROR:
+                        ESP_LOGW(TAG, "📶 WiFi status changed: Connection error");
+                        break;
+                    default:
+                        break;
+                }
+                last_wifi_status = current_wifi_status;
+            }
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}/**
  * Telemetry broadcast task - sends real-time data to connected clients
  */
 static void telemetry_broadcast_task(void *pvParameters)
 {
     ESP_LOGI(TAG, "📡 Telemetry broadcast task started");
     
-    // Wait for web server to be ready (disabled - WiFi not available)
-    // xEventGroupWaitBits(system_event_group, WEB_SERVER_READY_BIT, 
-    //                    pdFALSE, pdTRUE, portMAX_DELAY);
+    // Wait for web server to be ready
+    xEventGroupWaitBits(system_event_group, WEB_SERVER_READY_BIT, 
+                       pdFALSE, pdTRUE, portMAX_DELAY);
     
     TickType_t last_wake_time = xTaskGetTickCount();
     const TickType_t frequency = pdMS_TO_TICKS(100); // 10 Hz telemetry
@@ -704,8 +758,10 @@ static void telemetry_broadcast_task(void *pvParameters)
         // Update system status and broadcast to web clients
         system_status.uptime_seconds = esp_timer_get_time() / 1000000;
         
-        // Send telemetry data via WebSocket (disabled - WiFi not available)
-        // web_server_broadcast_telemetry(&system_status);
+        // Send telemetry data if web server is running
+        if (system_status.web_server_running) {
+            web_server_broadcast_telemetry(&system_status);
+        }
         
         vTaskDelayUntil(&last_wake_time, frequency);
     }
@@ -1078,8 +1134,8 @@ void app_main(void)
         return;
     }
     
-    // Initialize TCP/IP stack (disabled - WiFi not available)
-    // ESP_ERROR_CHECK(esp_netif_init());
+    // Initialize TCP/IP stack (required for web server)
+    ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     
     // Initialize hardware subsystems
@@ -1136,7 +1192,16 @@ void app_main(void)
         ESP_LOGI(TAG, "⚠️ Continuing with built-in defaults (no SD card available)");
     }
     
-    // Now initialize components with loaded configuration
+    // Initialize communication with ESP32-C6 slave (web server)
+    ESP_LOGI(TAG, "� Initializing communication with ESP32-C6 slave...");
+    ret = comm_manager_init();
+    if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "✅ Communication manager initialized successfully");
+        ESP_LOGI(TAG, "📡 ESP32-C6 will handle WiFi and web interface");
+    } else {
+        ESP_LOGE(TAG, "❌ Communication manager initialization failed: %s", esp_err_to_name(ret));
+        ESP_LOGW(TAG, "⚠️ Continuing without C6 communication - SLAM system will still work");
+    }    // Now initialize components with loaded configuration
     ret = initialize_camera();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Camera initialization failed, continuing anyway...");
@@ -1243,11 +1308,11 @@ void app_main(void)
         save_configuration_to_sd();
     }
 
-    // Create main processing tasks
+    // Create main processing tasks with optimized stack sizes
     xTaskCreatePinnedToCore(
         main_processing_task,
         "main_processing",
-        8192,
+        12288,  // Increased stack for SLAM processing
         NULL,
         5,
         &main_processing_task_handle,
@@ -1257,7 +1322,7 @@ void app_main(void)
     xTaskCreatePinnedToCore(
         web_interface_task,
         "web_interface",
-        8192,
+        6144,   // Reduced stack since WiFi is disabled
         NULL,
         4,
         &web_interface_task_handle,
@@ -1267,7 +1332,7 @@ void app_main(void)
     xTaskCreatePinnedToCore(
         telemetry_broadcast_task,
         "telemetry_broadcast",
-        4096,
+        3072,   // Reduced stack since telemetry is minimal
         NULL,
         3,
         &telemetry_broadcast_task_handle,
@@ -1278,7 +1343,7 @@ void app_main(void)
     xTaskCreatePinnedToCore(
         sensor_monitoring_task,
         "sensor_monitor",
-        4096,
+        5120,   // Increased for UART operations
         NULL,
         2,
         &sensor_monitoring_task_handle,

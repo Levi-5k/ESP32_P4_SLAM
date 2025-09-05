@@ -34,6 +34,7 @@ typedef struct {
     bool msp_enabled;
     bool sd_storage_enabled;
     bool web_server_enabled;
+    bool wifi_enabled;
     // Performance settings
     uint32_t target_fps;
     uint32_t max_processing_time_ms;

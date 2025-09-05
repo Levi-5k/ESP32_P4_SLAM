@@ -1,0 +1,9 @@
+# Configuration option for SDMMC/WiFi conflict resolution
+# Due to ESP-IDF issue #16233, SDMMC and ESP-Hosted SDIO cannot work simultaneously
+
+# Disable ESP-Hosted WiFi to allow SD card functionality
+CONFIG_ESP_HOSTED_ENABLED=n
+
+# Alternative: Use SPI mode for ESP-Hosted (if needed)
+# CONFIG_ESP_HOSTED_SPI_HOST_INTERFACE=y
+# CONFIG_ESP_HOSTED_SDIO_HOST_INTERFACE=n

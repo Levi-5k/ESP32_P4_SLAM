@@ -84,13 +84,15 @@ idf.py monitor -p <PORT>
 
 ### Pin Configuration
 
-#### GPS (uBlox) - UART Interface
+#### ESP32-P4 Pin Configuration
+
+##### GPS (uBlox) - UART Interface
 - **TX Pin**: GPIO_NUM_15 (ESP32-P4 → GPS RX)
 - **RX Pin**: GPIO_NUM_16 (GPS TX → ESP32-P4)
 - **Baud Rate**: 115600
 - **Update Rate**: 10Hz
 
-#### IMU (BMI088) - SPI Interface
+##### IMU (BMI088) - SPI Interface
 - **MOSI Pin**: GPIO_NUM_11
 - **MISO Pin**: GPIO_NUM_13
 - **CLK Pin**: GPIO_NUM_12
@@ -98,7 +100,7 @@ idf.py monitor -p <PORT>
 - **INT1 Pin**: GPIO_NUM_9 (interrupt for data ready)
 - **Sample Rate**: 400Hz
 
-#### SD Card - SDMMC Interface
+##### SD Card - SDMMC Interface
 - **CLK Pin**: GPIO_NUM_43
 - **CMD Pin**: GPIO_NUM_44
 - **D0 Pin**: GPIO_NUM_39
@@ -106,8 +108,34 @@ idf.py monitor -p <PORT>
 - **D2 Pin**: GPIO_NUM_41
 - **D3 Pin**: GPIO_NUM_42
 
-#### Camera (OV5647) - MIPI-CSI Interface
+##### Camera (OV5647) - MIPI-CSI Interface
 - **CSI Clock**: Dedicated MIPI-CSI pins
+
+#### ESP32-C6 Pin Configuration
+
+The ESP32-C6 operates as a WiFi coprocessor connected to the ESP32-P4 via ESP-Hosted communication interface.
+
+##### ESP-Hosted Communication Interface (P4 ↔ C6 Communication)
+- **CLK Pin**: GPIO_NUM_19 (Communication Clock - slave mode)
+- **CMD Pin**: GPIO_NUM_18 (Command interface - slave mode)
+- **D0 Pin**: GPIO_NUM_20 (Data line 0)
+- **D1 Pin**: GPIO_NUM_21 (Data line 1)
+- **D2 Pin**: GPIO_NUM_22 (Data line 2)
+- **D3 Pin**: GPIO_NUM_23 (Data line 3)
+- **Reset Pin**: EN (Reset input - controlled by P4)
+
+##### WiFi Hardware Interface
+- **Antenna**: Built-in PCB antenna or external connector
+- **WiFi Standard**: 802.11ax (WiFi 6) - 2.4 GHz
+- **Operating Modes**: AP mode, STA mode, concurrent AP+STA
+- **Web Server**: HTTP server on port 80 for SLAM control
+- **Communication**: WebSocket support for real-time streaming
+
+##### Communication Protocol
+- **Transport**: ESP-Hosted high-speed communication protocol
+- **Data Exchange**: WiFi control commands, network scan results, web interface data
+- **WiFi Toggle**: Supports enable/disable while maintaining scan capability
+- **AP Fallback**: Automatic AP mode if no network found during WiFi enable
 - **CSI Data**: Dedicated MIPI-CSI pins
 - **Resolution**: 1920x1080 at 30 FPS
 
