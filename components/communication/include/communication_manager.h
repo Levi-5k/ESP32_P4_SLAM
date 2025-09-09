@@ -79,6 +79,19 @@ esp_err_t comm_handle_system_command(const system_cmd_msg_t* cmd);
 esp_err_t comm_handle_map_command(const map_cmd_msg_t* cmd);
 
 /**
+ * @brief Handle WiFi positioning data from C6
+ */
+esp_err_t comm_handle_wifi_positioning_data(const wifi_positioning_msg_t* pos_data);
+
+/**
+ * @brief Initialize WiFi connection with provided credentials
+ * @param ssid WiFi network SSID
+ * @param password WiFi network password
+ * @return ESP_OK on success
+ */
+esp_err_t comm_init_wifi_connection(const char* ssid, const char* password);
+
+/**
  * @brief Check if communication with C6 is active
  * @return true if connected, false otherwise
  */

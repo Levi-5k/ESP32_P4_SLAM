@@ -7,4 +7,6 @@ idf_component_register(
              "freertos"
              "log"
              "sensor_fusion"
+             "wifi_manager"
+             "wifi_positioning"
 )

@@ -938,7 +938,7 @@ esp_err_t sd_storage_stop_session_log(const session_metadata_t *metadata) {
                 fprintf(meta_file, "  \"total_poses\": \"%lu\",\n", g_sd_state.session_pose_count);
                 fprintf(meta_file, "  \"total_maps_saved\": \"%lu\",\n", g_sd_state.session_map_count);
                 fprintf(meta_file, "  \"system_info\": {\n");
-                fprintf(meta_file, "    \"firmware_version\": \"1.1.5\",\n");
+                fprintf(meta_file, "    \"firmware_version\": \"1.1.6\",\n");
                 fprintf(meta_file, "    \"hardware\": \"ESP32-P4\",\n");
                 fprintf(meta_file, "    \"camera\": \"OV5647\",\n");
                 fprintf(meta_file, "    \"imu\": \"BMI088\",\n");

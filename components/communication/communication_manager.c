@@ -2,13 +2,17 @@
  * @file communication_manager.c
  * @brief Communication manager implementation for ESP32-P4 master
  *
- * Manages communication with ESP32-C6 slave device via ESP-Hosted protocol.
+     // Initialize ESP-Hosted Wi-Fi remote
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    esp_err_t ret = esp_wifi_remote_init(&cfg);Manages communication with ESP32-C6 slave device via ESP-Hosted protocol.
  * Handles sending SLAM data and receiving configuration updates.
  */
 
 #include "communication_manager.h"
 #include "communication_protocol.h"
 #include "sensor_fusion.h"
+#include "wifi_manager.h"
+#include "wifi_positioning.h"
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
@@ -16,6 +20,7 @@
 #include "freertos/queue.h"
 #include "freertos/semphr.h"
 #include "esp_wifi_remote.h"
+#include "esp_wifi.h"
 #include <string.h>
 
 static const char *TAG = "COMM_MGR";
@@ -110,7 +115,8 @@ esp_err_t comm_manager_init(void)
     ESP_LOGI(TAG, "Initializing communication manager");
     
     // Initialize ESP-Hosted WiFi remote
-    esp_err_t ret = esp_wifi_remote_init();
+    wifi_init_config_t wifi_init_cfg = WIFI_INIT_CONFIG_DEFAULT();
+    esp_err_t ret = esp_wifi_remote_init(&wifi_init_cfg);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize ESP-Hosted WiFi: %s", esp_err_to_name(ret));
         return ret;
@@ -156,12 +162,12 @@ esp_err_t comm_send_heartbeat_auto(void)
 {
     heartbeat_msg_t heartbeat = {
         .uptime_ms = esp_timer_get_time() / 1000,
-        .system_status = system_status.overall_status,
-        .slam_status = system_status.slam_status,
-        .camera_status = system_status.camera_status,
-        .sd_card_status = system_status.sd_card_status,
+        .system_status = system_status.slam_active ? 1 : 0,      // Overall system status
+        .slam_status = system_status.slam_tracking ? 1 : 0,      // SLAM tracking status  
+        .camera_status = system_status.camera_available ? 1 : 0, // Camera status
+        .sd_card_status = 1, // TODO: Get actual SD card status
         .free_heap_size = esp_get_free_heap_size(),
-        .cpu_usage_percent = 0, // TODO: Implement CPU usage monitoring
+        .cpu_usage_percent = (uint16_t)(system_status.cpu_usage_percent * 100), // Convert to percentage
     };
     
     return comm_send_heartbeat(&heartbeat);
@@ -278,6 +284,9 @@ esp_err_t comm_process_received_message(const comm_message_t* message)
         case MSG_C6_TO_P4_MAP_CMD:
             return comm_handle_map_command(&message->payload.map_cmd);
             
+        case MSG_C6_TO_P4_WIFI_POSITIONING_DATA:
+            return comm_handle_wifi_positioning_data(&message->payload.wifi_positioning);
+            
         case MSG_C6_TO_P4_HEARTBEAT_ACK:
             comm_state.connected = true;
             ESP_LOGD(TAG, "Received heartbeat ACK");
@@ -287,6 +296,30 @@ esp_err_t comm_process_received_message(const comm_message_t* message)
             ESP_LOGW(TAG, "Unknown message type 0x%02x", message->header.msg_type);
             return ESP_ERR_NOT_SUPPORTED;
     }
+}
+
+esp_err_t comm_init_wifi_connection(const char* ssid, const char* password)
+{
+    if (!ssid || !password) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    
+    wifi_connect_msg_t wifi_config = {0};
+    
+    // Copy SSID and password with proper bounds checking
+    strncpy((char*)wifi_config.ssid, ssid, COMM_MAX_SSID_LEN - 1);
+    wifi_config.ssid[COMM_MAX_SSID_LEN - 1] = '\0';
+    
+    strncpy((char*)wifi_config.password, password, COMM_MAX_PASSWORD_LEN - 1);
+    wifi_config.password[COMM_MAX_PASSWORD_LEN - 1] = '\0';
+    
+    // Set authentication mode to WPA2 PSK (most common)
+    wifi_config.auth_mode = 3; // WIFI_AUTH_WPA2_PSK
+    
+    ESP_LOGI(TAG, "🚀 Initializing WiFi connection - SSID: %s", ssid);
+    
+    // Call the WiFi connect handler directly
+    return comm_handle_wifi_connect(&wifi_config);
 }
 
 esp_err_t comm_handle_config_update(const config_update_msg_t* config)
@@ -559,10 +592,29 @@ esp_err_t comm_handle_wifi_scan_request(void)
 
 esp_err_t comm_handle_wifi_connect(const wifi_connect_msg_t* wifi_config)
 {
-    ESP_LOGI(TAG, "WiFi connection request: SSID %s", wifi_config->ssid);
+    if (!wifi_config) {
+        return ESP_ERR_INVALID_ARG;
+    }
     
-    // TODO: Implement WiFi connection
+    ESP_LOGI(TAG, "📡 WiFi connection request: SSID '%s'", wifi_config->ssid);
     
+    // Enable WiFi first if not already enabled
+    esp_err_t ret = wifi_manager_enable(false);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "❌ Failed to enable WiFi manager: %s", esp_err_to_name(ret));
+        return ret;
+    }
+    
+    // Connect to the specified network
+    ret = wifi_manager_connect((const char*)wifi_config->ssid, 
+                              (const char*)wifi_config->password);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "❌ Failed to connect to WiFi '%s': %s", 
+                wifi_config->ssid, esp_err_to_name(ret));
+        return ret;
+    }
+    
+    ESP_LOGI(TAG, "✅ WiFi connection initiated for SSID '%s'", wifi_config->ssid);
     return ESP_OK;
 }
 
@@ -724,6 +776,106 @@ esp_err_t comm_handle_map_command(const map_cmd_msg_t* cmd)
     }
     
     return ESP_OK;
+}
+
+esp_err_t comm_handle_wifi_positioning_data(const wifi_positioning_msg_t* pos_data)
+{
+    if (!pos_data) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    ESP_LOGI(TAG, "📡 Received WiFi positioning data from C6: %d access points, seq=%d", 
+             pos_data->ap_count, pos_data->sequence_number);
+
+    // Convert C6 WiFi AP data to positioning format
+    wifi_ap_info_t aps[MAX_POSITIONING_APS];
+    uint8_t valid_ap_count = 0;
+
+    for (uint8_t i = 0; i < pos_data->ap_count && i < MAX_POSITIONING_APS && valid_ap_count < MAX_POSITIONING_APS; i++) {
+        const wifi_ap_positioning_t* src_ap = &pos_data->access_points[i];
+        wifi_ap_info_t* dst_ap = &aps[valid_ap_count];
+
+        // Copy and validate AP data
+        if (src_ap->rssi < -100 || src_ap->rssi > 0) {
+            ESP_LOGD(TAG, "Skipping AP with invalid RSSI: %d", src_ap->rssi);
+            continue;
+        }
+
+        // Copy SSID (ensure null termination)
+        strncpy(dst_ap->ssid, src_ap->ssid, sizeof(dst_ap->ssid) - 1);
+        dst_ap->ssid[sizeof(dst_ap->ssid) - 1] = '\0';
+
+        // Copy BSSID (ensure null termination)
+        strncpy(dst_ap->bssid, src_ap->bssid, sizeof(dst_ap->bssid) - 1);
+        dst_ap->bssid[sizeof(dst_ap->bssid) - 1] = '\0';
+
+        // Copy other fields
+        dst_ap->rssi = src_ap->rssi;
+        dst_ap->channel = src_ap->channel;
+        dst_ap->auth_mode = src_ap->auth_mode;
+        dst_ap->is_hidden = src_ap->is_hidden;
+
+        ESP_LOGD(TAG, "AP[%d]: SSID='%s', BSSID='%s', RSSI=%d dBm, Ch=%d", 
+                 valid_ap_count, dst_ap->ssid, dst_ap->bssid, dst_ap->rssi, dst_ap->channel);
+
+        valid_ap_count++;
+    }
+
+    if (valid_ap_count == 0) {
+        ESP_LOGW(TAG, "⚠️ No valid access points in positioning data");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // Process the AP data through WiFi positioning system
+    wifi_position_t position;
+    esp_err_t ret = wifi_positioning_process_external_aps(aps, valid_ap_count, &position);
+
+    if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "✅ WiFi position calculated: lat=%.6f, lon=%.6f, accuracy=%.1fm", 
+                 position.latitude, position.longitude, position.accuracy_h);
+
+        // Send acknowledgment back to C6
+        wifi_position_ack_msg_t ack_msg = {
+            .sequence_number = pos_data->sequence_number,
+            .status = WIFI_POS_ACK_SUCCESS,
+            .processing_time_ms = (uint32_t)((esp_timer_get_time() - pos_data->timestamp) / 1000),
+            .position_calculated = true,
+            .latitude = position.latitude,
+            .longitude = position.longitude,
+            .accuracy = position.accuracy_h
+        };
+
+        esp_err_t send_ret = comm_send_message(MSG_P4_TO_C6_WIFI_POSITION_ACK, 
+                                              &ack_msg, sizeof(ack_msg));
+        if (send_ret != ESP_OK) {
+            ESP_LOGW(TAG, "⚠️ Failed to send WiFi position ACK to C6: %s", esp_err_to_name(send_ret));
+        } else {
+            ESP_LOGD(TAG, "📤 WiFi position ACK sent to C6 (seq=%d, time=%dms)", 
+                     ack_msg.sequence_number, ack_msg.processing_time_ms);
+        }
+
+    } else {
+        ESP_LOGW(TAG, "⚠️ Failed to calculate position from C6 WiFi data: %s", esp_err_to_name(ret));
+
+        // Send error acknowledgment
+        wifi_position_ack_msg_t ack_msg = {
+            .sequence_number = pos_data->sequence_number,
+            .status = WIFI_POS_ACK_ERROR,
+            .processing_time_ms = (uint32_t)((esp_timer_get_time() - pos_data->timestamp) / 1000),
+            .position_calculated = false,
+            .latitude = 0.0,
+            .longitude = 0.0,
+            .accuracy = 0.0
+        };
+
+        esp_err_t send_ret = comm_send_message(MSG_P4_TO_C6_WIFI_POSITION_ACK, 
+                                              &ack_msg, sizeof(ack_msg));
+        if (send_ret != ESP_OK) {
+            ESP_LOGW(TAG, "⚠️ Failed to send WiFi position error ACK to C6: %s", esp_err_to_name(send_ret));
+        }
+    }
+
+    return ret;
 }
 
 bool comm_is_connected(void)

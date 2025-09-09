@@ -19,6 +19,8 @@ set(COMPONENT_SRCS
 	"slam_web_server.c"
 	"slam_communication_handler.c"
 	"communication_protocol.c"
+	"wifi_manager_c6.c"
+	"communication_monitor_c6.c"
 )
 
 set(COMPONENT_ADD_INCLUDEDIRS

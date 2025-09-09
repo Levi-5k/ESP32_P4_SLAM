@@ -1,9 +1,6 @@
 /**
  * @file esp32p4_pin_config.h
  * @brief Centralized ESP32-P4 pin configuration for DroneCam Visual SLAM system
- *
- * This file defines all GPIO pin assignments to prevent conflicts and provide
- * a single source of truth for hardware pin configuration.
  */
 
 #ifndef ESP32P4_PIN_CONFIG_H
@@ -24,7 +21,7 @@
 // ============================================================================
 
 /** BMI088 IMU SPI Interface Pins */
-#define IMU_SPI_MISO_PIN           GPIO_NUM_20   /**< SPI MISO for IMU (changed to avoid camera conflict) */
+#define IMU_SPI_MISO_PIN           GPIO_NUM_20   /**< SPI MISO for IMU */
 #define IMU_SPI_MOSI_PIN           GPIO_NUM_21   /**< SPI MOSI for IMU */
 #define IMU_SPI_CLK_PIN            GPIO_NUM_22   /**< SPI Clock for IMU */
 #define IMU_ACC_CS_PIN             GPIO_NUM_23   /**< Accelerometer Chip Select */
@@ -56,7 +53,7 @@
 // ============================================================================
 
 /** System Status Indicator LEDs */
-/** @note Using GPIO 15-17 range, avoiding GPS UART conflicts */
+/** @note Using GPIO 15-17 range */
 #define SYSTEM_STATUS_LED_PIN      GPIO_NUM_15   /**< System status indicator */
 #define SLAM_ACTIVITY_LED_PIN      GPIO_NUM_16   /**< SLAM processing activity */
 #define COMMUNICATION_LED_PIN      GPIO_NUM_17   /**< Communication status */
@@ -66,7 +63,7 @@
 // ============================================================================
 
 /** MSP Protocol UART for INAV Flight Controller */
-/** @note Using available UART pins, avoiding conflicts */
+/** @note Using available UART pins */
 #define MSP_UART_TX_PIN            GPIO_NUM_18   /**< MSP UART TX */
 #define MSP_UART_RX_PIN            GPIO_NUM_19   /**< MSP UART RX */
 

@@ -1,7 +1,7 @@
 {
   "system": {
     "name": "ESP32-P4 Visual SLAM Navigation System",
-    "version": "1.1.5",
+    "version": "1.1.6",
     "description": "Real-time Visual SLAM navigation system for autonomous drone",
     "debug_mode": false,
     "log_level": "INFO",

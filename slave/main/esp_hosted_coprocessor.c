@@ -23,7 +23,10 @@
 #include "esp_hosted_coprocessor.h"
 #include "slam_web_server.h"
 #include "slam_communication_handler.h"
+#include "wifi_manager_c6.h"
+#include "communication_monitor_c6.h"
 #include "driver/gpio.h"
+#include "esp_timer.h"
 
 #include "freertos/task.h"
 #include "freertos/queue.h"
@@ -1241,15 +1244,87 @@ void app_main(void)
 	}
 	ESP_ERROR_CHECK( ret );
 
+	ESP_LOGI("C6_INIT", "🚀 Starting ESP32-C6 SLAM Coprocessor...");
+
+	// ⚠️ IMPORTANT: Update WiFi credentials before deployment!
+	ESP_LOGW("C6_INIT", "⚠️ IMPORTANT: Update WiFi credentials in esp_hosted_coprocessor.c before deployment!");
+	ESP_LOGW("C6_INIT", "   Current default_ssid: 'YourWiFiNetwork' - replace with your actual WiFi network");
+	ESP_LOGW("C6_INIT", "   Current default_password: 'YourWiFiPassword' - replace with your actual WiFi password");
+
+	// Initialize ESP-Hosted coprocessor functionality
 	esp_hosted_coprocessor_init();
 
+	// Initialize comprehensive WiFi manager with AP fallback
+	wifi_manager_config_t wifi_config = {
+		.default_ssid = "YourWiFiNetwork",        // Change to your WiFi SSID
+		.default_password = "YourWiFiPassword",   // Change to your WiFi password
+		.ap_ssid = "ESP32-AP",                    // AP mode SSID
+		.ap_password = "slam123456",              // AP mode password (min 8 chars)
+		.connection_timeout_ms = 30000,           // 30 second timeout
+		.max_retry_attempts = 3,                  // Try 3 times before AP fallback
+		.enable_ap_fallback = true,               // Enable AP mode fallback
+		.ap_channel = 6,                          // AP channel
+		.ap_max_connections = 4,                  // Max AP connections
+		.enable_captive_portal = true,            // Enable captive portal
+		.captive_portal_url = "http://192.168.4.1" // Captive portal URL
+	};
+
+	ESP_LOGI("C6_INIT", "🔧 Initializing WiFi Manager with AP fallback...");
+	esp_err_t wifi_ret = wifi_manager_c6_init(&wifi_config);
+	if (wifi_ret == ESP_OK) {
+		ESP_LOGI("C6_INIT", "✅ WiFi Manager initialized");
+		
+		// Start WiFi (will try STA first, fallback to AP if needed)
+		wifi_ret = wifi_manager_c6_start();
+		if (wifi_ret == ESP_OK) {
+			ESP_LOGI("C6_INIT", "✅ WiFi Manager started - attempting connection...");
+		} else {
+			ESP_LOGE("C6_INIT", "❌ Failed to start WiFi Manager: %s", esp_err_to_name(wifi_ret));
+		}
+	} else {
+		ESP_LOGE("C6_INIT", "❌ Failed to initialize WiFi Manager: %s", esp_err_to_name(wifi_ret));
+	}
+
+	// Initialize communication monitor
+	comm_monitor_config_t monitor_config = {
+		.status_log_interval_ms = 60000,          // Log status every 60 seconds
+		.p4_comm_timeout_ms = 10000,              // P4 communication timeout 10s
+		.enable_detailed_logging = true,          // Enable detailed logging
+		.enable_performance_monitoring = true     // Enable performance monitoring
+	};
+
+	ESP_LOGI("C6_INIT", "🔧 Initializing Communication Monitor...");
+	esp_err_t monitor_ret = comm_monitor_c6_init(&monitor_config);
+	if (monitor_ret == ESP_OK) {
+		ESP_LOGI("C6_INIT", "✅ Communication Monitor initialized");
+		
+		// Start monitoring
+		monitor_ret = comm_monitor_c6_start();
+		if (monitor_ret == ESP_OK) {
+			ESP_LOGI("C6_INIT", "✅ Communication Monitor started");
+		} else {
+			ESP_LOGE("C6_INIT", "❌ Failed to start Communication Monitor: %s", esp_err_to_name(monitor_ret));
+		}
+	} else {
+		ESP_LOGE("C6_INIT", "❌ Failed to initialize Communication Monitor: %s", esp_err_to_name(monitor_ret));
+	}
+
 	// Initialize SLAM web server and communication handler
-	ESP_LOGI("SLAM_INIT", "✅ Starting SLAM communication handler...");
+	ESP_LOGI("C6_INIT", "🔧 Starting SLAM communication handler...");
 	esp_err_t comm_ret = slam_communication_init();
 	if (comm_ret == ESP_OK) {
-		ESP_LOGI("SLAM_INIT", "✅ SLAM communication handler initialized");
+		ESP_LOGI("C6_INIT", "✅ SLAM communication handler initialized");
+		
+		// Start WiFi positioning for enhanced navigation
+		ESP_LOGI("C6_INIT", "📡 Starting WiFi positioning system...");
+		esp_err_t pos_ret = slam_comm_start_wifi_positioning(15000); // Scan every 15 seconds
+		if (pos_ret == ESP_OK) {
+			ESP_LOGI("C6_INIT", "✅ WiFi positioning started (15s intervals)");
+		} else {
+			ESP_LOGW("C6_INIT", "⚠️ Failed to start WiFi positioning: %s", esp_err_to_name(pos_ret));
+		}
 	} else {
-		ESP_LOGE("SLAM_INIT", "❌ Failed to initialize SLAM communication handler: %s", esp_err_to_name(comm_ret));
+		ESP_LOGE("C6_INIT", "❌ Failed to initialize SLAM communication handler: %s", esp_err_to_name(comm_ret));
 	}
 
 	// Initialize web server with default configuration
@@ -1258,13 +1333,38 @@ void app_main(void)
 		.stack_size = 4096
 	};
 	
-	ESP_LOGI("SLAM_INIT", "✅ Starting SLAM web server...");
+	ESP_LOGI("C6_INIT", "🔧 Starting SLAM web server...");
 	esp_err_t web_ret = slam_web_server_init(&web_config);
 	if (web_ret == ESP_OK) {
-		ESP_LOGI("SLAM_INIT", "✅ SLAM web server initialized - Access dashboard at http://<ESP32-C6-IP>/");
+		ESP_LOGI("C6_INIT", "✅ SLAM web server initialized");
+		
+		// Actually start the web server
+		web_ret = slam_web_server_start();
+		if (web_ret == ESP_OK) {
+			ESP_LOGI("C6_INIT", "✅ SLAM web server started");
+			ESP_LOGI("C6_INIT", "🌐 Web dashboard available at:");
+			ESP_LOGI("C6_INIT", "   📱 http://<ESP32-C6-IP>/ (if connected to WiFi)");
+			ESP_LOGI("C6_INIT", "   📡 http://192.168.4.1/ (if in AP mode - captive portal enabled)");
+		} else {
+			ESP_LOGE("C6_INIT", "❌ Failed to start SLAM web server: %s", esp_err_to_name(web_ret));
+		}
 	} else {
-		ESP_LOGE("SLAM_INIT", "❌ Failed to initialize SLAM web server: %s", esp_err_to_name(web_ret));
+		ESP_LOGE("C6_INIT", "❌ Failed to initialize SLAM web server: %s", esp_err_to_name(web_ret));
 	}
+
+	ESP_LOGI("C6_INIT", "");
+	ESP_LOGI("C6_INIT", "════════════════════════════════════════════════════════════════");
+	ESP_LOGI("C6_INIT", "                ESP32-C6 SLAM COPROCESSOR READY                ");
+	ESP_LOGI("C6_INIT", "════════════════════════════════════════════════════════════════");
+	ESP_LOGI("C6_INIT", "📶 WiFi: Auto-connect with AP fallback enabled");
+	ESP_LOGI("C6_INIT", "🌐 Web Server: Dashboard and API endpoints");
+	ESP_LOGI("C6_INIT", "🔗 P4 Communication: ESP-Hosted protocol");
+	ESP_LOGI("C6_INIT", "📊 Monitoring: Comprehensive status logging");
+	ESP_LOGI("C6_INIT", "════════════════════════════════════════════════════════════════");
+	ESP_LOGI("C6_INIT", "");
+
+	// Remove test timer since test functions have been removed
+	ESP_LOGI("C6_INIT", "⚠️ Test communication functions have been removed - using handshake protocol instead");
 
 #ifdef CONFIG_ESP_HOSTED_NETWORK_SPLIT_ENABLED
 #ifdef ESP_HOSTED_COPROCESSOR_EXAMPLE_HTTP_CLIENT

@@ -34,7 +34,7 @@ static esp_err_t save_master_config_to_spiffs(const master_config_t* config);
 static const char* DEFAULT_SYSTEM_CONFIG_JSON = "{"
   "\"system\": {"
     "\"name\": \"ESP32-P4 Visual SLAM Navigation System\","
-    "\"version\": \"1.1.5\","
+    "\"version\": \"1.1.6\","
     "\"description\": \"Real-time Visual SLAM navigation system for autonomous drone\","
     "\"debug_mode\": false,"
     "\"log_level\": \"INFO\","
@@ -544,7 +544,7 @@ esp_err_t config_loader_load_system_config(system_config_t* config) {
     // Initialize with default values first
     system_config_t default_config = {
         .name = "ESP32-P4 Visual SLAM Navigation System",
-        .version = "1.1.5",
+        .version = "1.1.6",
         .description = "Real-time Visual SLAM navigation system for autonomous drone",
         .debug_mode = false,
         .log_level = "INFO",
@@ -1009,7 +1009,6 @@ esp_err_t config_loader_load_gps_config(extended_gps_config_t* config) {
         return ESP_OK;
     }
 
-    esp_err_t ret = ESP_OK; // Config loaded successfully
     cJSON* root = cJSON_Parse(buffer);
     free(buffer);
 

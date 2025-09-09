@@ -2,6 +2,16 @@
 
 This document details the **ESP32-C6 WiFi Coprocessor Implementation** for the Visual SLAM Navigation System, providing Wi-Fi connectivity and web interface services to the ESP32-P4 main processor via ESP-Hosted communication protocol.
 
+## Quick Start - WiFi Access
+
+**AP Mode (Default Fallback):**
+- **SSID**: `ESP32-AP`
+- **Password**: `slam123456`
+- **Web Interface**: `http://192.168.4.1`
+
+**Handshake Protocol:**
+The C6 automatically initiates handshake with P4 on startup to receive WiFi credentials. If connection fails, it falls back to AP mode with 2-minute timeout before switching to scanning mode.
+
 ## Overview
 
 The ESP32-C6 coprocessor enables the ESP32-P4 main processor to utilize advanced Wi-Fi capabilities through **ESP-Hosted communication interface**. This implementation provides comprehensive WiFi management, web-based SLAM system control, and real-time data streaming capabilities optimized for drone navigation applications.
@@ -29,16 +39,14 @@ The Visual SLAM system uses ESP-Hosted communication interface for high-speed da
 
 #### Communication Interface (Default for ESP32-P4-Function-EV-Board)
 
-The ESP32-C6 operates in slave mode, providing WiFi and communication services to the ESP32-P4 host:
+The ESP32-C6 operates in slave mode, providing WiFi and communication services to the ESP32-P4 host via ESP-Hosted SPI protocol:
 
 | Signal | GPIO | Function | Connection |
 |:-------|:-----|:---------|:-----------|
-| CLK | 19 | Communication Clock | Connects to P4 host CLK |
-| CMD | 18 | Command Interface | Connects to P4 host CMD |
-| D0 | 20 | Data Line 0 | Connects to P4 host D0 |
-| D1 | 21 | Data Line 1 | Connects to P4 host D1 |
-| D2 | 22 | Data Line 2 | Connects to P4 host D2 |
-| D3 | 23 | Data Line 3 | Connects to P4 host D3 |
+| CLK | 21 | SPI Clock | Connects to P4 GPIO 18 (CLK) |
+| MOSI | 23 | SPI Master Out | Connects to P4 GPIO 17 (MOSI) |
+| MISO | 22 | SPI Master In | Connects to P4 GPIO 16 (MISO) |
+| CS | 24 | Chip Select | Connects to P4 GPIO 19 (CS) |
 | Reset | EN | Reset input | Controlled by P4 for reset management |
 
 #### WiFi Hardware Configuration
@@ -64,10 +72,14 @@ The ESP32-C6 operates in slave mode, providing WiFi and communication services t
 - **API Endpoints**: WiFi control, system status, network management
 
 **ESP-Hosted Communication Protocol**
-- **Transport**: High-speed communication interface
-- **Data Types**: WiFi control commands, network scan results, web data
-- **Special Features**: WiFi toggle with scan capability retention
-- **Fallback**: Automatic AP mode activation if no network found
+- **Transport**: ESP-Hosted SPI interface at up to 10 MHz
+- **Data Types**: WiFi control commands, network scan results, web data, handshake protocol
+- **Message Types**: Handshake requests/acks, WiFi credential exchange, status updates
+- **Special Features**: 
+  - Automatic handshake on startup to receive WiFi credentials from P4
+  - WiFi toggle with scan capability retention
+  - AP fallback with 2-minute timeout
+  - Real-time status synchronization
 
 #### Power and Reset Management
 
@@ -100,11 +112,19 @@ This project implements a sophisticated dual-chip architecture for real-time Vis
 - **Communication**: Communication slave responding to P4 commands
 
 #### Inter-Chip Communication Protocol
-- **Transport**: High-speed communication interface (up to 50 MHz)
-- **Commands**: WiFi control, network management, web interface data
+- **Transport**: ESP-Hosted SPI interface (up to 10 MHz)
+- **Pin Configuration**: C6 GPIO 21-24 ↔ P4 GPIO 16-19 (CLK/MOSI/MISO/CS)
+- **Commands**: WiFi control, network management, web interface data, handshake protocol
+- **Message Flow**:
+  1. C6 sends handshake request on startup
+  2. P4 acknowledges handshake
+  3. C6 requests WiFi credentials
+  4. P4 sends WiFi SSID/password
+  5. C6 attempts connection or falls back to AP mode
 - **Special Features**: 
-  - WiFi toggle while maintaining scan capability
-  - Automatic AP fallback if no networks available
+  - Automatic handshake-based WiFi credential exchange
+  - AP fallback with `ESP32-AP` / `slam123456`
+  - 2-minute AP timeout before switching to scanning mode
   - Real-time status synchronization
   - Web-based SLAM system control
 

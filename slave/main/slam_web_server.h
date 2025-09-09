@@ -26,6 +26,8 @@ typedef struct {
     uint8_t max_clients;        /**< Maximum concurrent clients */
     bool enable_cors;           /**< Enable CORS headers */
     uint32_t stack_size;        /**< Task stack size */
+    bool enable_captive_portal; /**< Enable captive portal functionality */
+    bool captive_portal_redirect_all; /**< Redirect all requests to main page */
 } web_server_config_t;
 
 /**

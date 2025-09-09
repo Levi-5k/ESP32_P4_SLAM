@@ -181,6 +181,20 @@ esp_err_t wifi_manager_stop_scanning(void);
  */
 bool wifi_manager_is_scan_only(void);
 
+/**
+ * @brief Connect to a specific WiFi network
+ *
+ * @param ssid SSID to connect to
+ * @param password Password for the network
+ * @return ESP_OK on success, error code on failure
+ */
+esp_err_t wifi_manager_connect(const char* ssid, const char* password);
+
+/**
+ * @brief Print comprehensive WiFi status for debugging
+ */
+void wifi_manager_print_comprehensive_status(void);
+
 #ifdef __cplusplus
 }
 #endif

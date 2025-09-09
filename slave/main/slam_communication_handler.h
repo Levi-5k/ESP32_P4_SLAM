@@ -34,6 +34,31 @@ esp_err_t slam_communication_send_command(uint8_t msg_type, const void* payload,
  */
 esp_err_t slam_communication_simulate_p4_data(void);
 
+/**
+ * @brief Start WiFi positioning data transmission to P4
+ * @param scan_interval_ms Interval between WiFi scans in milliseconds
+ * @return ESP_OK on success
+ */
+esp_err_t slam_comm_start_wifi_positioning(uint32_t scan_interval_ms);
+
+/**
+ * @brief Stop WiFi positioning data transmission
+ * @return ESP_OK on success
+ */
+esp_err_t slam_comm_stop_wifi_positioning(void);
+
+/**
+ * @brief Initiate handshake with P4
+ * @return ESP_OK on success
+ */
+esp_err_t slam_comm_initiate_handshake(void);
+
+/**
+ * @brief Request WiFi credentials from P4
+ * @return ESP_OK on success
+ */
+esp_err_t slam_comm_request_wifi_credentials(void);
+
 #ifdef __cplusplus
 }
 #endif

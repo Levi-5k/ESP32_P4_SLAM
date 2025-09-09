@@ -36,6 +36,8 @@
 #include "assistnow.h"    // AssistNow Offline GPS enhancement
 #include "wifi_assistnow.h" // WiFi for AssistNow downloads
 #include "wifi_positioning.h" // WiFi positioning using WiGLE database
+#include "wifi_manager.h" // WiFi management for ESP32-P4
+#include "web_server.h" // Web server for system interface
 
 // Centralized pin configuration
 #include "esp32p4_pin_config.h"
@@ -61,7 +63,7 @@ static TaskHandle_t telemetry_broadcast_task_handle = NULL;
 static TaskHandle_t sensor_monitoring_task_handle = NULL;
 
 // System status instance
-static system_status_t system_status = {0};
+system_status_t system_status = {0};
 
 // WIFI remote functionality
 // static bool wifi_enabled = false;
@@ -780,6 +782,7 @@ static void sensor_monitoring_task(void *pvParameters)
     TickType_t last_gps_check = 0;
     TickType_t last_imu_check = 0;
     TickType_t last_msp_check = 0;
+    TickType_t last_wifi_check = 0;
     
     while (1) {
         TickType_t current_time = xTaskGetTickCount();
@@ -892,6 +895,23 @@ static void sensor_monitoring_task(void *pvParameters)
             } else {
                 ESP_LOGD(TAG, "📡 MSP flight controller connected - receiving messages");
                 system_status.msp_connected = true;
+            }
+        }
+        
+        // Check WiFi and communication status every 10 seconds
+        if ((current_time - last_wifi_check) >= pdMS_TO_TICKS(10000)) {
+            last_wifi_check = current_time;
+            
+            // Print comprehensive WiFi status from the WiFi manager
+            wifi_manager_print_comprehensive_status();
+            
+            // Print basic communication status and send heartbeat to C6
+            ESP_LOGI(TAG, "📡 Communication with C6: Sending heartbeat and status update");
+            esp_err_t comm_ret = comm_send_heartbeat_auto();
+            if (comm_ret == ESP_OK) {
+                ESP_LOGI(TAG, "✅ Communication with C6 successful");
+            } else {
+                ESP_LOGW(TAG, "⚠️ Communication with C6 failed: %s", esp_err_to_name(comm_ret));
             }
         }
         
@@ -1075,30 +1095,36 @@ esp_err_t wifi_disable(void)
 */
 
 /**
- * Initialize WIFI system
+ * Initialize WiFi system using WiFi manager
  */
-/*
 static esp_err_t initialize_wifi(void)
 {
-    ESP_LOGI(TAG, "📡 Initializing WIFI system...");
+    ESP_LOGI(TAG, "📡 Initializing WiFi manager...");
 
-    // Create WIFI mutex
-    wifi_mutex = xSemaphoreCreateMutex();
-    if (wifi_mutex == NULL) {
-        ESP_LOGE(TAG, "❌ Failed to create WIFI mutex");
-        return ESP_ERR_NO_MEM;
+    // Configure WiFi manager with default settings
+    wifi_manager_config_t wifi_config = {
+        .sta_ssid = "",  // Will be set later via comm_init_wifi_connection
+        .sta_password = "",  // Will be set later via comm_init_wifi_connection
+        .sta_connect_timeout_ms = 10000,
+        .ap_ssid = "DroneCam-P4",
+        .ap_password = "dronecam123",
+        .ap_channel = 1,
+        .ap_max_connections = 4,
+        .auto_fallback = true,
+        .scan_only_mode = false,
+        .scan_interval_ms = 30000,
+        .max_retry_count = 3
+    };
+
+    esp_err_t ret = wifi_manager_init(&wifi_config);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "❌ Failed to initialize WiFi manager: %s", esp_err_to_name(ret));
+        return ret;
     }
 
-    // Initialize WIFI state
-    wifi_enabled = false;
-    wifi_connected = false;
-
-    ESP_LOGI(TAG, "✅ WIFI system initialized (disabled by default)");
-    ESP_LOGI(TAG, "🔘 Press GPIO%d button to toggle WIFI on/off", WIFI_TOGGLE_BUTTON_PIN);
-
+    ESP_LOGI(TAG, "✅ WiFi manager initialized successfully");
     return ESP_OK;
 }
-*/
 
 /**
  * Application main entry point
@@ -1122,8 +1148,7 @@ void app_main(void)
     initialize_nvs();
     initialize_gpio();
 
-    // Initialize WIFI system (disabled by default)
-    // initialize_wifi();
+    // WiFi will be initialized later after configuration is loaded
 
     // Create system synchronization objects
     system_mutex = xSemaphoreCreateMutex();
@@ -1201,7 +1226,36 @@ void app_main(void)
     } else {
         ESP_LOGE(TAG, "❌ Communication manager initialization failed: %s", esp_err_to_name(ret));
         ESP_LOGW(TAG, "⚠️ Continuing without C6 communication - SLAM system will still work");
-    }    // Now initialize components with loaded configuration
+    }
+    
+    // Initialize WiFi manager if enabled in configuration
+    if (master_config.loaded && master_config.system.wifi_enabled) {
+        ESP_LOGI(TAG, "🌐 WiFi enabled in configuration, initializing WiFi manager...");
+        ret = initialize_wifi();
+        if (ret == ESP_OK) {
+            ESP_LOGI(TAG, "✅ WiFi manager initialized successfully");
+            
+            // If we have WiFi credentials, try to connect
+            if (strlen(master_config.system.wifi_ssid) > 0) {
+                ESP_LOGI(TAG, "🌐 Starting WiFi connection to '%s'...", master_config.system.wifi_ssid);
+                ret = comm_init_wifi_connection(master_config.system.wifi_ssid, 
+                                              master_config.system.wifi_password);
+                if (ret == ESP_OK) {
+                    ESP_LOGI(TAG, "✅ WiFi connection initiated successfully");
+                } else {
+                    ESP_LOGE(TAG, "❌ Failed to initiate WiFi connection: %s", esp_err_to_name(ret));
+                }
+            } else {
+                ESP_LOGI(TAG, "⚠️ WiFi enabled but no SSID configured");
+            }
+        } else {
+            ESP_LOGE(TAG, "❌ WiFi manager initialization failed: %s", esp_err_to_name(ret));
+        }
+    } else {
+        ESP_LOGI(TAG, "🌐 WiFi disabled in configuration, skipping WiFi initialization");
+    }
+    
+    // Now initialize components with loaded configuration
     ret = initialize_camera();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Camera initialization failed, continuing anyway...");

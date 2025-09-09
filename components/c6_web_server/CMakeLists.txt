@@ -7,4 +7,5 @@ idf_component_register(
              "esp_timer"
              "freertos"
              "log"
+             "communication"
 )

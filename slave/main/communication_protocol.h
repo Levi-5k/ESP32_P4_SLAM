@@ -34,8 +34,12 @@ typedef enum {
     MSG_P4_TO_C6_ERROR = 0x06,          // Error conditions
     MSG_P4_TO_C6_CONFIG_ACK = 0x07,     // Acknowledge configuration changes
     MSG_P4_TO_C6_CAMERA_FRAME = 0x08,   // Camera preview frame data
-    MSG_P4_TO_C6_WIFI_STATUS = 0x09,    // WiFi status update from P4
+    MSG_P4_TO_C6_WIFI_CONTROL = 0x09,   // WiFi control commands to C6
     MSG_P4_TO_C6_WIFI_NETWORKS = 0x0A,  // Network scan results
+    MSG_P4_TO_C6_WIFI_POSITION_ACK = 0x0B,  // Acknowledge WiFi positioning data
+    MSG_P4_TO_C6_WIFI_STATUS = 0x0C,    // WiFi status updates to C6
+    MSG_P4_TO_C6_HANDSHAKE_ACK = 0x0D,  // Handshake acknowledgment from P4
+    MSG_P4_TO_C6_WIFI_CREDENTIALS = 0x0E,  // WiFi credentials response from P4
 } msg_p4_to_c6_type_t;
 
 // Message types from C6 to P4
@@ -48,7 +52,10 @@ typedef enum {
     MSG_C6_TO_P4_HEARTBEAT_ACK = 0x15,  // Heartbeat acknowledgment
     MSG_C6_TO_P4_CAMERA_CMD = 0x16,     // Camera configuration commands
     MSG_C6_TO_P4_PREVIEW_REQ = 0x17,    // Request camera preview frame
-    MSG_C6_TO_P4_WIFI_CONTROL = 0x18,   // WiFi enable/disable control
+    MSG_C6_TO_P4_WIFI_STATUS = 0x18,    // WiFi status from C6
+    MSG_C6_TO_P4_WIFI_POSITIONING_DATA = 0x19,  // WiFi access point data for positioning
+    MSG_C6_TO_P4_HANDSHAKE_REQUEST = 0x1A,      // Initial handshake request from C6
+    MSG_C6_TO_P4_WIFI_CREDENTIALS_REQUEST = 0x1B, // Request WiFi credentials from P4
 } msg_c6_to_p4_type_t;
 
 // System commands
@@ -181,6 +188,34 @@ typedef struct __attribute__((packed)) {
     uint8_t auth_mode;                  // Authentication mode
 } wifi_connect_msg_t;
 
+// WiFi credentials response (P4 to C6)
+typedef struct __attribute__((packed)) {
+    uint8_t ssid[COMM_MAX_SSID_LEN];    // WiFi SSID
+    uint8_t password[COMM_MAX_PASSWORD_LEN]; // WiFi password
+    uint8_t auth_mode;                  // Authentication mode
+    uint8_t status;                     // 0 = success, 1 = no credentials available
+} wifi_credentials_response_t;
+
+// WiFi control message (P4 to C6)
+typedef struct __attribute__((packed)) {
+    uint8_t enable_wifi;                // 1 = enable, 0 = disable
+    uint8_t enable_scan_only;           // 1 = scan-only mode, 0 = full mode
+    uint8_t auto_ap_fallback;           // 1 = enable AP fallback, 0 = disable
+    uint8_t reserved;                   // Reserved for future use
+} wifi_control_msg_t;
+
+// WiFi status message (C6 to P4)
+typedef struct __attribute__((packed)) {
+    uint8_t wifi_enabled;               // WiFi module state
+    uint8_t connected;                  // Connection status
+    uint8_t scan_active;                // Scanning state
+    uint8_t ap_mode_active;             // AP mode status
+    uint8_t ssid[COMM_MAX_SSID_LEN];    // Connected SSID
+    int8_t rssi;                        // Signal strength
+    uint32_t ip_address;                // IP address (if connected)
+    uint8_t mac_address[6];             // MAC address
+} wifi_status_msg_t;
+
 // System command message (C6 to P4)
 typedef struct __attribute__((packed)) {
     system_command_t command;           // System command to execute
@@ -211,6 +246,36 @@ typedef struct __attribute__((packed)) {
     // Frame data follows this header in the payload
 } camera_frame_msg_t;
 
+// WiFi Access Point information for positioning (C6 to P4)
+typedef struct __attribute__((packed)) {
+    char ssid[COMM_MAX_SSID_LEN];       // SSID name
+    uint8_t bssid[6];                   // BSSID (MAC address)
+    int8_t rssi;                        // Signal strength in dBm
+    uint8_t channel;                    // WiFi channel (1-13)
+    uint8_t auth_mode;                  // Authentication mode
+    uint32_t last_seen;                 // Timestamp when last seen
+    uint16_t vendor_oui;                // Vendor OUI for identification
+    bool is_hidden;                     // Hidden network flag
+} wifi_ap_positioning_t;
+
+// WiFi positioning data message (C6 to P4)
+typedef struct __attribute__((packed)) {
+    uint32_t scan_timestamp;            // When this scan was performed
+    uint8_t ap_count;                   // Number of access points found
+    uint32_t scan_duration_ms;          // How long the scan took
+    wifi_ap_positioning_t access_points[10];  // Access point information
+} wifi_positioning_msg_t;
+
+// WiFi positioning acknowledgment (P4 to C6)
+typedef struct __attribute__((packed)) {
+    uint32_t scan_timestamp;            // Timestamp of processed scan
+    uint8_t processed_ap_count;         // Number of APs successfully processed
+    uint8_t positioning_success;        // 1 if position calculated, 0 if failed
+    double estimated_latitude;          // Estimated latitude (if successful)
+    double estimated_longitude;         // Estimated longitude (if successful)
+    float confidence_radius;            // Confidence radius in meters
+} wifi_position_ack_msg_t;
+
 // Generic message structure
 typedef struct __attribute__((packed)) {
     comm_msg_header_t header;
@@ -222,10 +287,14 @@ typedef struct __attribute__((packed)) {
         config_update_msg_t config_update;
         wifi_scan_response_t wifi_scan;
         wifi_connect_msg_t wifi_connect;
+        wifi_control_msg_t wifi_control;
+        wifi_status_msg_t wifi_status;
         system_cmd_msg_t system_cmd;
         map_cmd_msg_t map_cmd;
         camera_cmd_msg_t camera_cmd;
         camera_frame_msg_t camera_frame;
+        wifi_positioning_msg_t wifi_positioning;
+        wifi_position_ack_msg_t wifi_position_ack;
         uint8_t raw_payload[COMM_MAX_PAYLOAD_SIZE];
     } payload;
 } comm_message_t;

@@ -643,6 +643,9 @@ esp_err_t wifi_manager_get_diagnostics(char* buffer, size_t buffer_size)
 
     wifi_ap_record_t ap_info;
     esp_err_t ret = esp_wifi_remote_sta_get_ap_info(&ap_info);
+    
+    // Use connection_info for diagnostics, ap_info is supplementary
+    (void)ret;  // Suppress unused variable warning
 
     snprintf(buffer, buffer_size,
              "WiFi Manager Diagnostics:\n"
@@ -846,4 +849,122 @@ esp_err_t wifi_manager_stop_scanning(void)
 bool wifi_manager_is_scan_only(void)
 {
     return scan_only_mode;
+}
+
+esp_err_t wifi_manager_connect(const char* ssid, const char* password)
+{
+    if (!ssid || !password) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (!initialized) {
+        ESP_LOGE(TAG, "❌ WiFi manager not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    ESP_LOGI(TAG, "🔄 Connecting to WiFi network: %s", ssid);
+
+    // Update configuration with new credentials
+    config.sta_ssid = ssid;
+    config.sta_password = password;
+
+    // Stop any current WiFi operations
+    esp_err_t ret = esp_wifi_remote_stop();
+    if (ret != ESP_OK && ret != ESP_ERR_WIFI_NOT_STARTED) {
+        ESP_LOGW(TAG, "⚠️ Failed to stop WiFi: %s", esp_err_to_name(ret));
+    }
+
+    // Configure station mode with new credentials
+    ret = wifi_configure_station();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "❌ Failed to configure station: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    // Start WiFi
+    ret = esp_wifi_remote_start();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "❌ Failed to start WiFi: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    // Initiate connection
+    ret = esp_wifi_remote_connect();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "❌ Failed to connect to WiFi: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    // Update status
+    status = WIFI_MGR_STATUS_CONNECTING;
+    
+    ESP_LOGI(TAG, "✅ WiFi connection initiated for SSID: %s", ssid);
+    return ESP_OK;
+}
+
+/**
+ * @brief Print comprehensive WiFi status for P4
+ */
+void wifi_manager_print_comprehensive_status(void)
+{
+    ESP_LOGI(TAG, "");
+    ESP_LOGI(TAG, "════════════════════════════════════════════════════════════════");
+    ESP_LOGI(TAG, "                   ESP32-P4 WIFI STATUS                        ");
+    ESP_LOGI(TAG, "════════════════════════════════════════════════════════════════");
+    
+    // WiFi Manager Status
+    const char* status_names[] = {
+        "DISABLED", "INITIALIZING", "SCAN_ONLY", "CONNECTING", 
+        "CONNECTED", "DISCONNECTED", "AP_MODE", "ERROR"
+    };
+    
+    const char* status_name = (status < sizeof(status_names)/sizeof(status_names[0])) ? 
+                             status_names[status] : "UNKNOWN";
+    
+    ESP_LOGI(TAG, "🔧 WIFI MANAGER:");
+    ESP_LOGI(TAG, "   📊 Status: %s", status_name);
+    ESP_LOGI(TAG, "   🏃 Running: %s", running ? "Yes" : "No");
+    ESP_LOGI(TAG, "   📡 WiFi Enabled: %s", wifi_enabled ? "Yes" : "No");
+    ESP_LOGI(TAG, "   🔍 Scan Only: %s", scan_only_mode ? "Yes" : "No");
+    ESP_LOGI(TAG, "   🔄 Scanning Active: %s", scanning_active ? "Yes" : "No");
+    
+    // Connection Information
+    ESP_LOGI(TAG, "🔗 CONNECTION INFO:");
+    if (connection_info.ssid[0] != '\0') {
+        ESP_LOGI(TAG, "   📶 SSID: %s", connection_info.ssid);
+        ESP_LOGI(TAG, "   🌐 IP Address: %s", connection_info.ip_addr);
+        ESP_LOGI(TAG, "   📡 RSSI: %d dBm", connection_info.rssi);
+        ESP_LOGI(TAG, "   📻 Channel: %d", connection_info.channel);
+        ESP_LOGI(TAG, "   🏠 AP Mode: %s", connection_info.is_ap_mode ? "Yes" : "No");
+        if (connection_info.is_ap_mode) {
+            ESP_LOGI(TAG, "   👥 Connected Clients: %d", connection_info.client_count);
+        }
+    } else {
+        ESP_LOGI(TAG, "   ❌ No connection information available");
+    }
+    
+    // Configuration Details
+    ESP_LOGI(TAG, "⚙️ CONFIGURATION:");
+    ESP_LOGI(TAG, "   📋 Station SSID: %s", config.sta_ssid);
+    ESP_LOGI(TAG, "   🏠 AP SSID: %s", config.ap_ssid);
+    ESP_LOGI(TAG, "   📻 AP Channel: %d", config.ap_channel);
+    ESP_LOGI(TAG, "   👥 Max AP Connections: %d", config.ap_max_connections);
+    ESP_LOGI(TAG, "   🔄 Auto Fallback: %s", config.auto_fallback ? "Yes" : "No");
+    ESP_LOGI(TAG, "   ⏰ Connection Timeout: %lu ms", config.sta_connect_timeout_ms);
+    ESP_LOGI(TAG, "   🔄 Max Retries: %d", config.max_retry_count);
+    ESP_LOGI(TAG, "   🔍 Scan Interval: %lu ms", config.scan_interval_ms);
+    
+    // Retry Status
+    ESP_LOGI(TAG, "🔄 RETRY STATUS:");
+    ESP_LOGI(TAG, "   📶 Station Retries: %d/%d", station_retry_count, config.max_retry_count);
+    ESP_LOGI(TAG, "   🏠 AP Retries: %d", ap_retry_count);
+    
+    // ESP-Hosted Communication
+    ESP_LOGI(TAG, "🔗 ESP-HOSTED:");
+    ESP_LOGI(TAG, "   🔧 Initialized: %s", initialized ? "Yes" : "No");
+    ESP_LOGI(TAG, "   📡 STA Interface: %s", sta_netif ? "Ready" : "Not Ready");
+    ESP_LOGI(TAG, "   🏠 AP Interface: %s", ap_netif ? "Ready" : "Not Ready");
+    
+    ESP_LOGI(TAG, "════════════════════════════════════════════════════════════════");
+    ESP_LOGI(TAG, "");
 }

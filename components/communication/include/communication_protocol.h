@@ -37,6 +37,7 @@ typedef enum {
     MSG_P4_TO_C6_CONFIG_ACK = 0x07,     // Acknowledge configuration changes
     MSG_P4_TO_C6_WIFI_STATUS = 0x08,    // WiFi status update from P4
     MSG_P4_TO_C6_WIFI_NETWORKS = 0x09,  // Network scan results
+    MSG_P4_TO_C6_WIFI_POSITION_ACK = 0x0A,  // WiFi positioning acknowledgment
 } msg_p4_to_c6_type_t;
 
 // Message types from C6 to P4
@@ -48,6 +49,7 @@ typedef enum {
     MSG_C6_TO_P4_MAP_CMD = 0x14,        // Map commands (save, load, clear)
     MSG_C6_TO_P4_HEARTBEAT_ACK = 0x15,  // Heartbeat acknowledgment
     MSG_C6_TO_P4_WIFI_CONTROL = 0x16,   // WiFi enable/disable control
+    MSG_C6_TO_P4_WIFI_POSITIONING_DATA = 0x19,  // WiFi access point data for positioning
 } msg_c6_to_p4_type_t;
 
 // System commands
@@ -199,6 +201,47 @@ typedef struct __attribute__((packed)) {
     uint8_t mac_address[6];             // MAC address
 } wifi_status_msg_t;
 
+// WiFi positioning constants
+#define MAX_POSITIONING_APS 10          // Maximum access points for positioning
+
+// WiFi access point for positioning
+typedef struct __attribute__((packed)) {
+    char ssid[32];                      // SSID (31 chars + null terminator)
+    char bssid[18];                     // BSSID in format "XX:XX:XX:XX:XX:XX"
+    int8_t rssi;                        // Signal strength in dBm
+    uint8_t channel;                    // WiFi channel
+    uint8_t auth_mode;                  // Authentication mode
+    uint8_t is_hidden;                  // Hidden network flag
+} wifi_ap_positioning_t;
+
+// WiFi positioning message (C6 to P4)
+typedef struct __attribute__((packed)) {
+    uint16_t sequence_number;           // Sequence number for tracking
+    uint8_t ap_count;                   // Number of access points in this message
+    uint8_t reserved;                   // Reserved for future use
+    uint64_t timestamp;                 // Timestamp when scan was performed
+    wifi_ap_positioning_t access_points[MAX_POSITIONING_APS];  // Access point data
+} wifi_positioning_msg_t;
+
+// WiFi positioning acknowledgment status
+typedef enum {
+    WIFI_POS_ACK_SUCCESS = 0x00,        // Position calculation successful
+    WIFI_POS_ACK_ERROR = 0x01,          // Position calculation failed
+    WIFI_POS_ACK_INSUFFICIENT_DATA = 0x02,  // Not enough access points
+    WIFI_POS_ACK_TIMEOUT = 0x03,        // Processing timeout
+} wifi_position_ack_status_t;
+
+// WiFi positioning acknowledgment (P4 to C6)
+typedef struct __attribute__((packed)) {
+    uint16_t sequence_number;           // Sequence number from original message
+    uint8_t status;                     // Status code (wifi_position_ack_status_t)
+    uint8_t position_calculated;        // 1 if position was calculated, 0 otherwise
+    uint32_t processing_time_ms;        // Time taken to process positioning data
+    double latitude;                    // Calculated latitude (if successful)
+    double longitude;                   // Calculated longitude (if successful)
+    float accuracy;                     // Position accuracy in meters (if successful)
+} wifi_position_ack_msg_t;
+
 // Generic message structure
 typedef struct __attribute__((packed)) {
     comm_msg_header_t header;
@@ -212,6 +255,8 @@ typedef struct __attribute__((packed)) {
         wifi_connect_msg_t wifi_connect;
         wifi_control_msg_t wifi_control;
         wifi_status_msg_t wifi_status;
+        wifi_positioning_msg_t wifi_positioning;
+        wifi_position_ack_msg_t wifi_position_ack;
         system_cmd_msg_t system_cmd;
         map_cmd_msg_t map_cmd;
         uint8_t raw_payload[COMM_MAX_PAYLOAD_SIZE];

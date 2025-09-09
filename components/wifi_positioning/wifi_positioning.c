@@ -752,3 +752,53 @@ uint8_t wifi_positioning_get_visible_aps(wifi_ap_info_t* aps, uint8_t max_count)
 
     return count;
 }
+
+/**
+ * @brief Process external WiFi access point data for positioning
+ */
+esp_err_t wifi_positioning_process_external_aps(const wifi_ap_info_t* aps, uint8_t ap_count, wifi_position_t* position)
+{
+    if (!aps || !position || ap_count == 0) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (!initialized) {
+        ESP_LOGW(TAG, "WiFi positioning not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    ESP_LOGI(TAG, "📡 Processing %d external WiFi access points for positioning", ap_count);
+
+    // Log the received access points
+    for (uint8_t i = 0; i < ap_count; i++) {
+        ESP_LOGD(TAG, "AP[%d]: SSID='%s', BSSID='%s', RSSI=%d dBm, Channel=%d", 
+                 i, aps[i].ssid, aps[i].bssid, aps[i].rssi, aps[i].channel);
+    }
+
+    // Calculate position using the same algorithm as local scanning
+    esp_err_t ret = calculate_position_from_aps(aps, ap_count, position);
+    
+    if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "✅ Position calculated from external APs: lat=%.6f, lon=%.6f, accuracy=%.1fm",
+                 position->latitude, position->longitude, position->accuracy_h);
+        
+        // Update statistics
+        stats.successful_positions++;
+        stats.database_queries += ap_count;
+        
+        // Update last known position
+        memcpy(&last_position, position, sizeof(wifi_position_t));
+        
+        // Update status
+        status = WIFI_POS_STATUS_READY;
+        
+        // Add timestamp
+        position->timestamp = esp_timer_get_time();
+        
+    } else {
+        ESP_LOGW(TAG, "⚠️ Failed to calculate position from external APs: %s", esp_err_to_name(ret));
+        stats.failed_positions++;
+    }
+
+    return ret;
+}

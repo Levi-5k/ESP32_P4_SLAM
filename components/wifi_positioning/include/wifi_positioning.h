@@ -166,6 +166,15 @@ uint8_t wifi_positioning_get_visible_ap_count(void);
  */
 uint8_t wifi_positioning_get_visible_aps(wifi_ap_info_t* aps, uint8_t max_count);
 
+/**
+ * @brief Process external WiFi access point data for positioning
+ * @param aps Array of access point information from external source
+ * @param ap_count Number of access points in array
+ * @param position Pointer to store calculated position
+ * @return ESP_OK on success
+ */
+esp_err_t wifi_positioning_process_external_aps(const wifi_ap_info_t* aps, uint8_t ap_count, wifi_position_t* position);
+
 #ifdef __cplusplus
 }
 #endif

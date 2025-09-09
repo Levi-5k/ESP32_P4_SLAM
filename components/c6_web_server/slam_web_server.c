@@ -8,6 +8,7 @@
 #include <esp_log.h>
 #include <esp_http_server.h>
 #include <esp_wifi.h>
+#include <esp_timer.h>
 #include <cJSON.h>
 #include <string.h>
 #include <math.h>
@@ -229,7 +230,7 @@ static esp_err_t api_command_handler(httpd_req_t *req)
     cJSON *cmd = cJSON_GetObjectItem(json, "command");
     if (!cmd || !cJSON_IsString(cmd)) {
         cJSON_Delete(json);
-        httpd_resp_send_400(req);
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid command");
         return ESP_FAIL;
     }
     

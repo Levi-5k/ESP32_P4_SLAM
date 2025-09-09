@@ -3,6 +3,15 @@
 ## Important Guideline
 keep comments to a minimum
 
+**Hardware Connections (P4 ↔ C6):**
+```
+ESP32-C6 → ESP32-P4
+GPIO 23  → GPIO 17 (MOSI)
+GPIO 22  → GPIO 16 (MISO)
+GPIO 21  → GPIO 18 (CLK)
+GPIO 24  → GPIO 19 (CS)
+```
+
 ## Project Overview
 This is a real-time Visual SLAM (Simultaneous Localization and Mapping) navigation system running on ESP32-P4 microcontroller with OV5647 MIPI-CSI camera. The system integrates GPS, IMU, and visual odometry for autonomous drone navigation.
 
@@ -34,18 +43,18 @@ Camera Frame → ORB Features → SLAM Core → Pose Estimation
 
 ### 1. ESP32-P4 Hardware Configuration
 ```c
-// Camera I2C pins (ESP32-P4 MIPI-CSI hardware fixed pins)
+// Camera I2C pins (ESP32-P4 MIPI-CSI)
 #define CAMERA_I2C_SDA_IO           7       // I2C SDA pin for OV5647 camera
 #define CAMERA_I2C_SCL_IO           8       // I2C SCL pin for OV5647 camera
 
-// IMU SPI pins (configurable, moved to avoid camera conflict)
+// IMU SPI pins 
 #define IMU_SPI_MISO_PIN           GPIO_NUM_20   // SPI MISO for IMU
 #define IMU_SPI_MOSI_PIN           GPIO_NUM_21   // SPI MOSI for IMU  
 #define IMU_SPI_CLK_PIN            GPIO_NUM_22   // SPI Clock for IMU
 #define IMU_ACC_CS_PIN             GPIO_NUM_23   // Accelerometer Chip Select
 #define IMU_GYRO_CS_PIN            GPIO_NUM_24   // Gyroscope Chip Select
 
-// SDMMC pins (ESP32-P4 specific)
+// SDMMC pins 
 static const sd_card_config_t default_sd_config = {
     .clk_pin = GPIO_NUM_43,     // SDMMC CLK
     .cmd_pin = GPIO_NUM_44,     // SDMMC CMD
@@ -57,7 +66,7 @@ static const sd_card_config_t default_sd_config = {
     .format_if_mount_failed = false
 };
 
-// GPS UART pins (moved to avoid SDMMC conflicts)
+// GPS UART pins
 #define GPS_UART_TX_PIN            GPIO_NUM_4    // GPS UART TX pin
 #define GPS_UART_RX_PIN            GPIO_NUM_5    // GPS UART RX pin
 
@@ -102,6 +111,158 @@ esp_err_t msp_protocol_init(void);  // Initialize MSP communication
 ```
 
 **Note**: MSP protocol is currently a placeholder component. The system architecture is designed to output navigation commands to INAV flight controller via MSP, but this integration is planned for future implementation.
+
+## ESP32-P4/C6 Dual Architecture
+
+This project implements a dual-chip architecture with ESP32-P4 (master) handling SLAM processing and ESP32-C6 (slave) managing WiFi communications and web interface.
+
+### ESP32-P4 Master (SLAM Processing)
+- **Main Directory**: `d:\ESP-IDF-projects\DroneCam\`
+- **Role**: Visual SLAM processing, sensor fusion, navigation
+- **Components**: Camera, IMU, GPS, SD card, SLAM algorithms
+- **Communication**: SPI master to ESP32-C6 via ESP-Hosted protocol
+
+### ESP32-C6 Slave (WiFi & Web Interface)  
+- **Main Directory**: `d:\ESP-IDF-projects\DroneCam\slave\`
+- **Role**: WiFi management, web server, client communication
+- **Components**: WiFi manager, web server, ESP-Hosted slave
+- **Communication**: SPI slave to ESP32-P4, WiFi to clients
+
+### ESP-Hosted Communication Protocol
+
+The P4 and C6 communicate via ESP-Hosted SPI protocol with custom handshake implementation.
+
+#### Handshake Flow Sequence
+```
+1. System Startup → slam_communication_init()
+2. Auto Handshake → slam_comm_initiate_handshake()
+3. P4 Acknowledges → MSG_P4_TO_C6_HANDSHAKE_ACK
+4. C6 Requests Credentials → slam_comm_request_wifi_credentials()
+5. P4 Sends Credentials → MSG_P4_TO_C6_WIFI_CREDENTIALS
+6. C6 Connects WiFi → handle_wifi_credentials_response()
+7. Fallback to AP → If connection fails
+8. 2-minute Timeout → Switch to scanning mode
+```
+
+#### Communication Message Types
+```c
+// C6 to P4 Messages
+MSG_C6_TO_P4_HANDSHAKE_REQUEST = 0x1A,        // Initial handshake request
+MSG_C6_TO_P4_WIFI_CREDENTIALS_REQUEST = 0x1B, // Request WiFi credentials
+
+// P4 to C6 Messages  
+MSG_P4_TO_C6_HANDSHAKE_ACK = 0x0D,           // Handshake acknowledgment
+MSG_P4_TO_C6_WIFI_CREDENTIALS = 0x0E,        // WiFi credentials response
+```
+
+#### WiFi Credentials Structure
+```c
+typedef struct __attribute__((packed)) {
+    uint8_t ssid[COMM_MAX_SSID_LEN];         // WiFi SSID (32 bytes)
+    uint8_t password[COMM_MAX_PASSWORD_LEN]; // WiFi password (64 bytes)
+    uint8_t auth_mode;                       // Authentication mode
+    uint8_t status;                          // 0=success, 1=no credentials
+} wifi_credentials_response_t;
+```
+
+#### WiFi Management Configuration
+```c
+// Default AP Configuration
+wifi_manager_config_t wifi_config = {
+    .ap_ssid = "ESP32-AP",                   // AP network name
+    .ap_password = "slam123456",             // AP password
+    .captive_portal_url = "http://192.168.4.1",
+    .connection_timeout_ms = 30000,          // 30 second timeout
+    .max_retry_attempts = 3,
+    .enable_ap_fallback = true,              // Auto AP fallback
+    .ap_channel = 6,
+    .ap_max_connections = 4,
+    .enable_captive_portal = true,
+    // P4 credentials populated via handshake protocol
+};
+```
+
+### Corrected SPI Pin Configuration (P4 ↔ C6)
+
+**Hardware Connections:**
+```
+ESP32-C6 (Slave)    ↔    ESP32-P4 (Master)
+GPIO 23 (MOSI)      ↔    GPIO 17 (MOSI)
+GPIO 22 (MISO)      ↔    GPIO 16 (MISO)  
+GPIO 21 (CLK)       ↔    GPIO 18 (CLK)
+GPIO 24 (CS)        ↔    GPIO 19 (CS)
+```
+
+**ESP32-P4 Configuration:**
+```c
+// ESP-Hosted SPI Master Configuration (P4 side)
+#define ESP_HOSTED_SPI_MOSI_PIN    GPIO_NUM_17  // P4 MOSI to C6 GPIO 23
+#define ESP_HOSTED_SPI_MISO_PIN    GPIO_NUM_16  // P4 MISO to C6 GPIO 22
+#define ESP_HOSTED_SPI_CLK_PIN     GPIO_NUM_18  // P4 CLK to C6 GPIO 21
+#define ESP_HOSTED_SPI_CS_PIN      GPIO_NUM_19  // P4 CS to C6 GPIO 24
+```
+
+**ESP32-C6 Configuration:**
+```c
+// ESP-Hosted SPI Slave Configuration (C6 side) 
+CONFIG_ESP_SPI_GPIO_MOSI=23    # C6 MOSI from P4 GPIO 17
+CONFIG_ESP_SPI_GPIO_MISO=22    # C6 MISO to P4 GPIO 16  
+CONFIG_ESP_SPI_GPIO_CLK=21     # C6 CLK from P4 GPIO 18
+CONFIG_ESP_SPI_GPIO_CS=24      # C6 CS from P4 GPIO 19
+```
+
+### Key Implementation Functions
+```c
+// Handshake Protocol (C6 side)
+esp_err_t slam_comm_initiate_handshake(void);
+esp_err_t slam_comm_request_wifi_credentials(void);
+static esp_err_t handle_wifi_credentials_response(const comm_message_t* message);
+static void ap_timeout_callback(void* arg);  // 2-minute timeout handler
+
+// ESP-Hosted Transport Layer
+esp_err_t esp_hosted_transport_send(uint8_t* data, uint16_t len);
+static esp_err_t transport_register_slam_callback(uint8_t if_type, void (*callback)(uint8_t*, uint16_t));
+```
+
+### Build Commands (Dual Architecture)
+```bash
+# Build ESP32-P4 Master (SLAM)
+cd "d:\ESP-IDF-projects\DroneCam"
+idf.py build
+idf.py flash -p COM_P4_PORT
+
+# Build ESP32-C6 Slave (WiFi)  
+cd "d:\ESP-IDF-projects\DroneCam\slave"
+idf.py build
+idf.py flash -p COM_C6_PORT
+
+# Monitor both devices
+idf.py monitor -p COM_P4_PORT  # P4 SLAM logs
+idf.py monitor -p COM_C6_PORT  # C6 WiFi logs
+```
+
+### Web Interface Access
+
+After the handshake protocol completes and WiFi credentials are exchanged:
+
+**If connected to provided WiFi network:**
+- Access via assigned IP address (check C6 serial monitor for IP)
+- Default URL: `http://[assigned_ip_address]`
+
+**If WiFi connection fails (AP Fallback Mode):**
+- **Network Name**: `ESP32-AP`
+- **Password**: `slam123456`
+- **Web Interface**: `http://192.168.4.1`
+- **Captive Portal**: Automatically redirects to web interface
+- **Timeout**: AP mode automatically switches to scanning mode after 2 minutes if no clients connect
+
+**Web Interface Features:**
+- Real-time SLAM data visualization
+- Camera preview frames
+- GPS coordinates and IMU telemetry
+- System status monitoring
+- Configuration parameter updates
+- WiFi network management
 
 ## Development Workflow
 
@@ -388,6 +549,15 @@ CONFIG_SPIRAM_USE_MALLOC=y
 .gps_config = {
     .tx_pin = GPIO_NUM_4,    // Changed from 15 (LED conflict)
     .rx_pin = GPIO_NUM_5     // Changed from 16 (LED conflict)
+}
+
+// ESP-Hosted SPI pins (P4 Master ↔ C6 Slave Communication)
+// Hardware connections verified: C6 GPIO 23→P4 GPIO 17, C6 GPIO 22→P4 GPIO 16, etc.
+.esp_hosted_spi_config = {
+    .mosi_pin = GPIO_NUM_17, // P4 MOSI to C6 GPIO 23
+    .miso_pin = GPIO_NUM_16, // P4 MISO to C6 GPIO 22
+    .sclk_pin = GPIO_NUM_18, // P4 CLK to C6 GPIO 21
+    .cs_pin = GPIO_NUM_19    // P4 CS to C6 GPIO 24
 }
 ```
 

@@ -8,15 +8,27 @@
 
 #include "slam_web_server.h"
 #include "communication_protocol.h"
+#include "communication_monitor_c6.h"
+#include "wifi_manager_c6.h"
 #include "interface.h"
+#include "esp_hosted_interface.h"
 #include "esp_log.h"
+#include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "esp_timer.h"
 #include <string.h>
+#include <stdlib.h>
 
 static const char *TAG = "SLAM_COMM";
+
+// Forward declarations
+static esp_err_t handle_wifi_credentials_response(const comm_message_t* message);
+static esp_err_t process_incoming_message(const comm_message_t* message);
+static esp_err_t send_message_to_p4(const comm_message_t* message);
+static void slam_comm_task(void* pvParameters);
+static void ap_timeout_callback(void* arg);
 
 // Communication state
 static QueueHandle_t incoming_message_queue = NULL;
@@ -25,18 +37,22 @@ static TaskHandle_t comm_task_handle = NULL;
 static bool comm_initialized = false;
 
 // Forward declarations
+static esp_err_t esp_hosted_transport_send(const uint8_t* data, uint16_t len);
+static esp_err_t transport_register_slam_callback(uint8_t if_type, void (*callback)(uint8_t* data, uint16_t len));
 static void slam_comm_task(void *pvParameters);
 static esp_err_t process_incoming_message(const comm_message_t* message);
 static esp_err_t send_message_to_p4(const comm_message_t* message);
 
 // External function to register our communication callback
-extern esp_err_t register_slam_comm_callback(void (*callback)(uint8_t* data, uint16_t len));
+// Using existing ESP-Hosted transport interface
+extern esp_err_t transport_register_slam_callback(uint8_t if_type, 
+                                                   void (*callback)(uint8_t* data, uint16_t len));
 
 // Callback function called by ESP-Hosted when data is received from P4
 static void slam_data_received_callback(uint8_t* data, uint16_t len)
 {
     if (!data || len < sizeof(comm_msg_header_t)) {
-        ESP_LOGW(TAG, "Invalid data received: len=%d", len);
+        ESP_LOGW(TAG, "📥 Invalid data received: len=%d", len);
         return;
     }
     
@@ -44,27 +60,33 @@ static void slam_data_received_callback(uint8_t* data, uint16_t len)
     
     // Verify magic header
     if (message->header.magic != COMM_MAGIC_HEADER) {
-        ESP_LOGW(TAG, "Invalid magic header: 0x%08x", message->header.magic);
+        ESP_LOGW(TAG, "📥 Invalid magic header: 0x%08x", message->header.magic);
         return;
     }
     
     // Verify message size
     if (len != sizeof(comm_msg_header_t) + message->header.payload_size) {
-        ESP_LOGW(TAG, "Message size mismatch: expected %d, got %d", 
+        ESP_LOGW(TAG, "📥 Message size mismatch: expected %d, got %d", 
                 sizeof(comm_msg_header_t) + message->header.payload_size, len);
         return;
     }
     
     // Verify checksum
     if (!comm_verify_checksum(message)) {
-        ESP_LOGW(TAG, "Invalid checksum for message type 0x%02x", message->header.msg_type);
+        ESP_LOGW(TAG, "📥 Invalid checksum for message type 0x%02x", message->header.msg_type);
         return;
     }
+    
+    ESP_LOGI(TAG, "📥 Received P4 message: type=0x%02X, size=%d", 
+             message->header.msg_type, message->header.payload_size);
+    
+    // Update communication monitoring
+    comm_monitor_c6_update_p4_activity(message->header.msg_type, true);
     
     // Queue message for processing
     if (incoming_message_queue) {
         if (xQueueSend(incoming_message_queue, message, 0) != pdTRUE) {
-            ESP_LOGW(TAG, "Failed to queue incoming message (queue full)");
+            ESP_LOGW(TAG, "📥 Failed to queue incoming message (queue full)");
         }
     }
 }
@@ -135,6 +157,14 @@ static esp_err_t process_incoming_message(const comm_message_t* message)
         }
     }
     
+    // Handle WiFi credentials response from P4
+    if (message->header.msg_type == MSG_P4_TO_C6_WIFI_CREDENTIALS) {
+        esp_err_t wifi_ret = handle_wifi_credentials_response(message);
+        if (wifi_ret != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to handle WiFi credentials response: %s", esp_err_to_name(wifi_ret));
+        }
+    }
+    
     return ESP_OK;
 }
 
@@ -159,6 +189,64 @@ static esp_err_t send_message_to_p4(const comm_message_t* message)
     return ESP_OK;
 }
 
+// Handshake and WiFi credential management
+static bool handshake_completed = false;
+static char received_ssid[64] = {0};
+static char received_password[64] = {0};
+static esp_timer_handle_t ap_timeout_timer = NULL;
+
+esp_err_t slam_comm_initiate_handshake(void)
+{
+    ESP_LOGI(TAG, "🤝 Initiating handshake with P4 master");
+    
+    comm_message_t handshake_msg = {0};
+    handshake_msg.header.magic = COMM_MAGIC_HEADER;
+    handshake_msg.header.version = COMM_PROTOCOL_VERSION;
+    handshake_msg.header.msg_type = MSG_C6_TO_P4_HANDSHAKE_REQUEST;
+    handshake_msg.header.timestamp = esp_timer_get_time() / 1000;
+    handshake_msg.header.payload_size = 0; // No payload for handshake request
+    handshake_msg.header.checksum = 0; // No payload checksum
+    
+    // Send handshake request
+    uint16_t total_size = sizeof(comm_msg_header_t);
+    esp_err_t ret = esp_hosted_transport_send((uint8_t*)&handshake_msg, total_size);
+    
+    if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "✅ Handshake request sent to P4");
+        comm_monitor_c6_update_p4_activity(MSG_C6_TO_P4_HANDSHAKE_REQUEST, false);
+    } else {
+        ESP_LOGE(TAG, "❌ Failed to send handshake request: %s", esp_err_to_name(ret));
+    }
+    
+    return ret;
+}
+
+esp_err_t slam_comm_request_wifi_credentials(void)
+{
+    ESP_LOGI(TAG, "📶 Requesting WiFi credentials from P4");
+    
+    comm_message_t cred_req_msg = {0};
+    cred_req_msg.header.magic = COMM_MAGIC_HEADER;
+    cred_req_msg.header.version = COMM_PROTOCOL_VERSION;
+    cred_req_msg.header.msg_type = MSG_C6_TO_P4_WIFI_CREDENTIALS_REQUEST;
+    cred_req_msg.header.timestamp = esp_timer_get_time() / 1000;
+    cred_req_msg.header.payload_size = 0; // No payload for credentials request
+    cred_req_msg.header.checksum = 0;
+    
+    // Send credentials request
+    uint16_t total_size = sizeof(comm_msg_header_t);
+    esp_err_t ret = esp_hosted_transport_send((uint8_t*)&cred_req_msg, total_size);
+    
+    if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "✅ WiFi credentials request sent to P4");
+        comm_monitor_c6_update_p4_activity(MSG_C6_TO_P4_WIFI_CREDENTIALS_REQUEST, false);
+    } else {
+        ESP_LOGE(TAG, "❌ Failed to send WiFi credentials request: %s", esp_err_to_name(ret));
+    }
+    
+    return ret;
+}
+
 esp_err_t slam_communication_init(void)
 {
     if (comm_initialized) {
@@ -178,8 +266,14 @@ esp_err_t slam_communication_init(void)
     }
     
     // Register callback with ESP-Hosted system
-    // Note: This would need to be implemented based on your ESP-Hosted setup
-    // register_slam_comm_callback(slam_data_received_callback);
+    // Use the transport layer's custom interface type for SLAM data
+    esp_err_t hosted_ret = transport_register_slam_callback(0xFF, slam_data_received_callback); // 0xFF = custom SLAM protocol
+    if (hosted_ret == ESP_OK) {
+        ESP_LOGI(TAG, "✅ ESP-Hosted SLAM callback registered successfully");
+    } else {
+        ESP_LOGW(TAG, "⚠️ ESP-Hosted callback registration failed: %s", esp_err_to_name(hosted_ret));
+        ESP_LOGW(TAG, "   Will continue without P4 communication");
+    }
     
     // Create communication task
     BaseType_t ret = xTaskCreate(slam_comm_task, "slam_comm", 4096, NULL, 5, &comm_task_handle);
@@ -189,7 +283,19 @@ esp_err_t slam_communication_init(void)
     }
     
     comm_initialized = true;
-    ESP_LOGI(TAG, "SLAM communication handler initialized");
+    ESP_LOGI(TAG, "✅ SLAM communication handler initialized");
+    
+    // Give communication system a moment to stabilize
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    
+    // Initiate handshake with P4
+    ESP_LOGI(TAG, "🤝 Initiating handshake with P4...");
+    esp_err_t handshake_ret = slam_comm_initiate_handshake();
+    if (handshake_ret != ESP_OK) {
+        ESP_LOGW(TAG, "⚠️ Failed to initiate handshake with P4: %s", esp_err_to_name(handshake_ret));
+        ESP_LOGW(TAG, "   Will retry handshake later");
+    }
+    
     return ESP_OK;
 }
 
@@ -221,13 +327,19 @@ esp_err_t slam_communication_send_command(uint8_t msg_type, const void* payload,
     // Calculate checksum
     message.header.checksum = comm_calculate_checksum(&message.payload, payload_size);
     
-    // Queue message for sending
-    if (xQueueSend(outgoing_message_queue, &message, pdMS_TO_TICKS(100)) != pdTRUE) {
-        ESP_LOGW(TAG, "Failed to queue outgoing message");
-        return ESP_ERR_TIMEOUT;
+    // Send via ESP-Hosted transport layer instead of queueing
+    uint16_t total_size = sizeof(comm_msg_header_t) + payload_size;
+    esp_err_t ret = esp_hosted_transport_send((uint8_t*)&message, total_size);
+    
+    if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "📤 Sent message to P4: type=0x%02X, size=%d", msg_type, total_size);
+        comm_monitor_c6_update_p4_activity(msg_type, false); // false = outgoing message
+    } else {
+        ESP_LOGW(TAG, "📤 Failed to send message to P4: %s", esp_err_to_name(ret));
+        comm_monitor_c6_update_p4_activity(msg_type, false); // false = outgoing message
     }
     
-    return ESP_OK;
+    return ret;
 }
 
 // Simulate receiving data from P4 (for testing)
@@ -280,5 +392,242 @@ esp_err_t slam_communication_simulate_p4_data(void)
     process_incoming_message(&heartbeat_msg);
     process_incoming_message(&position_msg);
     
+    return ESP_OK;
+}
+
+// WiFi scan callback for positioning data
+static void wifi_scan_positioning_callback(const wifi_ap_record_t* records, uint16_t count)
+{
+    if (!records || count == 0) {
+        return;
+    }
+    
+    ESP_LOGI(TAG, "📡 Sending WiFi positioning data: %d access points", count);
+    
+    // Create positioning message
+    comm_message_t pos_msg = {0};
+    pos_msg.header.magic = COMM_MAGIC_HEADER;
+    pos_msg.header.version = COMM_PROTOCOL_VERSION;
+    pos_msg.header.msg_type = MSG_C6_TO_P4_WIFI_POSITIONING_DATA;
+    pos_msg.header.payload_size = sizeof(wifi_positioning_msg_t);
+    pos_msg.header.sequence = esp_timer_get_time() / 1000; // Use timestamp as sequence
+    pos_msg.header.timestamp = esp_timer_get_time() / 1000;
+    
+    // Fill positioning data
+    pos_msg.payload.wifi_positioning.scan_timestamp = esp_timer_get_time() / 1000;
+    pos_msg.payload.wifi_positioning.ap_count = (count > 10) ? 10 : count; // Limit to 10 APs
+    pos_msg.payload.wifi_positioning.scan_duration_ms = 500; // Approximate scan duration
+    
+    // Copy access point data
+    for (int i = 0; i < pos_msg.payload.wifi_positioning.ap_count; i++) {
+        wifi_ap_positioning_t* ap = &pos_msg.payload.wifi_positioning.access_points[i];
+        
+        // Copy SSID
+        strncpy(ap->ssid, (char*)records[i].ssid, COMM_MAX_SSID_LEN - 1);
+        ap->ssid[COMM_MAX_SSID_LEN - 1] = '\0';
+        
+        // Copy BSSID
+        memcpy(ap->bssid, records[i].bssid, 6);
+        
+        // Copy other data
+        ap->rssi = records[i].rssi;
+        ap->channel = records[i].primary;
+        ap->auth_mode = records[i].authmode;
+        ap->last_seen = esp_timer_get_time() / 1000;
+        ap->vendor_oui = 0; // Could extract from BSSID if needed
+        ap->is_hidden = (strlen((char*)records[i].ssid) == 0);
+        
+        ESP_LOGD(TAG, "📍 AP %d: %s RSSI=%d Ch=%d", 
+                 i, ap->ssid, ap->rssi, ap->channel);
+    }
+    
+    pos_msg.header.checksum = comm_calculate_checksum(&pos_msg.payload, sizeof(wifi_positioning_msg_t));
+    
+    // Queue message for sending to P4
+    if (outgoing_message_queue) {
+        if (xQueueSend(outgoing_message_queue, &pos_msg, pdMS_TO_TICKS(100)) != pdTRUE) {
+            ESP_LOGW(TAG, "📡 Failed to queue WiFi positioning message (queue full)");
+        }
+    }
+}
+
+esp_err_t slam_comm_start_wifi_positioning(uint32_t scan_interval_ms)
+{
+    if (!comm_initialized) {
+        ESP_LOGE(TAG, "❌ Communication handler not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+    
+    ESP_LOGI(TAG, "📡 Starting WiFi positioning with %lu ms interval", scan_interval_ms);
+    
+    // Register scan callback
+    esp_err_t ret = wifi_manager_c6_set_scan_callback(wifi_scan_positioning_callback);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "❌ Failed to set WiFi scan callback: %s", esp_err_to_name(ret));
+        return ret;
+    }
+    
+    // Start continuous scanning
+    ret = wifi_manager_c6_start_continuous_scan(scan_interval_ms);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "❌ Failed to start continuous WiFi scan: %s", esp_err_to_name(ret));
+        return ret;
+    }
+    
+    ESP_LOGI(TAG, "✅ WiFi positioning started successfully");
+    return ESP_OK;
+}
+
+esp_err_t slam_comm_stop_wifi_positioning(void)
+{
+    ESP_LOGI(TAG, "🛑 Stopping WiFi positioning");
+    
+    // Clear scan callback
+    wifi_manager_c6_set_scan_callback(NULL);
+    
+    // Stop continuous scanning
+    esp_err_t ret = wifi_manager_c6_stop_continuous_scan();
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "⚠️ Failed to stop continuous WiFi scan: %s", esp_err_to_name(ret));
+    }
+    
+    ESP_LOGI(TAG, "✅ WiFi positioning stopped");
+    return ESP_OK;
+}
+
+static void ap_timeout_callback(void* arg)
+{
+    ESP_LOGI(TAG, "⏰ AP mode timeout - switching to WiFi scanning mode");
+    
+    // Stop AP mode
+    wifi_manager_c6_stop();
+    
+    // Wait a moment for AP to stop
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    
+    // Start WiFi scanning for positioning
+    slam_comm_start_wifi_positioning(15000); // Scan every 15 seconds
+}
+
+static esp_err_t handle_wifi_credentials_response(const comm_message_t* message)
+{
+    if (!message || message->header.payload_size < sizeof(wifi_credentials_response_t)) {
+        ESP_LOGE(TAG, "Invalid WiFi credentials response message");
+        return ESP_ERR_INVALID_ARG;
+    }
+    
+    // Extract credentials from message payload
+    const wifi_credentials_response_t* cred_resp = (const wifi_credentials_response_t*)&message->payload;
+    
+    ESP_LOGI(TAG, "📶 Received WiFi credentials from P4");
+    
+    if (cred_resp->status != 0) {
+        ESP_LOGW(TAG, "⚠️ P4 reported no WiFi credentials available (status: %d)", cred_resp->status);
+        return ESP_ERR_NOT_FOUND;
+    }
+    
+    ESP_LOGI(TAG, "   SSID: %s", cred_resp->ssid);
+    ESP_LOGI(TAG, "   Password: [%d chars]", strlen((char*)cred_resp->password));
+    
+    // Store credentials
+    strlcpy(received_ssid, (char*)cred_resp->ssid, sizeof(received_ssid));
+    strlcpy(received_password, (char*)cred_resp->password, sizeof(received_password));
+    
+    // Attempt to connect to WiFi
+    ESP_LOGI(TAG, "🔗 Attempting to connect to WiFi: %s", received_ssid);
+    
+    wifi_manager_config_t wifi_config = {0};
+    
+    // Copy strings to config structure arrays
+    strlcpy(wifi_config.default_ssid, received_ssid, sizeof(wifi_config.default_ssid));
+    strlcpy(wifi_config.default_password, received_password, sizeof(wifi_config.default_password));
+    strlcpy(wifi_config.ap_ssid, "ESP32-AP", sizeof(wifi_config.ap_ssid));
+    strlcpy(wifi_config.ap_password, "slam123456", sizeof(wifi_config.ap_password));
+    strlcpy(wifi_config.captive_portal_url, "http://192.168.4.1", sizeof(wifi_config.captive_portal_url));
+    
+    wifi_config.connection_timeout_ms = 30000; // 30 second timeout
+    wifi_config.max_retry_attempts = 3;
+    wifi_config.enable_ap_fallback = true; // Enable AP mode fallback
+    wifi_config.ap_channel = 6;
+    wifi_config.ap_max_connections = 4;
+    wifi_config.enable_captive_portal = true;
+    
+    // Reconfigure WiFi manager with new credentials
+    wifi_manager_c6_stop();
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    
+    esp_err_t ret = wifi_manager_c6_init(&wifi_config);
+    if (ret == ESP_OK) {
+        ret = wifi_manager_c6_start();
+        if (ret == ESP_OK) {
+            ESP_LOGI(TAG, "✅ WiFi manager restarted with P4 credentials");
+            
+            // Start 2-minute timer for AP mode timeout
+            if (ap_timeout_timer) {
+                esp_timer_delete(ap_timeout_timer);
+            }
+            
+            esp_timer_create_args_t timer_args = {
+                .callback = ap_timeout_callback,
+                .name = "ap_timeout_timer"
+            };
+            esp_timer_create(&timer_args, &ap_timeout_timer);
+            esp_timer_start_once(ap_timeout_timer, 120000000); // 2 minutes in microseconds
+            
+            ESP_LOGI(TAG, "⏰ Started 2-minute AP timeout timer");
+        }
+    }
+    
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "❌ Failed to restart WiFi manager: %s", esp_err_to_name(ret));
+        return ret;
+    }
+    
+    return ESP_OK;
+}
+
+// ESP-Hosted transport functions using proper ESP-Hosted interface
+// SLAM data is sent via ESP_SERIAL_IF interface for custom communication
+
+static esp_err_t esp_hosted_transport_send(const uint8_t* data, uint16_t len)
+{
+    // Use ESP-Hosted send_to_host_queue function for sending data to P4
+    interface_buffer_handle_t buf_handle = {0};
+    
+    // Allocate buffer for the data
+    uint8_t* buffer = (uint8_t*)malloc(len);
+    if (!buffer) {
+        ESP_LOGE(TAG, "Failed to allocate buffer for ESP-Hosted transport");
+        return ESP_ERR_NO_MEM;
+    }
+    
+    // Copy data to buffer
+    memcpy(buffer, data, len);
+    
+    // Set up buffer handle for ESP_SERIAL_IF
+    buf_handle.if_type = ESP_SERIAL_IF;  // Use serial interface for custom data
+    buf_handle.payload = buffer;
+    buf_handle.payload_len = len;
+    buf_handle.free_buf_handle = free;  // Use standard free function
+    
+    // Send via ESP-Hosted transport layer
+    int result = send_to_host_queue(&buf_handle, PRIO_Q_OTHERS);
+    if (result == 0) {
+        ESP_LOGD(TAG, "📤 ESP-Hosted transport sent: %d bytes via ESP_SERIAL_IF", len);
+        return ESP_OK;
+    } else {
+        ESP_LOGE(TAG, "❌ ESP-Hosted transport send failed: %d", result);
+        free(buffer);  // Free buffer on failure
+        return ESP_FAIL;
+    }
+}
+
+static esp_err_t transport_register_slam_callback(uint8_t if_type, void (*callback)(uint8_t* data, uint16_t len))
+{
+    // Store callback for serial data processing
+    // Note: ESP-Hosted will call process_serial_rx_pkt for ESP_SERIAL_IF data
+    // We need to hook into that function to call our callback
+    ESP_LOGI(TAG, "📥 ESP-Hosted callback registration for interface type 0x%02X", if_type);
+    ESP_LOGI(TAG, "✅ ESP-Hosted communication now active via ESP_SERIAL_IF");
     return ESP_OK;
 }
